@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Chatterino/chatterino2/master/docs/plugin-info.schema.json",
+  "name": "YouTube test plugin",
+  "description": "This plugin is for testing Youtube stuff.",
+  "authors": [
+    "kararty"
+  ],
+  "homepage": "https://github.com/Chatterino/Chatterino2",
+  "tags": [
+    "test"
+  ],
+  "version": "0.0.0",
+  "license": "MIT",
+  "permissions": [
+    {
+      "type": "Network"
+    }
+  ]
+}

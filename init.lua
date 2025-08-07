@@ -1,4 +1,4 @@
-local JSON = require "JSON"
+local json = require "json"
 require "mm2plHelper"
 
 --local message_id_cache = {};
@@ -34,7 +34,7 @@ local add_chat = function(action, channel)
   local textRenderer = OptionalChain(item, "liveChatTextMessageRenderer")
 
   if textRenderer == nil then
-    print("Hit non normal message type: " .. JSON:encode(item))
+    print("Hit non normal message type: " .. json.encode(item))
     return
   end
 
@@ -79,10 +79,10 @@ local add_chat = function(action, channel)
   -- add_to_message_id_cache(id)
 end
 
----@param json table
+---@param youtubeData table
 ---@param channel c2.Channel
-local add_chats = function(json, channel)
-  local actions = OptionalChain(json, "continuationContents", "liveChatContinuation", "actions")
+local add_chats = function(youtubeData, channel)
+  local actions = OptionalChain(youtubeData, "continuationContents", "liveChatContinuation", "actions")
 
   if actions == nil then
     return
@@ -93,11 +93,11 @@ local add_chats = function(json, channel)
   end
 end
 
----@param json table
-local get_next_continuation = function(json)
+---@param youtubeData table
+local get_next_continuation = function(youtubeData)
   local nextContinuation = nil
 
-  local CS = OptionalChain(json, "continuationContents", "liveChatContinuation", "continuations")
+  local CS = OptionalChain(youtubeData, "continuationContents", "liveChatContinuation", "continuations")
 
   if CS then
     nextContinuation = CS[1]
@@ -113,7 +113,7 @@ local get_next_continuation = function(json)
   end
 
   if continuation == nil then
-    continuation = OptionalChain(json, "invalidationContinuationData", "continuation")
+    continuation = OptionalChain(youtubeData, "invalidationContinuationData", "continuation")
   end
 
   return continuation
@@ -131,23 +131,23 @@ local parse_live_chat_response = function(data, result, channel)
   end
 
   local stringJson = result:data()
-  local json = JSON:decode(stringJson)
+  local youtubeData = json.decode(stringJson)
 
-  if type(json) ~= "table" then
+  if type(youtubeData) ~= "table" then
     channel:add_system_message("Could not read chat.")
     return
   end
 
-  add_chats(json, channel)
+  add_chats(youtubeData, channel)
 
-  local newContinuation = get_next_continuation(json)
+  local newContinuation = get_next_continuation(youtubeData)
 
   if newContinuation == nil then
     channel:add_system_message("Could not continue reading chat.")
     return
   end
 
-  ---c2.later(function()
+  --c2.later(function()
     Read_YouTube_Chat(
       {
         ["liveId"] = data["liveId"],
@@ -157,7 +157,7 @@ local parse_live_chat_response = function(data, result, channel)
       },
       channel
     )
-  ---end, 500)
+  --end, 500)
 end
 
 ---@param data { ["liveId"]:string, ["apiKey"]:string, ["clientVersion"]:string, ["continuation"]:string }

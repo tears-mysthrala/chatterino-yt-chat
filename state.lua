@@ -1,0 +1,3 @@
+IO_LOCK = false
+
+ACTIVE_STREAMS = {}

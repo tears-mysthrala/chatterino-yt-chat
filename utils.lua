@@ -18,21 +18,23 @@ function Is_Valid_URL(url)
 end
 
 function FileExists(filename)
-   local isPresent = nil
-   local f = io.open(filename, "r")
+  local isPresent = nil
+  local f = io.open(filename, "r")
 
-   if f then
-      isPresent = true
-      f:close()
-   end
+  if f then
+    isPresent = true
+    f:close()
+  end
 
-   return isPresent
+  return isPresent
 end
 
---- This is MOST DEFINITELY prone to breaking in the future.
---- Channel ids are CASE SENSITIVE on Youtube but Chatterino channels are ALWAYS lowercase.
---- TODO: Create more useful and actually unique names.
----@param streamer string
-function GetSplitName(streamer)
-  return "/yt:" .. streamer:lower()
+function Table_Has_Value(table, value)
+  for _, v in ipairs(table) do
+    if v == value then
+      return true
+    end
+  end
+
+  return false
 end

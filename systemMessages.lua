@@ -52,7 +52,6 @@ function Warn_No_Channel_Id(channel, url)
     "Couldn't find channel id for this URL: " .. url)
 end
 
-
 ---@param channel c2.Channel
 ---@param url string
 function Warn_No_Client_Version(channel, url)
@@ -61,8 +60,15 @@ function Warn_No_Client_Version(channel, url)
 end
 
 ---@param channel c2.Channel
+---@param streamer string
+---@param split string
+function Warn_Split_Already_Added(channel, streamer, split)
+  channel:add_system_message(YT_CHAT_SYSTEM_MESSAGE_PREFIX ..
+  "Channel '" .. streamer .. "' has already been added to split '" .. split .. "'")
+end
+
+---@param channel c2.Channel
 ---@param url string
 function Log_Reading_URL(channel, url)
   channel:add_system_message(YT_CHAT_SYSTEM_MESSAGE_PREFIX .. "Reading URL: " .. url)
 end
-

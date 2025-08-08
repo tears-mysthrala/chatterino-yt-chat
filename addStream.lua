@@ -10,9 +10,16 @@ local initialize_add_stream = function(channel, data)
 
   local streamer = data["channelId"]
 
-  if StreamFile_Read_Streamer(streamer) then
+  local streamerData = StreamFile_Read_Streamer(streamer)
+
+  if streamerData ~= nil then
+    local hasSplit = Table_Has_Value(streamerData["split"], split)
+    if hasSplit then
+      Warn_Split_Already_Added(channel, streamer, split)
+      return
+    end
+
     StreamFile_Add_Split_To_Streamer(streamer, split)
-    IO_LOCK = false
     return
   end
 

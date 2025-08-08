@@ -1,4 +1,3 @@
-require "utils"
 require "systemMessages"
 
 ---@param channel c2.Channel
@@ -10,10 +9,10 @@ local initialize_add_stream = function(channel, data)
 
   local streamer = data["channelId"]
 
-  local streamerData = StreamFile_Read_Streamer(streamer)
+  local streamData = StreamFile_Read_Streamer(streamer)
 
-  if streamerData ~= nil then
-    local hasSplit = Table_Has_Value(streamerData["split"], split)
+  if streamData ~= nil then
+    local hasSplit = StreamData_Has_Split(streamData, split)
     if hasSplit then
       Warn_Split_Already_Added(channel, streamer, split)
       return

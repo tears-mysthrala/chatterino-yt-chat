@@ -151,8 +151,6 @@ local parse_live_chat_response = function(data, result)
 
   splits = Get_Active_Stream_Splits(videoId)
 
-  print(json.encode(splits))
-
   if #splits == 0 then
     Remove_From_Active_Streams(videoId)
     print("2 End polling of", videoId)

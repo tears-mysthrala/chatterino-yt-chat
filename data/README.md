@@ -3,13 +3,13 @@
 ```json
 {
   "channels": {
-    "random_alphanumerals": {
+    "random_letters": {
       "splits": ["forsen"]
     },
-    "random_alphanumerals": {
+    "random_letters": {
       "splits": ["notkarar"]
     }
   },
-  "settings":[]
+  "settings": []
 }
 ```

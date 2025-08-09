@@ -39,4 +39,5 @@ end
 
 c2.register_command("/yt-chat", cmd_yt_chat)
 
+StreamFile_Create_If_Not_Exists()
 c2.later(Read_Stream_Data, 1000)

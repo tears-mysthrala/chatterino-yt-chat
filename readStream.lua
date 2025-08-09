@@ -5,12 +5,12 @@ require "streamsFile"
 require "parseChat"
 require "state"
 
----@param data { ["channelId"]:string, ["videoId"]:string, ["apiKey"]:string, ["clientVersion"]:string, ["continuation"]:string }
+---@param data { channelName:string, channelId:string, videoId:string, apiKey:string, clientVersion:string, continuation:string }
 ---@param splits {}
 function Initialize_Live_Polling(data, splits)
-  Add_To_Active_Streams(data["videoId"], splits)
+  Add_To_Active_Streams(data.videoId, splits)
 
-  print("Heading into polling YouTube Chat with the following data:" , json.encode(data))
+  print("Heading into polling YouTube Chat with the following data:", json.encode(data))
   Read_YouTube_Chat(data)
 end
 
@@ -19,13 +19,27 @@ end
 local parse_is_live_data = function(result, splits)
   local data, err = Parse_HTML(result)
 
-  if err or data == nil then
+  if (err == nil or err ~= "continuation") and type(data) ~= "table" then
     print("Faulty HTML", "data is", type(data), "err is", err)
     return
   end
 
-  if Is_Active_Stream_VideoId_Active(data["videoId"]) == false then
-    print("Loading " .. data["videoId"] .. " into " .. table.concat(splits, ", "))
+  if data == nil then
+    -- it will never get here, but linter is complaining.
+    print("Clueless data == nil")
+    return
+  end
+
+  if err == "continuation" then
+    -- drop silently, this video isn't live.
+    print("Dropping", json.encode(data))
+    return
+  end
+
+  if Is_Active_Stream_VideoId_Active(data.videoId) == false then
+    local videoId = data.videoId
+
+    print("Loading " .. videoId .. " into " .. table.concat(splits, ", "))
     Initialize_Live_Polling(data, splits)
   end
 end

@@ -9,3 +9,6 @@ VIDEO_ID_REGEX = '"videoId"%s*:%s*"([^"]*)"'
 CHANNEL_ID_REGEX = '"channelId"%s*:%s*"([^"]*)","isOwnerViewing"'
 
 YT_CHAT_SYSTEM_MESSAGE_PREFIX = "[yt-chat] "
+
+-- This is best effort.
+CHANNEL_NAME_REGEX = '"author"%s*:%s*"([^"]*)","isLowLatencyLiveStream"'

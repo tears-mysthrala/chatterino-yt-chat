@@ -74,15 +74,18 @@ function Parse_HTML(result)
     return nil, "channelId"
   end
 
+  local channelName = html:match(CHANNEL_NAME_REGEX)
+
+  -- Don't forget, any new field you add here, you gotta also add to the end of parse_live_chat_response.
   return {
-    ["videoId"] = videoId,
-    ["apiKey"] = apiKey,
-    ["clientVersion"] = clientVersion,
-    ["continuation"] = continuation,
-    ["channelId"] = channelId
+    videoId = videoId,
+    apiKey = apiKey,
+    clientVersion = clientVersion,
+    continuation = continuation,
+    channelId = channelId,
+    channelName = channelName or videoId -- !!
   }
 end
-
 
 local colors = { "blue", "coral", "dodgerBlue", "springGreen", "yellowGreen", "green", "orangeRed", "red", "goldenRod",
   "hotPink", "cadetBlue", "seaGreen", "chocolate", "blueViolet", "firebrick" }
@@ -123,4 +126,12 @@ function LumeFind(t, value)
     if v == value then return k end
   end
   return nil
+end
+
+function Ternary(condition, whenTrue, whenFalse)
+  if condition then
+    return whenTrue
+  end
+
+  return whenFalse
 end

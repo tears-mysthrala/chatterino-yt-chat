@@ -1,13 +1,15 @@
 require "systemMessages"
 
 ---@param channel c2.Channel
----@param data { ["channelId"]:string, ["videoId"]:string, ["apiKey"]:string, ["clientVersion"]:string, ["continuation"]:string }
+---@param data { channelName:string, channelId:string, videoId:string, apiKey:string, clientVersion:string, continuation:string }
 local initialize_add_stream = function(channel, data)
+  local videoId = data.videoId
+  local channelId = data.channelId
+  local continuation = data.continuation
+
   StreamFile_Create_If_Not_Exists()
 
   local split = channel:get_name()
-
-  local channelId = data["channelId"]
 
   local channelData = StreamFile_Read_Channel(channelId)
 
@@ -23,8 +25,8 @@ local initialize_add_stream = function(channel, data)
 
     IO_LOCK = false
 
-    if data["continuation"] then
-      Add_To_Active_Streams(data["videoId"], splits)
+    if continuation then
+      Add_To_Active_Streams(videoId, splits)
     end
 
     return
@@ -34,7 +36,7 @@ local initialize_add_stream = function(channel, data)
 
   IO_LOCK = false
 
-  if data["continuation"] then
+  if continuation then
     Initialize_Live_Polling(data, splits)
   end
 end
@@ -69,7 +71,6 @@ local parse_data = function(channel, url, result)
   if err == "continuation" then
     Warn_No_Continuation(channel, url)
   end
-
 
   return data
 end

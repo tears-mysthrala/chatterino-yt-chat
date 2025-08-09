@@ -18,6 +18,6 @@ Read YouTube livestream chats, inside your Chatterino!
 - Youtube chats can be added to multiple Chatterino channels, the polling will add YouTube chat to the relevant Chatterino channels without extra polling.
 
 ## Credits
-kararty, thanks to help from mm2pl and nerixyz.
+Thanks to @mm2pl and @nerixyz, they were big help.
 
 MIT

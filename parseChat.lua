@@ -1,73 +1,29 @@
 local json = require "libs/json"
 
+require "buildMessage"
 require "mm2plHelper"
 
 ---@param action table
 local add_chat = function(data, action)
+  local videoId = data.videoId
+
+  local splits = Get_Active_Stream_Splits(videoId)
+
   local item = OptionalChain(action, "addChatItemAction", "item")
+
+  local showChannel = #splits > 0
 
   if item == nil then
     print("Missing addChatItemAction.item")
+    print(json.encode(action))
     return
   end
 
-  -- item could be anything, but for now we're reading only text
-  local textRenderer = OptionalChain(item, "liveChatTextMessageRenderer")
+  local message = Build_Message(data, item, showChannel)
 
-  -- This is a emoji reaction which users can spam.
-  if OptionalChain(item, "liveChatPlaceholderItemRenderer") then
+  if message == nil then
     return
   end
-
-  if textRenderer == nil then
-    print("Hit non normal message type: " .. json.encode(item))
-    return
-  end
-
-  local name = OptionalChain(textRenderer, "authorName", "text") or
-      OptionalChain(textRenderer, "authorName", "simpleText") or "[YouTube chatter]"
-  local trimmedName = Trim5(name)
-
-  local messageRuns = OptionalChain(textRenderer, "message", "runs")
-
-  local text = ""
-
-  if messageRuns then
-    for _, textRun in ipairs(messageRuns) do
-      text = text .. (OptionalChain(textRun, "text") or "")
-    end
-  end
-
-  local timestamp = OptionalChain(textRenderer, "timestampUsec")
-  local id = OptionalChain(textRenderer, "id")
-
-  local message = c2.Message.new({
-    id = "yt-chat-" .. id,
-    message_text = text,
-    server_received_time = timestamp,
-    elements = {
-      {
-        type = "text",
-        text = "YT",
-        color = "system"
-      },
-      {
-        type = "timestamp",
-        time = timestamp
-      },
-      {
-        type = "text",
-        text = trimmedName .. ":",
-        color = Get_Color(trimmedName),
-      },
-      {
-        type = "text",
-        text = text
-      }
-    }
-  })
-
-  local splits = Get_Active_Stream_Splits(data["videoId"])
 
   for _, split in ipairs(splits) do
     local channel = c2.Channel.by_name(split)
@@ -117,15 +73,16 @@ local get_next_continuation = function(youtubeData)
   return continuation
 end
 
----@param data { ["channelId"]:string, ["videoId"]:string, ["apiKey"]:string, ["clientVersion"]:string, ["continuation"]:string }
+---@param data { channelName:string, channelId:string, videoId:string, apiKey:string, clientVersion:string, continuation:string }
 ---@param result c2.HTTPResponse
 local parse_live_chat_response = function(data, result)
-  local videoId = data["videoId"]
+  local videoId = data.videoId
+
   local status = result:status()
 
   if status >= 300 then
     Remove_From_Active_Streams(videoId)
-    print("Status: '" .. status .. "'. Stop polling of", videoId)
+    print("Status: '" .. status .. "'. End polling of", videoId)
     return
   end
 
@@ -134,7 +91,7 @@ local parse_live_chat_response = function(data, result)
 
   if type(youtubeData) ~= "table" then
     Remove_From_Active_Streams(videoId)
-    print("Stop polling of", videoId)
+    print("Data from YouTube might not be JSON. End polling of", videoId, "String:", stringJson)
     return
   end
 
@@ -153,7 +110,7 @@ local parse_live_chat_response = function(data, result)
 
   if #splits == 0 then
     Remove_From_Active_Streams(videoId)
-    print("2 End polling of", videoId)
+    print("Lack of splits. End polling of", videoId)
     -- ends the polling
     return
   end
@@ -162,29 +119,30 @@ local parse_live_chat_response = function(data, result)
 
   if newContinuation == nil then
     Remove_From_Active_Streams(videoId)
-    print("End polling of", videoId)
+    print("Lack of newContinuation. End polling of", videoId)
     return
   end
 
   c2.later(function()
     Read_YouTube_Chat(
       {
-        ["channelId"] = data["channelId"],
-        ["videoId"] = data["videoId"],
-        ["apiKey"] = data["apiKey"],
-        ["clientVersion"] = data["clientVersion"],
-        ["continuation"] = newContinuation
+        continuation = newContinuation,
+        videoId = data.videoId,
+        apiKey = data.apiKey,
+        clientVersion = data.clientVersion,
+        channelId = data.channelId,
+        channelName = data.channelName
       }
     )
   end, 600)
 end
 
----@param data { ["channelId"]:string, ["videoId"]:string, ["apiKey"]:string, ["clientVersion"]:string, ["continuation"]:string }
+---@param data { channelName:string, channelId:string, videoId:string, apiKey:string, clientVersion:string, continuation:string }
 function Read_YouTube_Chat(data)
-  local videoId = data["videoId"]
-  local apiKey = data["apiKey"]
-  local clientVersion = data["clientVersion"]
-  local continuation = data["continuation"]
+  local videoId = data.channelId
+  local apiKey = data.apiKey
+  local clientVersion = data.clientVersion
+  local continuation = data.continuation
 
   local request = c2.HTTPRequest.create(c2.HTTPMethod.Post,
     "https://www.youtube.com/youtubei/v1/live_chat/get_live_chat?key=" .. apiKey)

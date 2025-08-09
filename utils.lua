@@ -46,7 +46,7 @@ function Get_Keys(t)
 end
 
 ---@param result c2.HTTPResponse
-Parse_HTML = function(result)
+function Parse_HTML(result)
   local html = result:data()
 
   local videoId = html:match(LIVE_ID_REGEX) or html:match(VIDEO_ID_REGEX)

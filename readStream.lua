@@ -20,7 +20,7 @@ local parse_is_live_data = function(result, splits)
   local data, err = Parse_HTML(result)
 
   if err or data == nil then
-    print("Faulty HTML", data, err)
+    print("Faulty HTML", "data is", type(data), "err is", err)
     return
   end
 

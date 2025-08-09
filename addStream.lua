@@ -7,22 +7,24 @@ local initialize_add_stream = function(channel, data)
 
   local split = channel:get_name()
 
-  local streamer = data["channelId"]
+  local channelId = data["channelId"]
 
-  local streamData = StreamFile_Read_Streamer(streamer)
+  local channelData = StreamFile_Read_Channel(channelId)
 
-  if streamData ~= nil then
-    local hasSplit = StreamData_Has_Split(streamData, split)
+  if channelData ~= nil then
+    local hasSplit = StreamData_Has_Split(channelData, split)
     if hasSplit then
-      Warn_Split_Already_Added(channel, streamer, split)
+      Warn_Split_Already_Added(channel, channelId, split)
+      IO_LOCK = false
       return
     end
 
-    StreamFile_Add_Split_To_Streamer(streamer, split)
+    StreamFile_Add_Split_To_Channel(channelId, split)
+    IO_LOCK = false
     return
   end
 
-  StreamFile_Create_Streamer(streamer, split)
+  StreamFile_Create_Channel(channelId, split)
   IO_LOCK = false
 end
 

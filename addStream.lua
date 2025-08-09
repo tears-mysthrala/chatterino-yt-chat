@@ -23,7 +23,9 @@ local initialize_add_stream = function(channel, data)
 
     IO_LOCK = false
 
-    Add_To_Active_Streams(data["videoId"], splits)
+    if data["continuation"] then
+      Add_To_Active_Streams(data["videoId"], splits)
+    end
     return
   end
 
@@ -31,7 +33,9 @@ local initialize_add_stream = function(channel, data)
 
   IO_LOCK = false
 
-  Initialize_Live_Polling(data, splits)
+  if data["continuation"] then
+    Initialize_Live_Polling(data, splits)
+  end
 end
 
 ---@param channel c2.Channel
@@ -50,8 +54,8 @@ local parse_data = function(channel, url, result)
     return
   end
 
-  if err == "continuation" then
-    Warn_No_Continuation(channel, url)
+  if err == "channelId" then
+    Warn_No_Channel_Id(channel, url)
     return
   end
 
@@ -60,10 +64,11 @@ local parse_data = function(channel, url, result)
     return
   end
 
-  if err == "channelId" then
-    Warn_No_Channel_Id(channel, url)
-    return
+  -- This is fine, user might just be adding the channel.
+  if err == "continuation" then
+    Warn_No_Continuation(channel, url)
   end
+
 
   return data
 end

@@ -42,7 +42,9 @@ end
 ---@param url string
 function Warn_No_Continuation(channel, url)
   channel:add_system_message(YT_CHAT_SYSTEM_MESSAGE_PREFIX ..
-    "Couldn't find continuation for this URL: " .. url .. " This may mean this URL isn't a livestream.")
+    "Couldn't find continuation for this URL: " ..
+    url ..
+    " This may mean this URL isn't a livestream yet. Saving channel for now. Will load chat once a stream on the channel is live.")
 end
 
 ---@param channel c2.Channel

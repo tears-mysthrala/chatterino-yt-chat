@@ -3,13 +3,14 @@ local json = require "json"
 require "utils"
 require "streamsFile"
 require "parseChat"
+require "state"
 
 ---@param data { ["channelId"]:string, ["videoId"]:string, ["apiKey"]:string, ["clientVersion"]:string, ["continuation"]:string }
 ---@param splits {}
 function Initialize_Live_Polling(data, splits)
   Add_To_Active_Streams(data["videoId"], splits)
 
-  print("Heading into polling YouTube Chat with the following data:", json.encode(data))
+  print("Heading into polling YouTube Chat with the following data:" , json.encode(data))
   Read_YouTube_Chat(data)
 end
 

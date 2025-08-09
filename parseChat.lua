@@ -36,9 +36,6 @@ local add_chat = function(data, action)
   local timestamp = OptionalChain(textRenderer, "timestampUsec")
   local id = OptionalChain(textRenderer, "id")
 
-  print(json.encode(textRenderer))
-
-
   local message = c2.Message.new({
     id = "yt-chat-" .. id,
     message_text = text,

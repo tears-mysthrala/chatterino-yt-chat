@@ -30,10 +30,8 @@ function FileExists(filename)
 end
 
 function Table_Has_Value(table, value)
-  for _, v in ipairs(table) do
-    if v == value then
-      return true
-    end
+  if rawget(table, value) then
+    return true
   end
 
   return false

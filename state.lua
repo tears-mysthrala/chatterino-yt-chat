@@ -23,3 +23,16 @@ end
 function Remove_From_Active_Streams(videoId)
   ACTIVE_STREAMS[videoId] = nil
 end
+
+---@param videoId string
+---@param split string
+function Remove_Split_From_Active_Streams(videoId, split)
+  if Is_Active_Stream_VideoId_Active(videoId) then
+    local index = LumeFind(ACTIVE_STREAMS[videoId], split)
+    table.remove(ACTIVE_STREAMS[videoId], index)
+
+    if #ACTIVE_STREAMS[videoId] == 0 then
+      Remove_From_Active_Streams(videoId)
+    end
+  end
+end

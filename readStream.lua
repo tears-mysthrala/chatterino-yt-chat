@@ -39,7 +39,6 @@ end
 ---@param splits table
 local is_live_request = function(channelId, splits)
   local url = getUrl(channelId)
-  print("Checking status of " .. url)
   local request = c2.HTTPRequest.create(c2.HTTPMethod.Get, url)
   Mutate_Request_Default_Headers(request)
   request:on_success(function(result) parse_is_live_data(result, splits) end)
@@ -57,8 +56,15 @@ function Read_Stream_Data()
   local channelsData = StreamFile_Read_Channels()
 
   local channelIds = Get_Keys(channelsData)
+
   for _, channelId in ipairs(channelIds) do
-    is_live_request(channelId, channelsData[channelId][SPLITS_PROPERTY_NAME])
+    local splits = Only_Available_Splits(channelsData[channelId][SPLITS_PROPERTY_NAME])
+
+    if #splits > 0 then
+      is_live_request(channelId, splits)
+    else
+      print("No splits available for", channelId)
+    end
   end
 
   IO_LOCK = false

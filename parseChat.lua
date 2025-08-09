@@ -120,10 +120,12 @@ end
 ---@param data { ["channelId"]:string, ["videoId"]:string, ["apiKey"]:string, ["clientVersion"]:string, ["continuation"]:string }
 ---@param result c2.HTTPResponse
 local parse_live_chat_response = function(data, result)
+  local videoId = data["videoId"]
   local status = result:status()
 
   if status >= 300 then
-    Remove_From_Active_Streams(data["videoId"])
+    Remove_From_Active_Streams(videoId)
+    print("Status: '" .. status .. "'. Stop polling of", videoId)
     return
   end
 
@@ -131,16 +133,38 @@ local parse_live_chat_response = function(data, result)
   local youtubeData = json.decode(stringJson)
 
   if type(youtubeData) ~= "table" then
-    Remove_From_Active_Streams(data["videoId"])
+    Remove_From_Active_Streams(videoId)
+    print("Stop polling of", videoId)
     return
   end
 
   add_chats(data, youtubeData)
 
+  local splits = Get_Active_Stream_Splits(videoId)
+
+  for _, split in ipairs(splits) do
+    local channel = c2.Channel.by_name(split)
+    if channel == nil then
+      Remove_Split_From_Active_Streams(videoId, split)
+    end
+  end
+
+  splits = Get_Active_Stream_Splits(videoId)
+
+  print(json.encode(splits))
+
+  if #splits == 0 then
+    Remove_From_Active_Streams(videoId)
+    print("2 End polling of", videoId)
+    -- ends the polling
+    return
+  end
+
   local newContinuation = get_next_continuation(youtubeData)
 
   if newContinuation == nil then
-    Remove_From_Active_Streams(data["videoId"])
+    Remove_From_Active_Streams(videoId)
+    print("End polling of", videoId)
     return
   end
 

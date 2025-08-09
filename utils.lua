@@ -102,3 +102,25 @@ end
 function Trim5(s)
   return s:match '^%s*(.*%S)' or ''
 end
+
+function Only_Available_Splits(splits)
+  local t = {}
+  for _, value in ipairs(splits) do
+    local c = c2.Channel.by_name(value)
+    if c then
+      table.insert(t, value)
+    end
+  end
+
+  return t
+end
+
+--- https://github.com/idbrii/lua-lume/blob/master/lume.lua
+--- Returns the index/key of `value` in `t`. Returns `nil` if that value does not
+-- exist in the table.
+function LumeFind(t, value)
+  for k, v in ipairs(t) do
+    if v == value then return k end
+  end
+  return nil
+end

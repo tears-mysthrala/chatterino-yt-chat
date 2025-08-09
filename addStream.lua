@@ -26,6 +26,7 @@ local initialize_add_stream = function(channel, data)
     if data["continuation"] then
       Add_To_Active_Streams(data["videoId"], splits)
     end
+
     return
   end
 

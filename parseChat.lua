@@ -11,8 +11,13 @@ local add_chat = function(data, action)
     return
   end
 
-  --- item could be anything, but for now we're reading only text
+  -- item could be anything, but for now we're reading only text
   local textRenderer = OptionalChain(item, "liveChatTextMessageRenderer")
+
+  -- This is a emoji reaction which users can spam.
+  if OptionalChain(item, "liveChatPlaceholderItemRenderer") then
+    return
+  end
 
   if textRenderer == nil then
     print("Hit non normal message type: " .. json.encode(item))
@@ -63,15 +68,14 @@ local add_chat = function(data, action)
   })
 
   local splits = Get_Active_Stream_Splits(data["videoId"])
+
   for _, split in ipairs(splits) do
     local channel = c2.Channel.by_name(split)
-    -- channel:add_system_message(text)
     if channel then
+      -- channel:add_system_message(text)
       channel:add_message(message)
     end
   end
-
-  -- add_to_message_id_cache(id)
 end
 
 ---@param youtubeData table

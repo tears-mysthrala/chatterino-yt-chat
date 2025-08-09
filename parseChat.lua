@@ -143,7 +143,7 @@ local parse_live_chat_response = function(data, result)
     return
   end
 
-  --c2.later(function()
+  c2.later(function()
     Read_YouTube_Chat(
       {
         ["channelId"] = data["channelId"],
@@ -153,7 +153,7 @@ local parse_live_chat_response = function(data, result)
         ["continuation"] = newContinuation
       }
     )
-  --end, 500)
+  end, 600)
 end
 
 ---@param data { ["channelId"]:string, ["videoId"]:string, ["apiKey"]:string, ["clientVersion"]:string, ["continuation"]:string }

@@ -3,8 +3,7 @@ local json = require "json"
 require "mm2plHelper"
 
 ---@param action table
----@param channel c2.Channel
-local add_chat = function(action, channel)
+local add_chat = function(data, action)
   local item = OptionalChain(action, "addChatItemAction", "item")
 
   if item == nil then
@@ -22,6 +21,7 @@ local add_chat = function(action, channel)
 
   local name = OptionalChain(textRenderer, "authorName", "text") or
       OptionalChain(textRenderer, "authorName", "simpleText") or "[YouTube chatter]"
+  local trimmedName = Trim5(name)
 
   local messageRuns = OptionalChain(textRenderer, "message", "runs")
 
@@ -36,17 +36,27 @@ local add_chat = function(action, channel)
   local timestamp = OptionalChain(textRenderer, "timestampUsec")
   local id = OptionalChain(textRenderer, "id")
 
+  print(json.encode(textRenderer))
+
+
   local message = c2.Message.new({
     id = "yt-chat-" .. id,
+    message_text = text,
+    server_received_time = timestamp,
     elements = {
+      {
+        type = "text",
+        text = "YT",
+        color = "system"
+      },
       {
         type = "timestamp",
         time = timestamp
       },
       {
         type = "text",
-        text = name .. ":",
-        color = "system"
+        text = trimmedName .. ":",
+        color = Get_Color(trimmedName),
       },
       {
         type = "text",
@@ -55,15 +65,20 @@ local add_chat = function(action, channel)
     }
   })
 
-  -- channel:add_system_message(text)
-  channel:add_message(message)
+  local splits = Get_Active_Stream_Splits(data["videoId"])
+  for _, split in ipairs(splits) do
+    local channel = c2.Channel.by_name(split)
+    -- channel:add_system_message(text)
+    if channel then
+      channel:add_message(message)
+    end
+  end
 
   -- add_to_message_id_cache(id)
 end
 
 ---@param youtubeData table
----@param channel c2.Channel
-local add_chats = function(youtubeData, channel)
+local add_chats = function(data, youtubeData)
   local actions = OptionalChain(youtubeData, "continuationContents", "liveChatContinuation", "actions")
 
   if actions == nil then
@@ -71,7 +86,7 @@ local add_chats = function(youtubeData, channel)
   end
 
   for _, action in ipairs(actions) do
-    add_chat(action, channel)
+    add_chat(data, action)
   end
 end
 
@@ -101,14 +116,13 @@ local get_next_continuation = function(youtubeData)
   return continuation
 end
 
----@param data { ["liveId"]:string, ["apiKey"]:string, ["clientVersion"]:string, ["continuation"]:string }
+---@param data { ["channelId"]:string, ["videoId"]:string, ["apiKey"]:string, ["clientVersion"]:string, ["continuation"]:string }
 ---@param result c2.HTTPResponse
----@param channel c2.Channel
-local parse_live_chat_response = function(data, result, channel)
+local parse_live_chat_response = function(data, result)
   local status = result:status()
 
   if status >= 300 then
-    channel:add_system_message("Could not read chat, status code: " .. status)
+    Remove_From_Active_Streams(data["videoId"])
     return
   end
 
@@ -116,36 +130,35 @@ local parse_live_chat_response = function(data, result, channel)
   local youtubeData = json.decode(stringJson)
 
   if type(youtubeData) ~= "table" then
-    channel:add_system_message("Could not read chat.")
+    Remove_From_Active_Streams(data["videoId"])
     return
   end
 
-  add_chats(youtubeData, channel)
+  add_chats(data, youtubeData)
 
   local newContinuation = get_next_continuation(youtubeData)
 
   if newContinuation == nil then
-    channel:add_system_message("Could not continue reading chat.")
+    Remove_From_Active_Streams(data["videoId"])
     return
   end
 
   --c2.later(function()
     Read_YouTube_Chat(
       {
-        ["liveId"] = data["liveId"],
+        ["channelId"] = data["channelId"],
+        ["videoId"] = data["videoId"],
         ["apiKey"] = data["apiKey"],
         ["clientVersion"] = data["clientVersion"],
         ["continuation"] = newContinuation
-      },
-      channel
+      }
     )
   --end, 500)
 end
 
----@param data { ["liveId"]:string, ["apiKey"]:string, ["clientVersion"]:string, ["continuation"]:string }
----@param channel c2.Channel
-function Read_YouTube_Chat (data, channel)
-  local liveId = data["liveId"]
+---@param data { ["channelId"]:string, ["videoId"]:string, ["apiKey"]:string, ["clientVersion"]:string, ["continuation"]:string }
+function Read_YouTube_Chat(data)
+  local videoId = data["videoId"]
   local apiKey = data["apiKey"]
   local clientVersion = data["clientVersion"]
   local continuation = data["continuation"]
@@ -165,10 +178,10 @@ function Read_YouTube_Chat (data, channel)
       "continuation": "]] .. continuation .. [["
     }
   ]])
-  request:on_success(function(result) parse_live_chat_response(data, result, channel) end)
+  request:on_success(function(result) parse_live_chat_response(data, result) end)
   request:on_error(function(result)
-    print("Something went wrong reading chat from live_id " ..
-      liveId .. " :" .. result:error())
+    print("Something went wrong reading chat from videoId " ..
+      videoId .. " :" .. result:error())
   end)
   request:execute()
 end

@@ -6,7 +6,7 @@ require "utils"
 
 local settingsPropertyName = "settings"
 local channelsPropertyName = "channels"
-local splitsPropertyName = "splits"
+SPLITS_PROPERTY_NAME = "splits"
 
 local STREAMS_FILE_NAME = "YT_CHAT.json"
 local STREAMS_FILE_DEFAULT_CONTENT = [[{
@@ -40,12 +40,14 @@ function StreamFile_Create_Channel(channel, split)
   local t = json.decode(rawFile)
 
   t[channelsPropertyName][channel] = {
-    [splitsPropertyName] = { split }
+    [SPLITS_PROPERTY_NAME] = { split }
   }
 
   f:seek("set", 0)
   f:write(json.encode(t)):flush()
   f:close()
+
+  return { split }
 end
 
 function StreamFile_Read_Channels()
@@ -84,21 +86,23 @@ function StreamFile_Add_Split_To_Channel(channel, split)
   ---@type table
   local t = json.decode(rawFile)
 
-  local splits = OptionalChain(t, channelsPropertyName, channel, splitsPropertyName)
+  local splits = OptionalChain(t, channelsPropertyName, channel, SPLITS_PROPERTY_NAME)
 
   if splits ~= nil then
-    table.insert(t[channelsPropertyName][channel][splitsPropertyName], split)
+    table.insert(t[channelsPropertyName][channel][SPLITS_PROPERTY_NAME], split)
   else
-    t[channelsPropertyName][channel][splitsPropertyName] = { split }
+    t[channelsPropertyName][channel][SPLITS_PROPERTY_NAME] = { split }
   end
 
   f:seek("set", 0)
   f:write(json.encode(t)):flush()
   f:close()
+
+  return t[channelsPropertyName][channel][SPLITS_PROPERTY_NAME]
 end
 
 ---@param channelData string
 ---@param split string
 function StreamData_Has_Split(channelData, split)
-  return Table_Has_Value(channelData[splitsPropertyName], split)
+  return Table_Has_Value(channelData[SPLITS_PROPERTY_NAME], split)
 end

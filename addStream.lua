@@ -1,7 +1,7 @@
 require "systemMessages"
 
 ---@param channel c2.Channel
----@param data { ["channelId"]:string, ["liveId"]:string, ["apiKey"]:string, ["clientVersion"]:string, ["continuation"]:string }
+---@param data { ["channelId"]:string, ["videoId"]:string, ["apiKey"]:string, ["clientVersion"]:string, ["continuation"]:string }
 local initialize_add_stream = function(channel, data)
   StreamFile_Create_If_Not_Exists()
 
@@ -19,58 +19,53 @@ local initialize_add_stream = function(channel, data)
       return
     end
 
-    StreamFile_Add_Split_To_Channel(channelId, split)
+    local splits = StreamFile_Add_Split_To_Channel(channelId, split)
+
     IO_LOCK = false
+
+    Add_To_Active_Streams(data["videoId"], splits)
     return
   end
 
-  StreamFile_Create_Channel(channelId, split)
+  local splits = StreamFile_Create_Channel(channelId, split)
+
   IO_LOCK = false
+
+  Initialize_Live_Polling(data, splits)
 end
 
 ---@param channel c2.Channel
 ---@param url string
 ---@param result c2.HTTPResponse
 local parse_data = function(channel, url, result)
-  local html = result:data()
+  local data, err = Parse_HTML(result)
 
-  local liveId = html:match(LIVE_ID_REGEX) or html:match(VIDEO_ID_REGEX)
-  if liveId == nil then
+  if err == "videoId" then
     Warn_No_VideoId(channel, url)
     return
   end
 
-  local apiKey = html:match(API_KEY_REGEX)
-  if apiKey == nil then
+  if err == "apiKey" then
     Warn_No_ApiKey(channel, url)
     return
   end
 
-  local continuation = html:match(CONTINUATION_REGEX)
-  if continuation == nil then
+  if err == "continuation" then
     Warn_No_Continuation(channel, url)
     return
   end
 
-  local clientVersion = html:match(CLIENT_VERSION_REGEX)
-  if clientVersion == nil then
+  if err == "clientVersion" then
     Warn_No_Client_Version(channel, url)
     return
   end
 
-  local channelId = html:match(CHANNEL_ID_REGEX)
-  if channelId == nil then
+  if err == "channelId" then
     Warn_No_Channel_Id(channel, url)
     return
   end
 
-  return {
-    ["liveId"] = liveId,
-    ["apiKey"] = apiKey,
-    ["clientVersion"] = clientVersion,
-    ["continuation"] = continuation,
-    ["channelId"] = channelId
-  }
+  return data
 end
 
 ---@param result c2.HTTPResponse

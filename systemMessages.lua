@@ -64,7 +64,13 @@ end
 ---@param split string
 function Warn_Split_Already_Added(channel, streamer, split)
   channel:add_system_message(YT_CHAT_SYSTEM_MESSAGE_PREFIX ..
-  "Channel '" .. streamer .. "' has already been added to split '" .. split .. "'")
+    "Channel '" .. streamer .. "' has already been added to split '" .. split .. "'")
+end
+
+---@param channel c2.Channel
+function Warn_IO_Busy(channel)
+  channel:add_system_message(YT_CHAT_SYSTEM_MESSAGE_PREFIX ..
+    "Please try again in a bit, IO is currently busy...")
 end
 
 ---@param channel c2.Channel

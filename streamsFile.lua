@@ -1,4 +1,4 @@
-local json = require "json"
+local json = require "libs/json"
 
 require "constants"
 require "mm2plHelper"

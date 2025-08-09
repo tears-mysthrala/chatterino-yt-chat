@@ -1,4 +1,4 @@
-local json = require "json"
+local json = require "libs/json"
 
 require "utils"
 require "streamsFile"

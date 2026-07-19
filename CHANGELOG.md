@@ -48,7 +48,7 @@ subtree split).
 
 ### Quality
 
-- 1298-assertion suite: unit, integration harness (mocked Chatterino),
+- 1301-assertion suite: unit, integration harness (mocked Chatterino),
   defensive fuzzing (400 random trees + degenerate cases), load scenarios
   (5 streams, 10 offline channels, 3 h simulated).
 - Fixtures: anonymized real captures from `get_live_chat` plus

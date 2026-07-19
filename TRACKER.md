@@ -75,13 +75,13 @@
 
 ### CYC-027 — CI, release automation y packaging reproducible
 - Requisito de GOAL.md: CI, Release
-- Estado: Implementado, pendiente de prueba
+- Estado: Verificado
 - Dependencias: CYC-023, CYC-024
-- Archivos: `.github/workflows/ci.yml`, `.github/workflows/release.yml`, `scripts/build_release.sh`, `scripts/sha256.sh`
+- Archivos: `.github/workflows/ci.yml`, `.github/workflows/release.yml`, `scripts/build_release.sh`, `scripts/sha256.sh`, `scripts/validate_fixtures.sh`, `.luacheckrc`
 - Validación requerida: ZIP reproducible + SHA256 + checks de versión/tag + draft release
-- Resultado: pipelines y scripts creados; build local reproducible validado con hash estable en builds consecutivos
-- Commit: e104cf4
-- Notas: primera ejecución CI falló por falso positivo en chequeo de hosts; tarea reabierta y corregida en workflow; pendiente revalidación remota tras próximos pushes
+- Resultado: CI remota VERDE (run 29693795457): luacheck 0 warnings, format check, validación info.json, allowlist de hosts, secret scan, validación de fixtures, tests (1301 aserciones), build reproducible (doble build, mismo hash), SHA-256, artefacto subido; build local == CI
+- Commit: 4552d2f
+- Notas: fallos de CI durante el endurecimiento (hosts, luacheck apt, fixture real sin anonimizar) corregidos y revalidados; acciones de terceros fijadas por SHA; permisos mínimos (contents: read en CI, write solo en release)
 
 ## Pendiente
 
@@ -496,6 +496,14 @@
 - Evidencias: salida de `scripts/test.sh`; captura real `/tmp/cyc_research/chat1.json` (75 acciones reales, no publicada); `fixtures/real/`
 - Incidencias relacionadas: CYC-008..CYC-016, CYC-031
 
+### VAL-013 — CI remota verde + reconexión + barrido de seguridad
+- Fecha: 2026-07-19T18:00:00+02:00
+- Entorno: GitHub Actions `ubuntu-latest` + local
+- Procedimiento: push de `main` → workflow CI completo; test de reconexión (HTTP 500 → backoff → recuperación) añadido al harness; barrido `grep` de patrones prohibidos en `src/`
+- Resultado: CI VERDE (run `29693795457`): luacheck 0/43 warnings, format, hosts, secret scan, fixtures, tests 1301 aserciones, build reproducible, sha256, artefacto; reconexión verificada; barrido sin `load`/`loadstring`/`io.popen`/`os.execute` ni hosts fuera de allowlist ni claves embebidas
+- Evidencias: `gh run view 29693795457`; salida de `scripts/test.sh` (1301/0)
+- Incidencias relacionadas: CYC-027, CYC-018, criterios 5, 10, 19, 20
+
 ### VAL-011 — Instalación limpia del ZIP en Chatterino 2.5.5 estable
 - Fecha: 2026-07-19T17:20:00+02:00
 - Entorno: Arch Linux x86_64, `Chatterino-Ubuntu-24.04.deb` v2.5.5 oficial (SHA-256 `8ad1ec90ea5f02112f0c3e1814f0e5679e8fd456d15c949e7ced85dcc5da48ce` verificado contra `sha256-checksums.txt` de la release), ejecución headless `QT_QPA_PLATFORM=minimal`, `XDG_DATA_HOME` sandbox, ICU 74 local
@@ -530,7 +538,7 @@
 
 ## Estado de sesión para continuidad
 
-- Qué se hizo (sesión 2026-07-19 tarde): investigación directa Chatterino API (v2.5.5: sin librería `os`, sin imágenes, con mutación de mensajes) e inventario de renderers (chat-downloader/masterchat/pytchat + capturas reales); capas support/state/youtube/messages completas; polling con taxonomía de errores + monitor offline; mutación in-place vía `find_message_by_id`; 32 fixtures sintéticos + 4 reales anonimizados; suite 1298 aserciones (unit+integración+fuzz+carga) verde; validación real en Chatterino 2.5.5 oficial (VAL-011/012) incluyendo e2e con chat real de Lofi Girl; docs completas (COMPATIBILITY, SECURITY, README, research, validation).
+- Qué se hizo (sesión 2026-07-19 tarde): investigación directa Chatterino API (v2.5.5: sin librería `os`, sin imágenes, con mutación de mensajes) e inventario de renderers (chat-downloader/masterchat/pytchat + capturas reales); capas support/state/youtube/messages completas; polling con taxonomía de errores + monitor offline; mutación in-place vía `find_message_by_id`; 32 fixtures sintéticos + 4 reales anonimizados; suite 1301 aserciones (unit+integración+fuzz+carga) verde; validación real en Chatterino 2.5.5 oficial (VAL-011/012) incluyendo e2e con chat real de Lofi Girl; docs completas (COMPATIBILITY, SECURITY, README, research, validation).
 - Qué se estaba haciendo: preparación de push + CI + release.
 - Qué falta: push de main, verificación CI remota, configuración del repo (descripción/topics), tag v1.0.0, release draft→publicada, informe final (CYC-030). Checklist manual completa de GUI queda como recomendación post-release para el usuario (docs/validation/manual-checklist.md).
 - Qué falló: nada abierto. Bugs corregidos durante la sesión: dedupe doble bucket en logging; wake fijo 300 s monitor offline; prune pre-request; first_key con claves numéricas/metadatos; expectativa ARGB en test.
@@ -540,7 +548,7 @@
   3. build final + SHA-256;
   4. tag `v1.0.0` + release (draft primero, publicar tras revisión de criterios).
 - Comandos relevantes:
-  - `scripts/test.sh` (1298 aserciones)
+  - `scripts/test.sh` (1301 aserciones)
   - `scripts/build_release.sh 1.0.0 && scripts/sha256.sh dist/chatterino-yt-chat-1.0.0.zip`
   - Chatterino headless: `XDG_DATA_HOME=<sandbox> QT_QPA_PLATFORM=minimal QT_LOGGING_RULES="chatterino.lua.debug=true" ./chatterino`
 - Estado de Git: main limpio tras commits c6b1a47 → a484be4 → 0559ce7 (+ commit de docs pendiente al escribir esto).

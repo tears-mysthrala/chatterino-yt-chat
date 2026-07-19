@@ -167,6 +167,29 @@ local polls_after_end = mock.count_requests("get_live_chat")
 mock.advance(10000)
 T.eq(mock.count_requests("get_live_chat"), polls_after_end, "no polling after stream end")
 
+-- Reconnection: transient HTTP 500 -> bounded backoff retry -> recovery ----
+
+live = true
+local fail_next = 1
+local base_responder = mock.http_responder
+mock.http_responder = function(method, url, payload)
+  if fail_next > 0 and url:find("get_live_chat", 1, true) then
+    fail_next = fail_next - 1
+    return { status = 500, data = "" }
+  end
+  return base_responder(method, url, payload)
+end
+
+payload_queue[1] = chat_payload({ text_action("m8", "zoe", "after reconnect") }, 2000)
+mock.run_command("/yt-chat", "splitA", "https://www.youtube.com/@test/live")
+T.eq(mock.count_requests("get_live_chat"), polls_after_end + 1, "polling restarted")
+local reqs_before = mock.count_requests("get_live_chat")
+mock.advance(31000) -- backoff for first error is ~2 s, then poll resumes
+T.ok(mock.count_requests("get_live_chat") > reqs_before, "retry after transient error")
+T.ok(mock.channels.splitA.messages[#mock.channels.splitA.messages].message_text:find("after reconnect", 1, true) ~= nil,
+  "polling recovered after transient error")
+mock.http_responder = base_responder
+
 -- Offline channel -> live detection via offline monitor ----------------------
 
 live = false

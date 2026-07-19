@@ -1,7 +1,7 @@
 # Performance validation
 
 Executed by `tests/perf/load_spec.lua` (mocked Chatterino + controlled
-HTTP; run via `scripts/test.sh`). Last run: 2026-07-19, 1298 assertions
+HTTP; run via `scripts/test.sh`). Last run: 2026-07-19, 1301 assertions
 green across the suite (VAL-010 in TRACKER.md).
 
 ## Scenarios covered

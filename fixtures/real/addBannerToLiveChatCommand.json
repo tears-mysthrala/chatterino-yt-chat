@@ -84,18 +84,18 @@
                   "text": " "
                 },
                 {
-                  "text": "https://link.lofigirlshop.com/summer",
+                  "text": "https://example.com/shop",
                   "navigationEndpoint": {
                     "clickTrackingParams": "FAKE-TRACKING",
                     "commandMetadata": {
                       "webCommandMetadata": {
-                        "url": "https://www.youtube.com/redirect?event=live_chat&redir_token=QUFFLUhqbDhCb29ZN2ZHcEctQWtyYUR3SzR1ODZ1dzhjUXxBQ3Jtc0trcHVsSGlkNXMyckRHWE00OVhXdWZJbTZua0tMakt4ZUJoNlRHTHhqc0NwUUE0VlZPMjJRck9PdGh6b1pBaU5HdkZWX2VHeFFURjRpMC1kZGpfQV95a3IwLWEwNzJaX2JxUUNsVVlWVkVsQVdrRVdjUQ&q=https%3A%2F%2Flink.lofigirlshop.com%2Fsummer",
+                        "url": "https://www.youtube.com/redirect?q=https%3A%2F%2Fexample.com%2Fshop",
                         "webPageType": "WEB_PAGE_TYPE_UNKNOWN",
                         "rootVe": 83769
                       }
                     },
                     "urlEndpoint": {
-                      "url": "https://www.youtube.com/redirect?event=live_chat&redir_token=QUFFLUhqbDhCb29ZN2ZHcEctQWtyYUR3SzR1ODZ1dzhjUXxBQ3Jtc0trcHVsSGlkNXMyckRHWE00OVhXdWZJbTZua0tMakt4ZUJoNlRHTHhqc0NwUUE0VlZPMjJRck9PdGh6b1pBaU5HdkZWX2VHeFFURjRpMC1kZGpfQV95a3IwLWEwNzJaX2JxUUNsVVlWVkVsQVdrRVdjUQ&q=https%3A%2F%2Flink.lofigirlshop.com%2Fsummer",
+                      "url": "https://www.youtube.com/redirect?q=https%3A%2F%2Fexample.com%2Fshop",
                       "target": "TARGET_NEW_WINDOW",
                       "nofollow": true
                     }

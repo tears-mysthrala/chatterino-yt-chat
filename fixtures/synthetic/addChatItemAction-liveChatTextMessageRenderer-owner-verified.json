@@ -1,0 +1,47 @@
+{
+ "addChatItemAction": {
+  "item": {
+   "liveChatTextMessageRenderer": {
+    "authorName": {
+     "simpleText": "Channel Owner"
+    },
+    "authorExternalChannelId": "UCFAKECHANNEL0000000001",
+    "authorPhoto": {
+     "thumbnails": [
+      {
+       "url": "https://yt3.ggpht.com/FAKE-AVATAR=s64-c-k-c0x00ffffff-no-rj"
+      }
+     ]
+    },
+    "id": "FAKE-BADGE-2",
+    "timestampUsec": "1784468624206879",
+    "authorBadges": [
+     {
+      "liveChatAuthorBadgeRenderer": {
+       "icon": {
+        "iconType": "OWNER"
+       },
+       "tooltip": "Owner"
+      }
+     },
+     {
+      "liveChatAuthorBadgeRenderer": {
+       "icon": {
+        "iconType": "VERIFIED"
+       },
+       "tooltip": "Verified"
+      }
+     }
+    ],
+    "message": {
+     "runs": [
+      {
+       "text": "Owner message"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "_provenance": "Structure verified against xenova/chat-downloader youtube.py and sigvt/masterchat parsers (2026-07); anonymized synthetic values."
+}

@@ -1,0 +1,36 @@
+{
+ "addChatItemAction": {
+  "item": {
+   "liveChatLegacyPaidMessageRenderer": {
+    "authorName": {
+     "simpleText": "Viewer One"
+    },
+    "authorExternalChannelId": "UCFAKECHANNEL0000000001",
+    "authorPhoto": {
+     "thumbnails": [
+      {
+       "url": "https://yt3.ggpht.com/FAKE-AVATAR=s64-c-k-c0x00ffffff-no-rj"
+      }
+     ]
+    },
+    "id": "FAKE-LP-1",
+    "timestampUsec": "1784468624206879",
+    "purchaseAmountText": {
+     "simpleText": "€10.00"
+    },
+    "headerBackgroundColor": 4293217669,
+    "headerSubtext": {
+     "simpleText": "Level 3"
+    },
+    "message": {
+     "runs": [
+      {
+       "text": "Legacy paid message body"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "_provenance": "Structure verified against xenova/chat-downloader youtube.py and sigvt/masterchat parsers (2026-07); anonymized synthetic values."
+}

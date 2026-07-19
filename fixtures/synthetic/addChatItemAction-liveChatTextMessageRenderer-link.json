@@ -1,0 +1,52 @@
+{
+ "addChatItemAction": {
+  "item": {
+   "liveChatTextMessageRenderer": {
+    "authorName": {
+     "simpleText": "Viewer One"
+    },
+    "authorExternalChannelId": "UCFAKECHANNEL0000000001",
+    "authorPhoto": {
+     "thumbnails": [
+      {
+       "url": "https://yt3.ggpht.com/FAKE-AVATAR=s64-c-k-c0x00ffffff-no-rj"
+      }
+     ]
+    },
+    "id": "FAKE-LINK-1",
+    "timestampUsec": "1784468624206879",
+    "message": {
+     "runs": [
+      {
+       "text": "Check this "
+      },
+      {
+       "text": "example.com",
+       "navigationEndpoint": {
+        "commandMetadata": {
+         "webCommandMetadata": {
+          "url": "https://www.youtube.com/redirect?q=https%3A%2F%2Fexample.com"
+         }
+        }
+       }
+      },
+      {
+       "text": " and /watch"
+      },
+      {
+       "text": "internal link",
+       "navigationEndpoint": {
+        "commandMetadata": {
+         "webCommandMetadata": {
+          "url": "/watch?v=FAKEVID123"
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  }
+ },
+ "_provenance": "Structure verified against xenova/chat-downloader youtube.py and sigvt/masterchat parsers (2026-07); anonymized synthetic values."
+}

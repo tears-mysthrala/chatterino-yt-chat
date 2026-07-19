@@ -1,0 +1,36 @@
+{
+ "replayChatItemAction": {
+  "videoOffsetTimeMsec": "42000",
+  "actions": [
+   {
+    "addChatItemAction": {
+     "item": {
+      "liveChatTextMessageRenderer": {
+       "authorName": {
+        "simpleText": "Viewer One"
+       },
+       "authorExternalChannelId": "UCFAKECHANNEL0000000001",
+       "authorPhoto": {
+        "thumbnails": [
+         {
+          "url": "https://yt3.ggpht.com/FAKE-AVATAR=s64-c-k-c0x00ffffff-no-rj"
+         }
+        ]
+       },
+       "id": "FAKE-REPLAY-1",
+       "timestampUsec": "1784468624206879",
+       "message": {
+        "runs": [
+         {
+          "text": "Replayed chat message"
+         }
+        ]
+       }
+      }
+     }
+    }
+   }
+  ]
+ },
+ "_provenance": "Structure verified against xenova/chat-downloader youtube.py and sigvt/masterchat parsers (2026-07); anonymized synthetic values."
+}

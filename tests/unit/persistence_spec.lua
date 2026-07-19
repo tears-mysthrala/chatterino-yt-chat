@@ -108,6 +108,19 @@ do
   Persistence._now = function() return os.time() * 1000 end
 end
 
+-- Sandbox path: no os.rename (Chatterino). tmp+verify+write+.bak must work.
+do
+  Persistence._force_no_rename = true
+  local s = Persistence.read()
+  s.channels.NR1 = { channel_id = "NR1", splits = { "norename" } }
+  local h, wok = Persistence.write_if_changed(s, nil)
+  T.ok(wok, "no-rename write ok")
+  local back = Persistence.read()
+  T.ok(back.channels.NR1 ~= nil, "no-rename write persisted")
+  T.ok(read_raw(state_file() .. ".bak") ~= nil, "no-rename path keeps .bak")
+  Persistence._force_no_rename = false
+end
+
 -- Migration from legacy v0 shape
 do
   local legacy = {

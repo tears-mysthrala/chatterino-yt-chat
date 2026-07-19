@@ -1,0 +1,77 @@
+{
+ "addLiveChatTickerItemAction": {
+  "durationSec": "20",
+  "item": {
+   "liveChatTickerPaidStickerItemRenderer": {
+    "id": "FAKE-TICK-2",
+    "authorExternalChannelId": "UCFAKECHANNEL0000000001",
+    "authorPhoto": {
+     "thumbnails": [
+      {
+       "url": "https://yt3.ggpht.com/FAKE-AVATAR=s32"
+      }
+     ],
+     "accessibility": {
+      "accessibilityData": {
+       "label": "Viewer One"
+      }
+     }
+    },
+    "fullDurationSec": 120,
+    "startBackgroundColor": 4294953512,
+    "endBackgroundColor": 4293217669,
+    "tickerThumbnails": [
+     {
+      "thumbnails": [
+       {
+        "url": "https://lh3.googleusercontent.com/FAKE-STICKER=s32"
+       }
+      ],
+      "accessibility": {
+       "accessibilityData": {
+        "label": "Party sticker"
+       }
+      }
+     }
+    ],
+    "showItemEndpoint": {
+     "showLiveChatItemEndpoint": {
+      "renderer": {
+       "liveChatPaidStickerRenderer": {
+        "authorName": {
+         "simpleText": "Viewer One"
+        },
+        "authorExternalChannelId": "UCFAKECHANNEL0000000001",
+        "authorPhoto": {
+         "thumbnails": [
+          {
+           "url": "https://yt3.ggpht.com/FAKE-AVATAR=s64-c-k-c0x00ffffff-no-rj"
+          }
+         ]
+        },
+        "id": "FAKE-TICK-2",
+        "timestampUsec": "1784468624206879",
+        "purchaseAmountText": {
+         "simpleText": "$2.00"
+        },
+        "sticker": {
+         "thumbnails": [
+          {
+           "url": "https://lh3.googleusercontent.com/FAKE-STICKER=s104"
+          }
+         ],
+         "accessibility": {
+          "accessibilityData": {
+           "label": "Party sticker"
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "_provenance": "Structure verified against xenova/chat-downloader youtube.py and sigvt/masterchat parsers (2026-07); anonymized synthetic values."
+}

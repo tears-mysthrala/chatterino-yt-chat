@@ -1,0 +1,57 @@
+{
+ "addLiveChatTickerItemAction": {
+  "durationSec": "30",
+  "item": {
+   "liveChatTickerPaidMessageItemRenderer": {
+    "id": "FAKE-TICK-1",
+    "authorExternalChannelId": "UCFAKECHANNEL0000000001",
+    "authorPhoto": {
+     "thumbnails": [
+      {
+       "url": "https://yt3.ggpht.com/FAKE-AVATAR=s32"
+      }
+     ]
+    },
+    "amount": {
+     "simpleText": "€5.00"
+    },
+    "fullDurationSec": 300,
+    "amountTextColor": 4294967295,
+    "startBackgroundColor": 4294953512,
+    "endBackgroundColor": 4293217669,
+    "showItemEndpoint": {
+     "showLiveChatItemEndpoint": {
+      "renderer": {
+       "liveChatPaidMessageRenderer": {
+        "authorName": {
+         "simpleText": "Viewer One"
+        },
+        "authorExternalChannelId": "UCFAKECHANNEL0000000001",
+        "authorPhoto": {
+         "thumbnails": [
+          {
+           "url": "https://yt3.ggpht.com/FAKE-AVATAR=s64-c-k-c0x00ffffff-no-rj"
+          }
+         ]
+        },
+        "id": "FAKE-TICK-1",
+        "timestampUsec": "1784468624206879",
+        "purchaseAmountText": {
+         "simpleText": "€5.00"
+        },
+        "message": {
+         "runs": [
+          {
+           "text": "Ticker superchat body"
+          }
+         ]
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "_provenance": "Structure verified against xenova/chat-downloader youtube.py and sigvt/masterchat parsers (2026-07); anonymized synthetic values."
+}

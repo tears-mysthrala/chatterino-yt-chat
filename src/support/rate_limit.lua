@@ -1,3 +1,5 @@
+local Clock = require("src.support.clock")
+
 local RateLimit = {}
 
 local MAX_BUCKETS = 256
@@ -6,7 +8,7 @@ local buckets = {}
 
 -- Injectable wall clock (milliseconds). Tests override this.
 RateLimit._now = function()
-  return os.time() * 1000
+  return Clock.now_ms()
 end
 
 local function evict_if_full(now)

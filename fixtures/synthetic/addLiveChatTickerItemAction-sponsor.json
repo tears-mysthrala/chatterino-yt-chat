@@ -1,0 +1,64 @@
+{
+ "addLiveChatTickerItemAction": {
+  "durationSec": "25",
+  "item": {
+   "liveChatTickerSponsorItemRenderer": {
+    "id": "FAKE-TICK-3",
+    "authorExternalChannelId": "UCFAKECHANNEL0000000001",
+    "sponsorPhoto": {
+     "thumbnails": [
+      {
+       "url": "https://yt3.ggpht.com/FAKE-AVATAR=s32"
+      }
+     ]
+    },
+    "detailText": {
+     "simpleText": "12"
+    },
+    "detailTextColor": 4294967295,
+    "fullDurationSec": 240,
+    "startBackgroundColor": 4280731354,
+    "endBackgroundColor": 4279244592,
+    "showItemEndpoint": {
+     "showLiveChatItemEndpoint": {
+      "renderer": {
+       "liveChatMembershipItemRenderer": {
+        "authorName": {
+         "simpleText": "Viewer One"
+        },
+        "authorExternalChannelId": "UCFAKECHANNEL0000000001",
+        "authorPhoto": {
+         "thumbnails": [
+          {
+           "url": "https://yt3.ggpht.com/FAKE-AVATAR=s64-c-k-c0x00ffffff-no-rj"
+          }
+         ]
+        },
+        "id": "FAKE-TICK-3",
+        "timestampUsec": "1784468624206879",
+        "headerPrimaryText": {
+         "runs": [
+          {
+           "text": "Viewer One"
+          },
+          {
+           "text": " for 12 months"
+          }
+         ]
+        },
+        "message": {
+         "runs": [
+          {
+           "text": "Milestone from ticker"
+          }
+         ]
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "_provenance": "Structure verified against xenova/chat-downloader youtube.py and sigvt/masterchat parsers (2026-07); anonymized synthetic values."
+}

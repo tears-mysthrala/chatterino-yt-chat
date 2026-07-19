@@ -1,0 +1,172 @@
+{
+  "clickTrackingParams": "FAKE-TRACKING",
+  "addBannerToLiveChatCommand": {
+    "bannerRenderer": {
+      "liveChatBannerRenderer": {
+        "header": {
+          "liveChatBannerHeaderRenderer": {
+            "icon": {
+              "iconType": "KEEP"
+            },
+            "text": {
+              "runs": [
+                {
+                  "text": "Pinned by "
+                },
+                {
+                  "text": "sample text"
+                }
+              ]
+            },
+            "contextMenuButton": {
+              "buttonRenderer": {
+                "icon": {
+                  "iconType": "MORE_VERT"
+                },
+                "accessibility": {
+                  "label": "Chat actions"
+                },
+                "trackingParams": "FAKE-TRACKING",
+                "accessibilityData": {
+                  "accessibilityData": {
+                    "label": "Chat actions"
+                  }
+                },
+                "command": {
+                  "clickTrackingParams": "FAKE-TRACKING",
+                  "commandMetadata": {
+                    "webCommandMetadata": {
+                      "ignoreNavigation": true
+                    }
+                  },
+                  "liveChatItemContextMenuEndpoint": {
+                    "params": "FAKE-TRACKING"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "contents": {
+          "liveChatTextMessageRenderer": {
+            "message": {
+              "runs": [
+                {
+                  "text": "sample text"
+                },
+                {
+                  "emoji": {
+                    "emojiId": "🌊",
+                    "shortcuts": [
+                      ":water_wave:",
+                      ":ocean:"
+                    ],
+                    "searchTerms": [
+                      "water",
+                      "wave",
+                      "ocean"
+                    ],
+                    "image": {
+                      "thumbnails": [
+                        {
+                          "url": "https://fonts.gstatic.com/s/e/notoemoji/15.1/1f30a/72.png"
+                        }
+                      ],
+                      "accessibility": {
+                        "accessibilityData": {
+                          "label": "🌊"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "text": " "
+                },
+                {
+                  "text": "https://link.lofigirlshop.com/summer",
+                  "navigationEndpoint": {
+                    "clickTrackingParams": "FAKE-TRACKING",
+                    "commandMetadata": {
+                      "webCommandMetadata": {
+                        "url": "https://www.youtube.com/redirect?event=live_chat&redir_token=QUFFLUhqbDhCb29ZN2ZHcEctQWtyYUR3SzR1ODZ1dzhjUXxBQ3Jtc0trcHVsSGlkNXMyckRHWE00OVhXdWZJbTZua0tMakt4ZUJoNlRHTHhqc0NwUUE0VlZPMjJRck9PdGh6b1pBaU5HdkZWX2VHeFFURjRpMC1kZGpfQV95a3IwLWEwNzJaX2JxUUNsVVlWVkVsQVdrRVdjUQ&q=https%3A%2F%2Flink.lofigirlshop.com%2Fsummer",
+                        "webPageType": "WEB_PAGE_TYPE_UNKNOWN",
+                        "rootVe": 83769
+                      }
+                    },
+                    "urlEndpoint": {
+                      "url": "https://www.youtube.com/redirect?event=live_chat&redir_token=QUFFLUhqbDhCb29ZN2ZHcEctQWtyYUR3SzR1ODZ1dzhjUXxBQ3Jtc0trcHVsSGlkNXMyckRHWE00OVhXdWZJbTZua0tMakt4ZUJoNlRHTHhqc0NwUUE0VlZPMjJRck9PdGh6b1pBaU5HdkZWX2VHeFFURjRpMC1kZGpfQV95a3IwLWEwNzJaX2JxUUNsVVlWVkVsQVdrRVdjUQ&q=https%3A%2F%2Flink.lofigirlshop.com%2Fsummer",
+                      "target": "TARGET_NEW_WINDOW",
+                      "nofollow": true
+                    }
+                  }
+                }
+              ]
+            },
+            "authorName": {
+              "simpleText": "Viewer One"
+            },
+            "authorPhoto": {
+              "thumbnails": [
+                {
+                  "url": "https://yt3.ggpht.com/FAKE-AVATAR=s64-c-k-c0x00ffffff-no-rj",
+                  "width": 32,
+                  "height": 32
+                },
+                {
+                  "url": "https://yt3.ggpht.com/FAKE-AVATAR=s64-c-k-c0x00ffffff-no-rj",
+                  "width": 64,
+                  "height": 64
+                }
+              ]
+            },
+            "id": "FAKE-ID-1",
+            "timestampUsec": "1783413972908546",
+            "authorBadges": [
+              {
+                "liveChatAuthorBadgeRenderer": {
+                  "icon": {
+                    "iconType": "VERIFIED"
+                  },
+                  "tooltip": "Verified",
+                  "accessibility": {
+                    "accessibilityData": {
+                      "label": "Verified"
+                    }
+                  }
+                }
+              },
+              {
+                "liveChatAuthorBadgeRenderer": {
+                  "icon": {
+                    "iconType": "OWNER"
+                  },
+                  "tooltip": "Owner",
+                  "accessibility": {
+                    "accessibilityData": {
+                      "label": "Owner"
+                    }
+                  }
+                }
+              }
+            ],
+            "authorExternalChannelId": "UCFAKECHANNEL0000000001",
+            "trackingParams": "FAKE-TRACKING"
+          }
+        },
+        "actionId": "ChwKGkNOZjUtX1NXd0pVREZWUV8xZ0FkX01rdFp3",
+        "viewerIsCreator": false,
+        "targetId": "FAKE-TARGET-ID-1",
+        "isStackable": false,
+        "backgroundType": "LIVE_CHAT_BANNER_BACKGROUND_TYPE_STATIC",
+        "bannerProperties": {
+          "autoCollapseDelay": {
+            "seconds": "7"
+          },
+          "bannerCollapsedStateEntityKey": "EihDaHdLR2tOT1pqVXRYMU5YZDBwVlJFWldVVjh4WjBGa1gwMXJkRnAzIIsBKAE%3D"
+        },
+        "bannerType": "LIVE_CHAT_BANNER_TYPE_PINNED_MESSAGE"
+      }
+    }
+  }
+}

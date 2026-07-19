@@ -1,0 +1,51 @@
+{
+ "addChatItemAction": {
+  "item": {
+   "liveChatTextMessageRenderer": {
+    "authorName": {
+     "simpleText": "Viewer One"
+    },
+    "authorExternalChannelId": "UCFAKECHANNEL0000000001",
+    "authorPhoto": {
+     "thumbnails": [
+      {
+       "url": "https://yt3.ggpht.com/FAKE-AVATAR=s64-c-k-c0x00ffffff-no-rj"
+      }
+     ]
+    },
+    "id": "FAKE-BADGE-1",
+    "timestampUsec": "1784468624206879",
+    "authorBadges": [
+     {
+      "liveChatAuthorBadgeRenderer": {
+       "icon": {
+        "iconType": "MODERATOR"
+       },
+       "tooltip": "Moderator"
+      }
+     },
+     {
+      "liveChatAuthorBadgeRenderer": {
+       "customThumbnail": {
+        "thumbnails": [
+         {
+          "url": "https://yt3.ggpht.com/FAKE-BADGE=s16"
+         }
+        ]
+       },
+       "tooltip": "Member (24 months)"
+      }
+     }
+    ],
+    "message": {
+     "runs": [
+      {
+       "text": "Moderator speaking"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "_provenance": "Structure verified against xenova/chat-downloader youtube.py and sigvt/masterchat parsers (2026-07); anonymized synthetic values."
+}

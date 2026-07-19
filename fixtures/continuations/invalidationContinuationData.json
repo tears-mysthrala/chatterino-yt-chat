@@ -1,0 +1,14 @@
+{
+  "continuationContents": {
+    "liveChatContinuation": {
+      "continuations": [
+        {
+          "invalidationContinuationData": {
+            "timeoutMs": 10000,
+            "continuation": "FAKE-CONTINUATION-TOKEN"
+          }
+        }
+      ]
+    }
+  }
+}

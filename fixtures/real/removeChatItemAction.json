@@ -1,0 +1,6 @@
+{
+  "clickTrackingParams": "FAKE-TRACKING",
+  "removeChatItemAction": {
+    "targetItemId": "FAKE-TARGET-ID-1"
+  }
+}

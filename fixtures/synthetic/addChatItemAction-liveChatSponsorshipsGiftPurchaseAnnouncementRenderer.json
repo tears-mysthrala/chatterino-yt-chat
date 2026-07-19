@@ -1,0 +1,66 @@
+{
+ "addChatItemAction": {
+  "item": {
+   "liveChatSponsorshipsGiftPurchaseAnnouncementRenderer": {
+    "id": "FAKE-GIFT-1",
+    "timestampUsec": "1784468624206879",
+    "authorExternalChannelId": "UCFAKECHANNEL0000000001",
+    "header": {
+     "liveChatSponsorshipsHeaderRenderer": {
+      "authorName": {
+       "simpleText": "Generous Gifter"
+      },
+      "authorPhoto": {
+       "thumbnails": [
+        {
+         "url": "https://yt3.ggpht.com/FAKE-AVATAR=s64"
+        }
+       ]
+      },
+      "authorBadges": [
+       {
+        "liveChatAuthorBadgeRenderer": {
+         "customThumbnail": {
+          "thumbnails": [
+           {
+            "url": "https://yt3.ggpht.com/FAKE-BADGE=s16"
+           }
+          ]
+         },
+         "tooltip": "Member (6 months)"
+        }
+       }
+      ],
+      "primaryText": {
+       "runs": [
+        {
+         "text": "Gifted "
+        },
+        {
+         "text": "5"
+        },
+        {
+         "text": " "
+        },
+        {
+         "text": "Channel Owner"
+        },
+        {
+         "text": " memberships"
+        }
+       ]
+      },
+      "image": {
+       "thumbnails": [
+        {
+         "url": "https://www.gstatic.com/youtube/img/sponsorships/sponsorships_gift_purchase_announcement_artwork.png"
+        }
+       ]
+      }
+     }
+    }
+   }
+  }
+ },
+ "_provenance": "Structure verified against xenova/chat-downloader youtube.py and sigvt/masterchat parsers (2026-07); anonymized synthetic values."
+}

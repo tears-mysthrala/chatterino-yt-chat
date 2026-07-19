@@ -1,0 +1,6 @@
+{
+ "closeLiveChatActionPanelAction": {
+  "targetPanelId": "FAKE-PANEL-1"
+ },
+ "_provenance": "Structure verified against xenova/chat-downloader youtube.py and sigvt/masterchat parsers (2026-07); anonymized synthetic values."
+}

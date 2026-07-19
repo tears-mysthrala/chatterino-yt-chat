@@ -1,26 +1,41 @@
 local Persistence = require("src.state.persistence")
 local Commands = require("src.commands")
+local Polling = require("src.youtube.polling")
 local Logging = require("src.support.logging")
+local Clock = require("src.support.clock")
 
 local Plugin = {}
 
 local state = Persistence.read()
-local state_hash = nil
+local flush, get_hash = Persistence.create_flusher(2000, function(cb, ms)
+  local c2 = rawget(_G, "c2")
+  if c2 and c2.later then
+    c2.later(cb, ms)
+  else
+    cb()
+  end
+end)
 
 local function persist(updated_state)
-  local new_hash, ok = Persistence.write_if_changed(updated_state, state_hash)
-  if ok then
-    state_hash = new_hash
-  end
-  return new_hash, ok
+  flush(updated_state)
 end
 
 function Plugin.bootstrap()
   Logging.set_debug(state.settings and state.settings.debug or false)
+  local c2 = rawget(_G, "c2")
+  Clock.start_heartbeat(c2 and c2.later)
   Commands.register(state, persist)
-  c2.later(function()
-    Commands.run_offline_poll_once(state)
-  end, 30000)
+  Polling.start_offline_monitor(state, persist)
+  Logging.info("plugin_loaded", { channels = #(require("src.state.channels").iter_active(state)) })
+end
+
+-- Exposed for the diagnostic self-test (docs/validation) and tests.
+function Plugin._state()
+  return state
+end
+
+function Plugin._persist()
+  return persist, get_hash
 end
 
 return Plugin

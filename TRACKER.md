@@ -14,23 +14,23 @@
 
 ### CYC-002 — Investigación de API de plugins de Chatterino
 - Requisito de GOAL.md: Compatibilidad de Chatterino
-- Estado: En curso
+- Estado: Verificado (investigación completada; doc pendiente de consolidar en CYC-028)
 - Dependencias: CYC-001
-- Archivos: `docs/research/chatterino-plugin-api.md` (nuevo), `README.md`, `COMPATIBILITY.md`
+- Archivos: `docs/research/chatterino-plugin-api.md`, fuentes: headers `src/controllers/plugins/**` de Chatterino2 v2.5.5 y master, `docs/wip-plugins.md`
 - Validación requerida: versión mínima compatible documentada con capacidades y limitaciones verificables
-- Resultado: Agente de investigación lanzado 2026-07-19T14:44 (API actual, elementos de mensaje, mutación de mensajes, info.json, rutas de instalación)
+- Resultado: estable actual **v2.5.5** (2026-03-22). Sandbox: Lua 5.4 sin librería `os` (confirmado en `PluginController.cpp` línea ~149: `LUA_OSLIBNAME` comentado), `io` limitado al data dir del plugin, sin `load` en release, `print`→`c2.log(Debug)`. API 2.5.5: elementos de mensaje SOLO texto/timestamp/mention/linebreak (sin imágenes; `c2.Image` llega en master post-2.5.5), `find_message_by_id`+`replace_message` DISPONIBLES (mutación real posible), HTTP sin acceso a headers de respuesta. Estructura plugin: `Plugins/<nombre>/{init.lua,info.json,data/}` en app data
 - Commit: N/A
-- Notas: se contrastará con `types/plugin_chatterino_types.lua` del historial (API 2023)
+- Notas: versión mínima objetivo: 2.5.0+ (API de mensajes compatible); imágenes = degradación documentada hasta que una estable incluya `c2.Image`
 
 ### CYC-003 — Matriz completa de acciones/renderers de YouTube Live Chat
 - Requisito de GOAL.md: Compatibilidad real, Acciones/renderers desconocidos
-- Estado: En curso
+- Estado: Verificado (inventario completado; matriz final se consolida en CYC-028)
 - Dependencias: CYC-001
-- Archivos: `COMPATIBILITY.md`, `docs/research/youtube-live-chat-renderers.md`
-- Validación requerida: matriz con acción, renderer, handler, fixture, resultado esperado y estado `Full`/`Degraded by Chatterino API`
-- Resultado: Agente de investigación lanzado 2026-07-19T14:44 (inventario desde chat-downloader, pytchat, YTLiveChat y fuentes abiertas)
+- Archivos: `COMPATIBILITY.md`, `docs/research/youtube-live-chat-renderers.md`, fuentes: `xenova/chat-downloader` (`sites/youtube.py` líneas 980-1110), `sigvt/masterchat` (`src/chat/actions/*`), `LuanRT/YouTube.js`, `taizan-hokuto/pytchat`, capturas reales `get_live_chat` (2026-07-19)
+- Validación requerida: matriz con acción, renderer, handler, fixture, resultado esperado y estado
+- Resultado: 15 acciones y ~20 renderers identificados con campos confirmados (ver implementación en `src/youtube/actions.lua`/`renderers.lua`); continuations: invalidation (timeoutMs real=10000 capturado), timed, replay, reload; no existen renderers específicos actuales de raid/Q&A/celebración en fuentes (documentado)
 - Commit: N/A
-- Notas: `Unsupported` no permitido para tipos obligatorios en release 1.0.0; se añadirán capturas reales anonimizadas (CYC-031)
+- Notas: fixtures sintéticos llevan `_provenance` con la fuente de estructura
 
 ### CYC-029 — Configuración del repositorio GitHub y publicación v1.0.0
 - Requisito de GOAL.md: Repositorio y atribución, Release, Criterios 1.0.0
@@ -44,13 +44,13 @@
 
 ### CYC-031 — Captura y anonimización de fixtures reales de YouTube
 - Requisito de GOAL.md: Validación real, Pruebas automatizadas, Compatibilidad real
-- Estado: En curso
+- Estado: Implementado, pendiente de prueba (en uso por la suite; se ampliará con más capturas en validación)
 - Dependencias: CYC-003
-- Archivos: `fixtures/real/**` (nuevo), `scripts/capture_fixture.sh` (nuevo, opcional)
+- Archivos: `fixtures/real/*.json`, `fixtures/continuations/invalidationContinuationData.json`
 - Validación requerida: fixtures procedentes de respuestas reales de `get_live_chat`, anonimizados (sin nombres/IDs reales), usados por la suite
-- Resultado: Pendiente; red a YouTube verificada (200) en este entorno
-- Commit: N/A
-- Notas: no publicar contenido identificable; redactar autores, IDs de canal y continuation tokens
+- Resultado: captura real 2026-07-19 de chat en directo (LofiGirl, UA `facebookexternalhit/`): 75 acciones en un poll; extraídos y anonimizados text message con emoji unicode, viewer engagement (subscribers-only), banner pinned real, removeChatItemAction real, invalidationContinuationData (timeoutMs=10000); anonimización: autores→"Viewer One/Two", IDs→FAKE-*, continuation→redactada, avatares→URLs fake en hosts permitidos; verde (VAL-008)
+- Commit: pendiente en este bloque
+- Notas: evidencia adicional: canal offline (NASA /live sin liveChatRenderer) confirma el camino offline
 
 ### CYC-032 — Validación de instalación en Chatterino estable
 - Requisito de GOAL.md: Criterio 16 y 17 (instalación limpia + actualización)
@@ -138,93 +138,93 @@
 
 ### CYC-008 — Renderizado completo de mensajes ordinarios/runs/emotes/badges
 - Requisito de GOAL.md: Mensajes ordinarios, Emotes e imágenes
-- Estado: Pendiente
+- Estado: Implementado, pendiente de prueba (suite verde; pendiente prueba en Chatterino real)
 - Dependencias: CYC-003, CYC-004
-- Archivos: `src/messages/text.lua`, `src/messages/emotes.lua`, `src/messages/badges.lua`, `src/messages/builder.lua`, `tests/**`
+- Archivos: `src/messages/text.lua`, `src/messages/emotes.lua`, `src/messages/badges.lua`, `src/messages/common.lua`, `src/messages/builder.lua`, `tests/unit/actions_renderers_spec.lua`
 - Validación requerida: cobertura de runs mixtos, emotes nativos/canal, unicode, enlaces, badges y rol de autor
-- Resultado: Pendiente
-- Commit: N/A
-- Notas: no perder runs sin `text`
+- Resultado: runs texto/link/emoji-unicode/emote-custom, badges OWNER/MODERATOR/VERIFIED/member(meses), autor por foto-accesibilidad, runs sin `text` marcados `[?]` y contados; fixtures reales anonimizados incluidos; 450 aserciones verdes (VAL-008)
+- Commit: pendiente en este bloque
+- Notas: emoji unicode se muestra nativamente; imágenes remotas no disponibles en API 2.5.5 (degradación documentada); bug real corregido: `first_key` saltaba metadatos (`clickTrackingParams`, `_provenance`)
 
 ### CYC-009 — Super Chat/Super Sticker y eventos monetarios
 - Requisito de GOAL.md: Super Chats y aportaciones económicas
-- Estado: Pendiente
+- Estado: Implementado, pendiente de prueba (suite verde)
 - Dependencias: CYC-003, CYC-004
-- Archivos: `src/messages/monetary.lua`, `src/youtube/renderers.lua`, `tests/**`
+- Archivos: `src/messages/monetary.lua`, `src/youtube/renderers.lua`, `fixtures/synthetic/*`
 - Validación requerida: importe, moneda, texto, nivel visual y fallback semántico
-- Resultado: Pendiente
-- Commit: N/A
-- Notas: sin conversiones monetarias
+- Resultado: super chat (importe verbatim + colores ARGB→hex + highlight), super sticker (alt + importe), donation announcement, legacy paid; sin conversiones monetarias; verde (VAL-008)
+- Commit: pendiente en este bloque
+- Notas: tickers (paid/sticker/sponsor) implementados con detalle completo vía showItemEndpoint
 
 ### CYC-010 — Membresías, regalos y eventos de nivel
 - Requisito de GOAL.md: Membresías
-- Estado: Pendiente
+- Estado: Implementado, pendiente de prueba (suite verde)
 - Dependencias: CYC-003, CYC-004
-- Archivos: `src/messages/memberships.lua`, `src/youtube/renderers.lua`, `tests/**`
+- Archivos: `src/messages/memberships.lua`, `src/youtube/renderers.lua`, `fixtures/synthetic/*`
 - Validación requerida: nuevas/renovación/antigüedad/regalos/receptores/nivel/cambios
-- Resultado: Pendiente
-- Commit: N/A
+- Resultado: nuevo miembro (nivel desde headerSubtext), milestone (antigüedad + nivel + mensaje), regalo (count + autor desde header), recepción de regalo; verde (VAL-008)
+- Commit: pendiente en este bloque
 - Notas:
 
 ### CYC-011 — Moderación y mutaciones de mensajes
 - Requisito de GOAL.md: Moderación y mutaciones visibles
-- Estado: Pendiente
+- Estado: Implementado, pendiente de prueba (suite verde; mutación in-place pendiente en Chatterino real)
 - Dependencias: CYC-003, CYC-004, CYC-007
-- Archivos: `src/messages/moderation.lua`, `src/state/active_streams.lua`, `src/youtube/actions.lua`, `tests/**`
+- Archivos: `src/messages/moderation.lua`, `src/c2_adapter.lua`, `src/youtube/actions.lua`, `src/youtube/polling.lua`
 - Validación requerida: eliminación/sustitución/marcado/actualización con ID o fallback inequívoco
-- Resultado: Pendiente
-- Commit: N/A
+- Resultado: markChatItemAsDeleted/removeChatItem/removeChatItemByAuthor/markChatItemsByAuthor/replaceChatItem implementados; mutación in-place con `find_message_by_id`+`replace_message` (verificado en API 2.5.5), fallback a evento de sistema con id; verde (VAL-008)
+- Commit: pendiente en este bloque
 - Notas:
 
 ### CYC-012 — Fijados, destacados y banners sin duplicados
 - Requisito de GOAL.md: Mensajes fijados y destacados
-- Estado: Pendiente
+- Estado: Implementado, pendiente de prueba (suite verde)
 - Dependencias: CYC-003, CYC-011
-- Archivos: `src/messages/system.lua`, `src/state/active_streams.lua`, `tests/**`
+- Archivos: `src/messages/system.lua`, `src/youtube/actions.lua`, `fixtures/real/addBannerToLiveChatCommand.json`
 - Validación requerida: pin/unpin/cambio/banner/highlight y deduplicación mensaje-banner
-- Resultado: Pendiente
-- Commit: N/A
+- Resultado: banner real capturado (header "Pinned by", contents completo, targetId); evento pinned con id `pin-<target>` para no chocar con el mensaje original; unpin vía removeBannerForLiveChatCommand; verde (VAL-008)
+- Commit: pendiente en este bloque
 - Notas:
 
 ### CYC-013 — Encuestas, Q&A e interactivos en modo lectura
 - Requisito de GOAL.md: Encuestas, preguntas y eventos interactivos
-- Estado: Pendiente
+- Estado: Implementado, pendiente de prueba (suite verde)
 - Dependencias: CYC-003, CYC-004
-- Archivos: `src/messages/polls.lua`, `src/youtube/actions.lua`, `tests/**`
+- Archivos: `src/messages/polls.lua`, `src/youtube/actions.lua`, `fixtures/synthetic/*poll*`
 - Validación requerida: opciones, recuentos/porcentajes, updates, cierre y mensajes de sistema
-- Resultado: Pendiente
-- Commit: N/A
-- Notas:
+- Resultado: poll inicial (panel), update (pregunta/opciones/ratio/votos totales), cierre (panel + resultados vía engagement POLL), throttle de updates 1/10s por encuesta; estructura verificada contra masterchat/YouTube.js; verde (VAL-008)
+- Commit: pendiente en este bloque
+- Notas: Q&A no existe como renderer de chat en fuentes actuales → documentado en matriz; cubierto por fallback si aparece
 
 ### CYC-014 — Redirecciones, estado del directo y sistema
 - Requisito de GOAL.md: Redirecciones y eventos del directo
-- Estado: Pendiente
+- Estado: Implementado, pendiente de prueba (suite verde)
 - Dependencias: CYC-003, CYC-007
-- Archivos: `src/messages/system.lua`, `src/youtube/actions.lua`, `tests/**`
+- Archivos: `src/messages/system.lua`, `src/youtube/polling.lua`
 - Validación requerida: redirect/raid/live status/chat restrictions/slow mode/end stream
-- Resultado: Pendiente
-- Commit: N/A
+- Resultado: mode change (slow/members/subscribers on/off) con fixture; viewer engagement (aviso subscribers-only real capturado); fin de directo/chat deshabilitado detectado por ausencia de continuationContents → mensaje de sistema + retorno a vigilancia offline; no existen renderers específicos de raid/redirect en fuentes actuales (documentado en matriz); verde (VAL-008)
+- Commit: pendiente en este bloque
 - Notas:
 
 ### CYC-015 — Placeholders, reacciones y efectos
 - Requisito de GOAL.md: Placeholders, reacciones y efectos
-- Estado: Pendiente
+- Estado: Implementado, pendiente de prueba (suite verde)
 - Dependencias: CYC-003, CYC-004
-- Archivos: `src/messages/system.lua`, `src/youtube/actions.lua`, `tests/**`
+- Archivos: `src/youtube/polling.lua`, `src/messages/system.lua`
 - Validación requerida: placeholder->resultado final, reacciones y efectos semánticos
-- Resultado: Pendiente
-- Commit: N/A
-- Notas:
+- Resultado: placeholders coalescidos en ventana de 10 s ("✨ N reactions"), sustitución placeholder→mensaje real vía replaceChatItemAction (entrega in-place si el objetivo existe); verde (VAL-008)
+- Commit: pendiente en este bloque
+- Notas: decisión documentada en ADR-005
 
 ### CYC-016 — Fallback seguro para acciones/renderers desconocidos
 - Requisito de GOAL.md: Acciones y renderers desconocidos
-- Estado: Pendiente
+- Estado: Implementado, pendiente de prueba (suite verde)
 - Dependencias: CYC-003, CYC-004
-- Archivos: `src/messages/fallback.lua`, `src/support/logging.lua`, `src/support/rate_limit.lua`, `tests/**`
+- Archivos: `src/messages/fallback.lua`, `src/support/logging.lua`, `tests/unit/actions_renderers_spec.lua`
 - Validación requerida: mensaje visible, redacción de sensibles, rate limit y modo diagnóstico explícito
-- Resultado: Pendiente
-- Commit: N/A
-- Notas: no loggear payload completo en producción
+- Resultado: evento visible con nombre exacto + extracción defensiva (autor/texto/importe), log rate-limited 1/60s, muestra anonimizada solo en modo debug vía sink (redacción profunda continuation/cookie/token/key); verde (VAL-008)
+- Commit: pendiente en este bloque
+- Notas: `liveChatReportModerationStateCommand` es no-op documentado (estado UI de moderador, no evento de chat)
 
 ### CYC-017 — Orden, deduplicación y consistencia de estado
 - Requisito de GOAL.md: Orden, duplicados y consistencia
@@ -403,6 +403,32 @@
 - Consecuencias: mejor trazabilidad y testabilidad; requiere ampliar cobertura de renderers para declarar 1.0.0 completa.
 - Evidencia: `src/youtube/actions.lua`, `src/youtube/renderers.lua`, `src/messages/fallback.lua`, `src/support/logging.lua`.
 
+### ADR-003 — Reloj monotónico propio (sin librería `os`)
+- Contexto: el sandbox de Chatterino no expone `os` (verificado en `PluginController.cpp` v2.5.5: `LUA_OSLIBNAME` comentado). backoff, rate-limit, dedupe TTL y debounce necesitan tiempo.
+- Decisión: `src/support/clock.lua` con heartbeat de 1 s encadenado en `c2.later` (monotónico, relativo); en tests/plain-Lua usa `os.time`. Todos los módulos inyectan `Clock.now_ms()`.
+- Alternativas: depender de timestamps de YouTube (no cubre timers locales); asumir `os` (rompería en Chatterino).
+- Consecuencias: deriva de segundos aceptable para backoff/rate-limit; ninguna lógica depende de hora absoluta.
+- Evidencia: `src/support/clock.lua`, `PluginController.cpp` v2.5.5 líneas 144-167.
+
+### ADR-004 — Persistencia atómica sin `os.rename`
+- Contexto: GOAL exige tmp+flush+sustitución segura+.bak; el sandbox no tiene `os.rename`/`os.remove`.
+- Decisión: doble camino en `persistence.lua`: rename atómico cuando `os` existe (tests), y tmp+verify+write+.bak con verificación de relectura y restauración desde .bak en el sandbox. Es el máximo de atomicidad posible en Chatterino; GOAL pide "atómica dentro de las posibilidades de Lua y Chatterino".
+- Alternativas: escritura directa sin tmp (riesgo de truncado).
+- Consecuencias: ventana de no-atomicidad documentada en `SECURITY.md`; recuperación garantizada vía `.bak`.
+- Evidencia: `src/state/persistence.lua` (`write_atomic`), test `no-rename` en `persistence_spec.lua`.
+
+### ADR-005 — Placeholders/reacciones coalescidos por ventana
+- Contexto: `liveChatPlaceholderItemRenderer` corresponde mayoritariamente a reacciones de emoji con spam potencial alto; GOAL prohíbe descartar eventos silenciosamente.
+- Decisión: coalescer placeholders por stream en ventanas de 10 s y emitir un evento de sistema "✨ N reactions"; `replaceChatItemAction` entrega el mensaje real que sustituye al placeholder.
+- Alternativas: un mensaje por reacción (inundaría el chat); descartarlos (prohibido).
+- Consecuencias: significado preservado sin flooding; documentado en COMPATIBILITY.md.
+- Evidencia: `src/youtube/polling.lua` (`deliver_event`, `REACTION_WINDOW_MS`).
+
+### ADR-006 — Eventos pinned con id `pin-<target>`
+- Contexto: un mensaje puede aparecer como ordinario y después como banner fijado; GOAL exige evitar duplicados sin perder el aviso de fijación.
+- Decisión: el evento `pinned` usa id prefijado `pin-` para deduplicar independientemente del mensaje original; la notificación de pin es un evento de sistema con autor y texto.
+- Evidencia: `src/messages/system.lua` (`System.pinned`), fixture real `fixtures/real/addBannerToLiveChatCommand.json`.
+
 ## Registro de validaciones
 
 ### VAL-001 — Lectura completa de GOAL y estado base
@@ -460,6 +486,22 @@
 - Resultado: verde — `Assertions: 136, Failures: 0`
 - Evidencias: salida de `scripts/test.sh`
 - Incidencias relacionadas: corregido defecto de doble consumo de bucket en deduplicación de logs antes del commit
+
+### VAL-008 — Capas youtube+messages contra fixtures reales y sintéticos
+- Fecha: 2026-07-19T16:35:00+02:00
+- Entorno: `/home/tears/stream` (Lua 5.5.0)
+- Procedimiento: `scripts/test.sh` tras implementar `url/html/innertube/continuations/polling`, `messages/*`, `actions/renderers`, `c2_adapter`, 4 fixtures reales anonimizados + 28 sintéticos; corrección de 2 bugs encontrados por la propia suite (`first_key` con metadatos; expectativa de color ARGB errónea en el test)
+- Resultado: verde — `Assertions: 450, Failures: 0`; sintaxis verificada con `luac5.4 -p` en todos los módulos
+- Evidencias: salida de `scripts/test.sh`; captura real `/tmp/cyc_research/chat1.json` (75 acciones reales, no publicada); `fixtures/real/`
+- Incidencias relacionadas: CYC-008..CYC-016, CYC-031
+
+### VAL-009 — Captura real de YouTube Live Chat (conectividad y protocolo)
+- Fecha: 2026-07-19T16:10:00+02:00
+- Entorno: red saliente a `www.youtube.com` (HTTP 200), curl
+- Procedimiento: GET `https://www.youtube.com/@LofiGirl/live` (UA `facebookexternalhit/`) → canonical videoId, `liveChatRenderer` presente, `INNERTUBE_API_KEY`, `INNERTUBE_CONTEXT_CLIENT_VERSION`, continuation; POST `youtubei/v1/live_chat/get_live_chat` → 75 acciones reales (texto con emoji unicode, viewer engagement subscribers-only, banner pinned, removeChatItemAction); segundo poll con nueva continuation OK (24 acciones); `@NASA/live` offline (sin liveChatRenderer) confirma camino offline
+- Resultado: protocolo del plugin validado contra YouTube real hoy; `timeoutMs` real = 10000 en invalidationContinuationData
+- Evidencias: `/tmp/cyc_research/watch_lofi.html`, `live_fb.html`, `chat1.json`, `chat2.json` (locales, no publicados); fixtures anonimizados derivados en `fixtures/real/`
+- Incidencias relacionadas: CYC-031; UA del plugin original sigue sirviendo páginas con datos de chat
 
 ## Estado de sesión para continuidad
 

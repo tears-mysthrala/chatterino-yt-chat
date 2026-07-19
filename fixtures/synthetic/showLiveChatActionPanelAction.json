@@ -1,0 +1,62 @@
+{
+ "showLiveChatActionPanelAction": {
+  "panelToShow": {
+   "liveChatActionPanelRenderer": {
+    "id": "FAKE-PANEL-1",
+    "targetId": "FAKE-POLL-1",
+    "contents": {
+     "pollRenderer": {
+      "liveChatPollId": "FAKE-POLL-1",
+      "header": {
+       "pollHeaderRenderer": {
+        "pollQuestion": {
+         "simpleText": "Best option?"
+        },
+        "metadataText": {
+         "runs": [
+          {
+           "text": "Viewer One"
+          },
+          {
+           "text": " • "
+          },
+          {
+           "text": "just now"
+          },
+          {
+           "text": " • "
+          },
+          {
+           "text": "0 votes"
+          }
+         ]
+        }
+       }
+      },
+      "choices": [
+       {
+        "text": {
+         "runs": [
+          {
+           "text": "Option A"
+          }
+         ]
+        }
+       },
+       {
+        "text": {
+         "runs": [
+          {
+           "text": "Option B"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    }
+   }
+  }
+ },
+ "_provenance": "Structure verified against xenova/chat-downloader youtube.py and sigvt/masterchat parsers (2026-07); anonymized synthetic values."
+}

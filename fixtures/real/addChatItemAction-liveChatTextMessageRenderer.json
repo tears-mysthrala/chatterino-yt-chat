@@ -1,0 +1,85 @@
+{
+  "clickTrackingParams": "FAKE-TRACKING",
+  "addChatItemAction": {
+    "item": {
+      "liveChatTextMessageRenderer": {
+        "message": {
+          "runs": [
+            {
+              "text": "sample text"
+            },
+            {
+              "emoji": {
+                "emojiId": "😘",
+                "shortcuts": [
+                  ":face_blowing_a_kiss:",
+                  ":kissing_heart:",
+                  ";*",
+                  ";-*"
+                ],
+                "searchTerms": [
+                  "face",
+                  "blowing",
+                  "a",
+                  "kiss",
+                  "kissing",
+                  "heart"
+                ],
+                "image": {
+                  "thumbnails": [
+                    {
+                      "url": "https://fonts.gstatic.com/s/e/notoemoji/15.1/1f618/72.png"
+                    }
+                  ],
+                  "accessibility": {
+                    "accessibilityData": {
+                      "label": "😘"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "authorName": {
+          "simpleText": "Viewer Two"
+        },
+        "authorPhoto": {
+          "thumbnails": [
+            {
+              "url": "https://yt3.ggpht.com/FAKE-AVATAR=s64-c-k-c0x00ffffff-no-rj",
+              "width": 32,
+              "height": 32
+            },
+            {
+              "url": "https://yt3.ggpht.com/FAKE-AVATAR=s64-c-k-c0x00ffffff-no-rj",
+              "width": 64,
+              "height": 64
+            }
+          ]
+        },
+        "contextMenuEndpoint": {
+          "clickTrackingParams": "FAKE-TRACKING",
+          "commandMetadata": {
+            "webCommandMetadata": {
+              "ignoreNavigation": true
+            }
+          },
+          "liveChatItemContextMenuEndpoint": {
+            "params": "FAKE-TRACKING"
+          }
+        },
+        "id": "FAKE-ID-2",
+        "timestampUsec": "1784467330897945",
+        "authorExternalChannelId": "UCFAKECHANNEL0000000001",
+        "contextMenuAccessibility": {
+          "accessibilityData": {
+            "label": "Chat actions"
+          }
+        },
+        "trackingParams": "FAKE-TRACKING"
+      }
+    },
+    "clientId": "CO2D_Orq3pUDFcPPwgQdNW0btQ"
+  }
+}

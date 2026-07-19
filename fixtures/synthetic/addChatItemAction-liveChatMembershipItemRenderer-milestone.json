@@ -1,0 +1,56 @@
+{
+ "addChatItemAction": {
+  "item": {
+   "liveChatMembershipItemRenderer": {
+    "authorName": {
+     "simpleText": "Viewer One"
+    },
+    "authorExternalChannelId": "UCFAKECHANNEL0000000001",
+    "authorPhoto": {
+     "thumbnails": [
+      {
+       "url": "https://yt3.ggpht.com/FAKE-AVATAR=s64-c-k-c0x00ffffff-no-rj"
+      }
+     ]
+    },
+    "id": "FAKE-MB-2",
+    "timestampUsec": "1784468624206879",
+    "authorBadges": [
+     {
+      "liveChatAuthorBadgeRenderer": {
+       "customThumbnail": {
+        "thumbnails": [
+         {
+          "url": "https://yt3.ggpht.com/FAKE-BADGE=s16"
+         }
+        ]
+       },
+       "tooltip": "Member (12 months)"
+      }
+     }
+    ],
+    "headerPrimaryText": {
+     "runs": [
+      {
+       "text": "Viewer One"
+      },
+      {
+       "text": " for 12 months"
+      }
+     ]
+    },
+    "headerSubtext": {
+     "simpleText": "Gold"
+    },
+    "message": {
+     "runs": [
+      {
+       "text": "Still here, love the streams"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "_provenance": "Structure verified against xenova/chat-downloader youtube.py and sigvt/masterchat parsers (2026-07); anonymized synthetic values."
+}

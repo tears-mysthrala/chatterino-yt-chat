@@ -1,12 +1,23 @@
 local json = require("libs/json")
 local Migrations = require("src.state.migrations")
 local Logging = require("src.support.logging")
+local Clock = require("src.support.clock")
 
 local Persistence = {}
 
 local STATE_FILE = "YT_CHAT.json"
 local BACKUP_SUFFIX = ".bak"
 local TMP_SUFFIX = ".tmp"
+
+-- Chatterino's sandbox has no `os` library: os.rename/os.remove do not
+-- exist there. Atomic replace via rename is used when available (tests,
+-- plain Lua); otherwise persistence degrades to tmp+verify+write with a
+-- .bak safety copy (see docs/architecture.md).
+local has_os_rename = type(os) == "table" and type(os.rename) == "function"
+local has_os_remove = type(os) == "table" and type(os.remove) == "function"
+
+-- Test hook: force the no-rename path.
+Persistence._force_no_rename = false
 
 local dir = "."
 local writing = false
@@ -16,7 +27,7 @@ Persistence.last_recovery = nil
 
 -- Injectable wall clock (ms) for the debounce flusher.
 Persistence._now = function()
-  return os.time() * 1000
+  return Clock.now_ms()
 end
 
 --- Redirect storage to another directory (tests only).
@@ -102,41 +113,68 @@ function Persistence.validate_schema(data)
   return out
 end
 
-local function write_atomic(path, encoded)
-  local tmp = path .. TMP_SUFFIX
-  local f, err = io.open(tmp, "w")
+local function write_file(path, content)
+  local f, err = io.open(path, "w")
   if not f then
     return false, err
   end
-  f:write(encoded)
+  f:write(content)
   f:flush()
   f:close()
+  return true, nil
+end
 
+local function backup_current(path)
   local existing = read_all(path)
   if existing then
-    local b = io.open(path .. BACKUP_SUFFIX, "w")
-    if b then
-      b:write(existing)
-      b:flush()
-      b:close()
-    end
+    write_file(path .. BACKUP_SUFFIX, existing)
+  end
+end
+
+local function restore_from_backup(path)
+  local backup = read_all(path .. BACKUP_SUFFIX)
+  if backup then
+    write_file(path, backup)
+  end
+end
+
+local function write_atomic(path, encoded)
+  local tmp = path .. TMP_SUFFIX
+  local ok, err = write_file(tmp, encoded)
+  if not ok then
+    return false, err
   end
 
-  os.remove(path)
-  local ok, rename_err = os.rename(tmp, path)
-  if not ok then
-    -- Best effort restore: keep the previous content reachable.
-    local backup = read_all(path .. BACKUP_SUFFIX)
-    if backup then
-      local restore = io.open(path, "w")
-      if restore then
-        restore:write(backup)
-        restore:flush()
-        restore:close()
-      end
+  if has_os_rename and not Persistence._force_no_rename then
+    backup_current(path)
+    if has_os_remove then
+      os.remove(path)
     end
-    os.remove(tmp)
-    return false, rename_err
+    local renamed, rename_err = os.rename(tmp, path)
+    if not renamed then
+      restore_from_backup(path)
+      os.remove(tmp)
+      return false, rename_err
+    end
+    return true, nil
+  end
+
+  -- Sandbox path (no os.rename): verify the tmp copy, keep a .bak, then
+  -- rewrite the real file and verify it. Not rename-atomic, but any
+  -- interruption leaves either the old file, the .bak, or a detectably
+  -- corrupt file that read() recovers from .bak.
+  if read_all(tmp) ~= encoded then
+    return false, "tmp_verify_failed"
+  end
+  backup_current(path)
+  local wrote, write_err = write_file(path, encoded)
+  if not wrote then
+    restore_from_backup(path)
+    return false, write_err
+  end
+  if read_all(path) ~= encoded then
+    restore_from_backup(path)
+    return false, "final_verify_failed"
   end
   return true, nil
 end

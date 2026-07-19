@@ -1,55 +1,79 @@
 local Text = require("src.messages.text")
-local Emotes = require("src.messages.emotes")
 local Monetary = require("src.messages.monetary")
 local Memberships = require("src.messages.memberships")
 local Polls = require("src.messages.polls")
+local System = require("src.messages.system")
 local Fallback = require("src.messages.fallback")
+local Common = require("src.messages.common")
 
 local Renderers = {}
 
+local SKIP_KEYS = { clickTrackingParams = true, trackingParams = true }
+
+local function skippable(key)
+  return SKIP_KEYS[key] == true or key:sub(1, 1) == "_"
+end
+
 local function first_key(tbl)
   for k, _ in pairs(tbl or {}) do
-    return k
+    if not skippable(k) then
+      return k
+    end
   end
   return nil
 end
 
-local function extract_generic(renderer)
-  local author = renderer.authorName and (renderer.authorName.simpleText or renderer.authorName.text) or nil
-  local text = renderer.message and renderer.message.simpleText or nil
-  local timestamp = renderer.timestampUsec
-  return {
-    author = author,
-    text = text,
-    timestamp_usec = timestamp
-  }
+local function viewer_engagement(renderer)
+  local icon = type(renderer.icon) == "table" and renderer.icon.iconType or nil
+  if icon == "POLL" then
+    return Polls.from_engagement(renderer)
+  end
+  return System.viewer_engagement(renderer)
 end
 
+local HANDLERS = {
+  liveChatTextMessageRenderer = Text.from_text_renderer,
+  liveChatPaidMessageRenderer = Monetary.super_chat,
+  liveChatPaidStickerRenderer = Monetary.super_sticker,
+  liveChatMembershipItemRenderer = Memberships.from_renderer,
+  liveChatSponsorshipsGiftPurchaseAnnouncementRenderer = Memberships.gift_purchase,
+  liveChatSponsorshipsGiftRedemptionAnnouncementRenderer = Memberships.gift_redemption,
+  liveChatViewerEngagementMessageRenderer = viewer_engagement,
+  liveChatModeChangeMessageRenderer = System.mode_change,
+  liveChatDonationAnnouncementRenderer = Monetary.donation,
+  liveChatLegacyPaidMessageRenderer = Monetary.legacy_paid,
+  liveChatPlaceholderItemRenderer = function(renderer)
+    return {
+      kind = "placeholder",
+      id = Common.safe_id(renderer.id),
+      timestamp_usec = Common.timestamp_usec(renderer.timestampUsec)
+    }
+  end
+}
+
+Renderers.HANDLERS = HANDLERS
+
+--- Dispatches an item payload ({<rendererName>: {...}}) to its handler.
+--- Always returns an event; unknown renderers become visible fallback
+--- events instead of being dropped.
 function Renderers.from_item(item, action_name)
   if type(item) ~= "table" then
     return nil
   end
-  if item.liveChatTextMessageRenderer then
-    return Text.from_text_renderer(item.liveChatTextMessageRenderer)
-  end
-  if item.liveChatPaidMessageRenderer then
-    return Monetary.super_chat(item.liveChatPaidMessageRenderer)
-  end
-  if item.liveChatPaidStickerRenderer then
-    return Emotes.describe_sticker(item.liveChatPaidStickerRenderer)
-  end
-  if item.liveChatMembershipItemRenderer then
-    return Memberships.from_renderer(item.liveChatMembershipItemRenderer)
-  end
-  if item.liveChatPlaceholderItemRenderer then
-    return { kind = "placeholder", message_id = item.liveChatPlaceholderItemRenderer.id }
-  end
-  if item.liveChatPollRenderer then
-    return Polls.from_renderer(item.liveChatPollRenderer)
-  end
   local name = first_key(item)
-  local renderer = item[name] or {}
-  return Fallback.unknown(name, action_name, extract_generic(renderer))
+  if not name then
+    return nil
+  end
+  local renderer = item[name]
+  local handler = HANDLERS[name]
+  if handler then
+    local ok, event = pcall(handler, renderer or {})
+    if ok and event then
+      event.source_renderer = event.source_renderer or name
+      return event
+    end
+  end
+  return Fallback.unknown(name, action_name, renderer)
 end
 
 return Renderers

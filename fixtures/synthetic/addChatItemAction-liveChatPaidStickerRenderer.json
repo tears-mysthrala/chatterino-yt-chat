@@ -1,0 +1,39 @@
+{
+ "addChatItemAction": {
+  "item": {
+   "liveChatPaidStickerRenderer": {
+    "authorExternalChannelId": "UCFAKECHANNEL0000000001",
+    "authorPhoto": {
+     "thumbnails": [
+      {
+       "url": "https://yt3.ggpht.com/FAKE-AVATAR=s64-c-k-c0x00ffffff-no-rj"
+      }
+     ]
+    },
+    "id": "FAKE-SS-1",
+    "timestampUsec": "1784468624206879",
+    "purchaseAmountText": {
+     "simpleText": "$2.00"
+    },
+    "sticker": {
+     "thumbnails": [
+      {
+       "url": "https://lh3.googleusercontent.com/FAKE-STICKER=s104"
+      }
+     ],
+     "accessibility": {
+      "accessibilityData": {
+       "label": "Thanks!"
+      }
+     }
+    },
+    "backgroundColor": 4294953512,
+    "moneyChipTextColor": 4294967295,
+    "moneyChipBackgroundColor": 4278219393,
+    "stickerDisplayWidth": 104,
+    "stickerDisplayHeight": 104
+   }
+  }
+ },
+ "_provenance": "Structure verified against xenova/chat-downloader youtube.py and sigvt/masterchat parsers (2026-07); anonymized synthetic values."
+}

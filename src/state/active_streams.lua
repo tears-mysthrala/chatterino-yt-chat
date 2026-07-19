@@ -1,3 +1,5 @@
+local Clock = require("src.support.clock")
+
 local ActiveStreams = {
   by_video = {},
   dedupe = {},
@@ -10,7 +12,7 @@ local DEDUPE_TTL_MS = 30 * 60 * 1000
 
 -- Injectable wall clock (ms) for tests.
 ActiveStreams._now = function()
-  return os.time() * 1000
+  return Clock.now_ms()
 end
 
 local function ensure_video(video_id)

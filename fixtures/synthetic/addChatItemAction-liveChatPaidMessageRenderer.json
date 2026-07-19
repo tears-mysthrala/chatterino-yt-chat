@@ -1,0 +1,53 @@
+{
+ "addChatItemAction": {
+  "item": {
+   "liveChatPaidMessageRenderer": {
+    "authorName": {
+     "simpleText": "Viewer One"
+    },
+    "authorExternalChannelId": "UCFAKECHANNEL0000000001",
+    "authorPhoto": {
+     "thumbnails": [
+      {
+       "url": "https://yt3.ggpht.com/FAKE-AVATAR=s64-c-k-c0x00ffffff-no-rj"
+      }
+     ]
+    },
+    "id": "FAKE-SC-1",
+    "timestampUsec": "1784468624206879",
+    "purchaseAmountText": {
+     "simpleText": "€5.00"
+    },
+    "message": {
+     "runs": [
+      {
+       "text": "Great stream! "
+      },
+      {
+       "emoji": {
+        "emojiId": "🎉",
+        "shortcuts": [
+         ":party_popper:"
+        ],
+        "image": {
+         "thumbnails": [
+          {
+           "url": "https://fonts.gstatic.com/s/e/notoemoji/15.1/1f389/72.png"
+          }
+         ]
+        }
+       }
+      }
+     ]
+    },
+    "headerBackgroundColor": 4294953512,
+    "headerTextColor": 4294967295,
+    "bodyBackgroundColor": 4294967295,
+    "bodyTextColor": 4278190080,
+    "authorNameTextColor": 4278190080,
+    "timestampColor": 4286611584
+   }
+  }
+ },
+ "_provenance": "Structure verified against xenova/chat-downloader youtube.py and sigvt/masterchat parsers (2026-07); anonymized synthetic values."
+}

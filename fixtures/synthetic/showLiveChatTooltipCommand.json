@@ -1,0 +1,16 @@
+{
+ "showLiveChatTooltipCommand": {
+  "tooltip": {
+   "tooltipRenderer": {
+    "detailsText": {
+     "runs": [
+      {
+       "text": "Vote in the poll above"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "_provenance": "Structure verified against xenova/chat-downloader youtube.py and sigvt/masterchat parsers (2026-07); anonymized synthetic values."
+}

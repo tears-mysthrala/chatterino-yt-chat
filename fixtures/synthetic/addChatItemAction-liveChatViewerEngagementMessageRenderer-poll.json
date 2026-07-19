@@ -1,0 +1,36 @@
+{
+ "addChatItemAction": {
+  "item": {
+   "liveChatViewerEngagementMessageRenderer": {
+    "id": "FAKE-POLLRES-1",
+    "timestampUsec": "1784468624206879",
+    "icon": {
+     "iconType": "POLL"
+    },
+    "message": {
+     "runs": [
+      {
+       "text": "Option A (73%)"
+      },
+      {
+       "text": "\n"
+      },
+      {
+       "text": "Option B (26%)"
+      },
+      {
+       "text": "\n"
+      },
+      {
+       "text": "\n"
+      },
+      {
+       "text": "Poll complete: 637 votes"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "_provenance": "Structure verified against xenova/chat-downloader youtube.py and sigvt/masterchat parsers (2026-07); anonymized synthetic values."
+}

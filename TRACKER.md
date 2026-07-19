@@ -10,6 +10,16 @@
 
 ## En curso
 
+### CYC-029 — Configuración del repositorio GitHub y publicación v1.0.0
+- Requisito de GOAL.md: Repositorio y atribución, Release, Criterios 1.0.0
+- Estado: En curso
+- Dependencias: CYC-001..CYC-028
+- Archivos: remotos git/tags/releases
+- Validación requerida: repo público creado, tag `v1.0.0`, release publicada tras checklist completa
+- Resultado: Pendiente
+- Commit: e104cf4
+- Notas: no se publicará release estable hasta completar criterios pendientes
+
 ### CYC-023 — Sistema de pruebas unitarias + fixtures anonimizados
 - Requisito de GOAL.md: Pruebas automatizadas
 - Estado: Implementado, pendiente de prueba
@@ -17,7 +27,7 @@
 - Archivos: `tests/**`, `fixtures/**`, `scripts/test.sh`
 - Validación requerida: ejecución de suite con casos de renderers/acciones/continuations y robustez
 - Resultado: Suite base ejecuta unitarias + integración simulada + fuzz ligero
-- Commit: N/A
+- Commit: e104cf4
 - Notas: cobertura aún parcial frente a todos los renderers/eventos exigidos
 
 ### CYC-027 — CI, release automation y packaging reproducible
@@ -27,7 +37,7 @@
 - Archivos: `.github/workflows/ci.yml`, `.github/workflows/release.yml`, `scripts/build_release.sh`, `scripts/sha256.sh`
 - Validación requerida: ZIP reproducible + SHA256 + checks de versión/tag + draft release
 - Resultado: pipelines y scripts creados; build local reproducible validado con hash estable en builds consecutivos
-- Commit: N/A
+- Commit: e104cf4
 - Notas: falta validación en GitHub Actions real y creación de draft release remota
 
 ## Pendiente
@@ -39,7 +49,7 @@
 - Archivos: `src/**`, `init.lua`, `info.json`, `README.md`, `SECURITY.md`
 - Validación requerida: separación en módulos auditables equivalentes a la estructura objetivo
 - Resultado: Estructura modular implementada en `src/` con separación youtube/messages/state/support
-- Commit: N/A
+- Commit: e104cf4
 - Notas: falta validar comportamiento en entorno Chatterino real
 
 ### CYC-001 — Bootstrap del repositorio independiente
@@ -49,7 +59,7 @@
 - Archivos: `*` (importación inicial del subárbol `yt-chat`), `TRACKER.md`
 - Validación requerida: Repositorio inicial creado con estructura mínima, licencia MIT, atribución visible y procedencia documentada
 - Resultado: Historial relevante de `yt-chat` preservado localmente con `git subtree split --prefix=yt-chat`
-- Commit: N/A
+- Commit: e104cf4
 - Notas: Importación hecha desde `Remahy/Chatterino-Plugins` sin arrastrar otros plugins; falta refactor completo y estructura objetivo 1.0.0
 
 ## Pendiente

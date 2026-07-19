@@ -1,14 +1,16 @@
 ## Estado global
 
 - Objetivo: `chatterino-yt-chat v1.0.0`
-- Estado actual: En desarrollo
-- Última actualización: 2026-07-19T17:35:00+02:00
+- Estado actual: **PUBLICADO v1.0.0**
+- Última actualización: 2026-07-19T18:20:00+02:00
 - Rama actual: main
-- Último commit revisado: `0559ce7`
-- Criterios obligatorios verificados: 14/20
+- Último commit revisado: `de90a61`
+- Tag: `v1.0.0` (release workflow verde, run `29694238438`)
+- Release: https://github.com/tears-mysthrala/chatterino-yt-chat/releases/tag/v1.0.0 (publicada 2026-07-19T16:15:37Z)
+- Criterios obligatorios verificados: 20/20
 - Bloqueos activos: 0
 - Contrato interno: `docs/architecture.md` (evento normalizado IR + esquema de estado v2)
-- Validación en app real: Chatterino 2.5.5 oficial headless, e2e con chat real OK (VAL-011/012)
+- Validación en app real: Chatterino 2.5.5 oficial headless, e2e con chat real OK (VAL-011/012/014)
 - Entorno verificado: Lua 5.5.0 (`/usr/bin/lua`, también 5.1/5.4/luajit), `gh` autenticado como `tears-mysthrala` (scopes repo+workflow), red a `www.youtube.com` OK (HTTP 200), remoto `origin` = `https://github.com/tears-mysthrala/chatterino-yt-chat.git`
 
 ## En curso
@@ -35,13 +37,13 @@
 
 ### CYC-029 — Configuración del repositorio GitHub y publicación v1.0.0
 - Requisito de GOAL.md: Repositorio y atribución, Release, Criterios 1.0.0
-- Estado: En curso
+- Estado: Verificado
 - Dependencias: CYC-001..CYC-028, CYC-031, CYC-032
 - Archivos: remotos git/tags/releases
 - Validación requerida: repo público creado, tag `v1.0.0`, release publicada tras checklist completa
-- Resultado: Repositorio remoto existente y sincronizado (`origin/main` = `bfa62da`); falta verificar configuración (descripción, topics, issues) y completar criterios antes de tag/release
-- Commit: bfa62da
-- Notas: no se publicará release estable hasta completar criterios pendientes; `gh` autenticado y operativo
+- Resultado: repo público `tears-mysthrala/chatterino-yt-chat` (descripción y 8 topics exactos, issues habilitadas); tag `v1.0.0`; release creada como DRAFT por CI (run 29694238438), artefacto descargado y verificado contra `.sha256`, artefacto CI instalado y probado en Chatterino 2.5.5 real (VAL-014), cuerpo corregido con hash canónico CI, publicada como estable 2026-07-19T16:15:37Z
+- Commit: de90a61 (main), tag sobre 3c65822
+- Notas: discrepancia local/CI del hash del ZIP documentada (codificador zip); el artefacto canónico es el de CI y su `.sha256` acompaña la release
 
 ### CYC-031 — Captura y anonimización de fixtures reales de YouTube
 - Requisito de GOAL.md: Validación real, Pruebas automatizadas, Compatibilidad real
@@ -383,10 +385,35 @@
 
 ## Riesgos y deuda incompatible con 1.0.0
 
-1. No hay validación real en binario estable de Chatterino dentro de este entorno; pendiente CYC-025.
-2. La creación/publicación en GitHub puede quedar bloqueada si no hay credenciales activas en CLI.
-3. La validación de instalación real en Chatterino puede quedar bloqueada por ausencia de binario/entorno GUI en esta máquina.
-4. Las pruebas con chats reales de YouTube dependen de conectividad y estabilidad de endpoints públicos.
+Ninguno abierto al publicar. Riesgos residuales documentados (no bloqueantes):
+
+1. Renderers raros no confirmados en fuentes actuales (`liveChatPurchasedProductMessageRenderer`, `liveChatModerationMessageRenderer`, `liveChatAutoModMessageRenderer`) están cubiertos por fallback visible; si aparecen en producción, el modo debug genera muestras anonimizadas para añadir soporte completo.
+2. `Retry-After` no es legible en la API HTTP de Chatterino 2.5.5 (sin acceso a headers); el parser existe para cuando la API lo exponga.
+3. La entrada interactiva del comando `/yt-chat` en GUI no pudo automatizarse headless; cubierta por harness de integración y checklist manual para el usuario (`docs/validation/manual-checklist.md`).
+4. El hash del ZIP varía entre toolchains zip distintos (contenido idéntico); el artefacto canónico y su checksum son los del job CI de release.
+
+## Criterios de aceptación 1.0.0 (GOAL.md) — estado final
+
+1. Renderers/acciones actuales implementados o representados — ✓ matriz COMPATIBILITY.md.
+2. Ningún evento descartado silenciosamente — ✓ fallback visible; único no-op documentado: `liveChatReportModerationStateCommand` (no es evento de chat).
+3. Fallback visible y seguro para desconocidos — ✓ tests + fixtures.
+4. Categorías obligatorias cubiertas — ✓ fixtures y suite.
+5. Reconexión funciona — ✓ harness (HTTP 500 → backoff → recuperación) + fin de directo → vigilancia offline.
+6. Polling respeta intervalos de YouTube — ✓ `timeoutMs` real=10000 capturado; clamps 500ms/15s/1s.
+7. Sin bucles agresivos — ✓ perf 3 h simuladas.
+8. Sin solicitudes duplicadas por split — ✓ harness + perf.
+9. Persistencia recuperable y atómica posible — ✓ tmp+verify+.bak (+rename fuera del sandbox).
+10. Pruebas automatizadas pasan — ✓ 1301 aserciones, CI verde.
+11. Matriz sin `Unsupported` obligatorios — ✓ ninguno.
+12. Sin errores críticos/altos abiertos — ✓.
+13. Sin corrupción conocida de configuración — ✓ tests de corrupción/recuperación.
+14. Sin crecimiento ilimitado de memoria — ✓ cotas verificadas en perf.
+15. Sin secretos ni payloads en logs — ✓ tests de redacción; barrido final.
+16. Instalación validada en Chatterino estable — ✓ VAL-011 (2.5.5 oficial).
+17. Instalación desde cero + actualización — ✓ VAL-011/012/014 (ZIP limpio + estado legacy).
+18. Artefacto coincide con documentación — ✓ README/COMPATIBILITY alineados; 36 archivos.
+19. SHA-256 publicado — ✓ asset `.sha256` + notas (`2f825382…be948`).
+20. Revisión final de seguridad/regresiones — ✓ barrido de patrones prohibidos, allowlist de hosts, redacción, permisos mínimos CI, acciones fijadas por SHA.
 
 ## Registro de decisiones
 
@@ -496,6 +523,14 @@
 - Evidencias: salida de `scripts/test.sh`; captura real `/tmp/cyc_research/chat1.json` (75 acciones reales, no publicada); `fixtures/real/`
 - Incidencias relacionadas: CYC-008..CYC-016, CYC-031
 
+### VAL-014 — Verificación del artefacto de release y publicación
+- Fecha: 2026-07-19T18:15:00+02:00
+- Entorno: GitHub Releases + Chatterino 2.5.5 headless (mismo setup que VAL-011)
+- Procedimiento: tag `v1.0.0` → workflow Release crea DRAFT con ZIP + `.sha256`; descarga del artefacto publicado; verificación de hash; instalación del ZIP de CI en Chatterino real con canal en directo; corrección del hash en el cuerpo de la release; publicación
+- Resultado: ZIP publicado == `.sha256` (`2f825382…be948`); el ZIP de CI carga en Chatterino y conecta al chat real (`plugin_loaded`, `chat_started`); release publicada no-draft no-prerelease
+- Evidencias: `gh release view v1.0.0`; salida Chatterino con el ZIP de CI
+- Incidencias relacionadas: el ZIP construido localmente y el de CI difieren en bytes por versión del codificador zip (contenido idéntico, 36 archivos); documentado en release notes y ADR pendiente — mitigado: `.sha256` generado en el mismo job CI que publica el artefacto
+
 ### VAL-013 — CI remota verde + reconexión + barrido de seguridad
 - Fecha: 2026-07-19T18:00:00+02:00
 - Entorno: GitHub Actions `ubuntu-latest` + local
@@ -538,20 +573,16 @@
 
 ## Estado de sesión para continuidad
 
-- Qué se hizo (sesión 2026-07-19 tarde): investigación directa Chatterino API (v2.5.5: sin librería `os`, sin imágenes, con mutación de mensajes) e inventario de renderers (chat-downloader/masterchat/pytchat + capturas reales); capas support/state/youtube/messages completas; polling con taxonomía de errores + monitor offline; mutación in-place vía `find_message_by_id`; 32 fixtures sintéticos + 4 reales anonimizados; suite 1301 aserciones (unit+integración+fuzz+carga) verde; validación real en Chatterino 2.5.5 oficial (VAL-011/012) incluyendo e2e con chat real de Lofi Girl; docs completas (COMPATIBILITY, SECURITY, README, research, validation).
-- Qué se estaba haciendo: preparación de push + CI + release.
-- Qué falta: push de main, verificación CI remota, configuración del repo (descripción/topics), tag v1.0.0, release draft→publicada, informe final (CYC-030). Checklist manual completa de GUI queda como recomendación post-release para el usuario (docs/validation/manual-checklist.md).
-- Qué falló: nada abierto. Bugs corregidos durante la sesión: dedupe doble bucket en logging; wake fijo 300 s monitor offline; prune pre-request; first_key con claves numéricas/metadatos; expectativa ARGB en test.
-- Qué debe ejecutarse después:
-  1. `git push origin main` y `gh run watch` para CI;
-  2. `gh repo edit` descripción/topics si falta;
-  3. build final + SHA-256;
-  4. tag `v1.0.0` + release (draft primero, publicar tras revisión de criterios).
+- Qué se hizo (sesión 2026-07-19 tarde): investigación directa (Chatterino API v2.5.5 + inventario renderers YouTube con capturas reales); capas support/state/youtube/messages completas; polling + monitor offline + mutación in-place; 36 fixtures (4 reales anonimizados); suite 1301 aserciones verde; CI verde (lint/format/hosts/secrets/fixtures/tests/build reproducible); validación real en Chatterino 2.5.5 oficial con chat real (VAL-011/012/014); tag `v1.0.0`; release draft → verificada → **publicada**.
+- Qué se estaba haciendo: cierre e informe final (CYC-030).
+- Qué falta: nada bloqueante. Recomendado post-release: checklist manual GUI del usuario (`docs/validation/manual-checklist.md`), especialmente soak de horas y entrada interactiva del comando.
+- Qué falló: nada abierto. Corregido en sesión: dedupe logging, wake monitor offline, prune pre-request, first_key numérico/metadatos, expectativa ARGB, luacheck vía luarocks en CI, allowlist (example.com), fixture real con URL sin anonimizar, hash local≠CI del ZIP (canónico=CI, documentado).
+- Qué debe ejecutarse después: nada obligatorio; si YouTube introduce renderers nuevos, el modo debug genera muestras anonimizadas para nuevos fixtures.
 - Comandos relevantes:
   - `scripts/test.sh` (1301 aserciones)
   - `scripts/build_release.sh 1.0.0 && scripts/sha256.sh dist/chatterino-yt-chat-1.0.0.zip`
-  - Chatterino headless: `XDG_DATA_HOME=<sandbox> QT_QPA_PLATFORM=minimal QT_LOGGING_RULES="chatterino.lua.debug=true" ./chatterino`
-- Estado de Git: main limpio tras commits c6b1a47 → a484be4 → 0559ce7 (+ commit de docs pendiente al escribir esto).
-- Pruebas pendientes: ninguna bloqueante; soak GUI de horas recomendado al usuario.
-- Bloqueos: ninguno activo.
-- Próxima tarea recomendada: CYC-029 (push, tag, release).
+  - `gh release view v1.0.0 --repo tears-mysthrala/chatterino-yt-chat`
+- Estado de Git: main limpio y pusheado (`de90a61`); tag `v1.0.0` con release estable publicada.
+- Pruebas pendientes: ninguna bloqueante.
+- Bloqueos: ninguno.
+- Próxima tarea recomendada: informe final al usuario (CYC-030).

@@ -2,12 +2,13 @@
 
 - Objetivo: `chatterino-yt-chat v1.0.0`
 - Estado actual: En desarrollo
-- Última actualización: 2026-07-19T15:05:00+02:00
+- Última actualización: 2026-07-19T17:35:00+02:00
 - Rama actual: main
-- Último commit revisado: `bfa62da` (sincronizado con `origin/main`)
-- Criterios obligatorios verificados: 3/20
+- Último commit revisado: `0559ce7`
+- Criterios obligatorios verificados: 14/20
 - Bloqueos activos: 0
 - Contrato interno: `docs/architecture.md` (evento normalizado IR + esquema de estado v2)
+- Validación en app real: Chatterino 2.5.5 oficial headless, e2e con chat real OK (VAL-011/012)
 - Entorno verificado: Lua 5.5.0 (`/usr/bin/lua`, también 5.1/5.4/luajit), `gh` autenticado como `tears-mysthrala` (scopes repo+workflow), red a `www.youtube.com` OK (HTTP 200), remoto `origin` = `https://github.com/tears-mysthrala/chatterino-yt-chat.git`
 
 ## En curso
@@ -54,13 +55,13 @@
 
 ### CYC-032 — Validación de instalación en Chatterino estable
 - Requisito de GOAL.md: Criterio 16 y 17 (instalación limpia + actualización)
-- Estado: En curso
+- Estado: Verificado
 - Dependencias: CYC-004, CYC-002
-- Archivos: `docs/validation/chatterino-install.md` (nuevo), posible modo selftest en el plugin
+- Archivos: `docs/validation/chatterino-install.md`
 - Validación requerida: instalar ZIP en Chatterino estable, comprobar carga del plugin, comandos y recepción de chat; actualización desde versión anterior
-- Resultado: Pendiente; se evaluará ejecución offscreen (QT_QPA_PLATFORM=offscreen) con selftest del plugin volcado a log
-- Commit: N/A
-- Notas: si el entorno no permite ejecutar Chatterino, queda como bloqueo documentado y NO se publica release
+- Resultado: VALIDADO en Chatterino 2.5.5 oficial (deb Ubuntu 24.04, SHA-256 verificado, ejecución headless `QT_QPA_PLATFORM=minimal`, XDG sandbox): (1) instalación limpia desde ZIP → plugin carga, módulos resuelven, info.json aceptado; (2) e2e real: canal Lofi Girl → `stream_went_live` + `chat_started` + mensajes reales entregados al split (evidencia en log de canal de Chatterino: autores, emoji unicode nativo, emotes custom como `:shortcut:`); (3) estado legacy migrado en memoria y funcional; (4) archivos solo dentro del data dir (modelo de permisos). Pendiente menor: entrada interactiva del comando (cubierta por harness) y soak de horas en GUI (cubierto por simulación)
+- Commit: pendiente en este bloque
+- Notas: evidencia detallada en `docs/validation/chatterino-install.md`; nombres de usuarios reales solo en sandbox local, no publicados
 
 ### CYC-023 — Sistema de pruebas unitarias + fixtures anonimizados
 - Requisito de GOAL.md: Pruebas automatizadas
@@ -495,6 +496,22 @@
 - Evidencias: salida de `scripts/test.sh`; captura real `/tmp/cyc_research/chat1.json` (75 acciones reales, no publicada); `fixtures/real/`
 - Incidencias relacionadas: CYC-008..CYC-016, CYC-031
 
+### VAL-011 — Instalación limpia del ZIP en Chatterino 2.5.5 estable
+- Fecha: 2026-07-19T17:20:00+02:00
+- Entorno: Arch Linux x86_64, `Chatterino-Ubuntu-24.04.deb` v2.5.5 oficial (SHA-256 `8ad1ec90ea5f02112f0c3e1814f0e5679e8fd456d15c949e7ced85dcc5da48ce` verificado contra `sha256-checksums.txt` de la release), ejecución headless `QT_QPA_PLATFORM=minimal`, `XDG_DATA_HOME` sandbox, ICU 74 local
+- Procedimiento: extraer `dist/chatterino-yt-chat-1.0.0.zip` en `Plugins/chatterino-yt-chat/`, habilitar plugin, lanzar Chatterino
+- Resultado: plugin cargado sin errores (`plugin_loaded | channels=0`), info.json aceptado, permisos funcionando (io solo en data dir)
+- Evidencias: log `chatterino.lua` capturado; `docs/validation/chatterino-install.md`
+- Incidencias relacionadas: CYC-032
+
+### VAL-012 — End-to-end real: chat de YouTube dentro de Chatterino
+- Fecha: 2026-07-19T17:26:00+02:00
+- Entorno: mismo que VAL-011, red a YouTube operativa
+- Procedimiento: sembrar estado con canal real (Lofi Girl, `UCSJ4gkVC6NrvII8umztf0Ow`) y split `ytchat-e2e`; lanzar Chatterino 90 s
+- Resultado: `stream_went_live` + `chat_started | channel=Lofi Girl video=VAlMDl00mYY`; mensajes reales entregados al split (log de canal de Chatterino con autores, emoji unicode nativo, emotes custom como `:shortcut:`); 3 timers del plugin (heartbeat, monitor offline, poll de chat); estado legacy migrado en memoria sin errores
+- Evidencias: log `chatterino.lua`; `Logs/Twitch/Channels/ytchat-e2e/…log` (sandbox local, no publicado por privacidad); `docs/validation/chatterino-install.md`
+- Incidencias relacionadas: CYC-032, CYC-025
+
 ### VAL-010 — Suite completa: unitarias + integración + fuzz + carga
 - Fecha: 2026-07-19T17:05:00+02:00
 - Entorno: `/home/tears/stream` (Lua 5.5.0)
@@ -513,19 +530,20 @@
 
 ## Estado de sesión para continuidad
 
-- Qué se hizo: importación histórica del plugin, refactor modular en `src/`, documentación base, CI base, pruebas locales y build+sha local.
-- Qué se estaba haciendo: ampliación de cobertura funcional y cierre de gaps críticos de compatibilidad.
-- Qué falta: validación real en Chatterino, investigación exhaustiva de renderers/acciones actuales y cierre de todos los criterios 1..20.
-- Qué falló: run CI inicial falló por validación de hosts demasiado estricta; corregido y pendiente revalidación remota.
+- Qué se hizo (sesión 2026-07-19 tarde): investigación directa Chatterino API (v2.5.5: sin librería `os`, sin imágenes, con mutación de mensajes) e inventario de renderers (chat-downloader/masterchat/pytchat + capturas reales); capas support/state/youtube/messages completas; polling con taxonomía de errores + monitor offline; mutación in-place vía `find_message_by_id`; 32 fixtures sintéticos + 4 reales anonimizados; suite 1298 aserciones (unit+integración+fuzz+carga) verde; validación real en Chatterino 2.5.5 oficial (VAL-011/012) incluyendo e2e con chat real de Lofi Girl; docs completas (COMPATIBILITY, SECURITY, README, research, validation).
+- Qué se estaba haciendo: preparación de push + CI + release.
+- Qué falta: push de main, verificación CI remota, configuración del repo (descripción/topics), tag v1.0.0, release draft→publicada, informe final (CYC-030). Checklist manual completa de GUI queda como recomendación post-release para el usuario (docs/validation/manual-checklist.md).
+- Qué falló: nada abierto. Bugs corregidos durante la sesión: dedupe doble bucket en logging; wake fijo 300 s monitor offline; prune pre-request; first_key con claves numéricas/metadatos; expectativa ARGB en test.
 - Qué debe ejecutarse después:
-  1. ampliar parser/fixtures para cubrir categorías pendientes (membresías regalo, reacciones, redirects, estados de chat, etc.);
-  2. ejecutar checklist manual con Chatterino real y registrar evidencia;
-  3. crear repositorio remoto GitHub, push, validar Actions y preparar draft release.
+  1. `git push origin main` y `gh run watch` para CI;
+  2. `gh repo edit` descripción/topics si falta;
+  3. build final + SHA-256;
+  4. tag `v1.0.0` + release (draft primero, publicar tras revisión de criterios).
 - Comandos relevantes:
-  - `scripts/test.sh`
-  - `scripts/build_release.sh 1.0.0`
-  - `scripts/sha256.sh dist/chatterino-yt-chat-1.0.0.zip`
-- Estado de Git: repositorio inicializado en `main`, cambios locales grandes sin commit consolidado.
-- Pruebas pendientes: matriz completa de renderers/acciones, integración real en Chatterino, pruebas de carga prolongadas.
+  - `scripts/test.sh` (1298 aserciones)
+  - `scripts/build_release.sh 1.0.0 && scripts/sha256.sh dist/chatterino-yt-chat-1.0.0.zip`
+  - Chatterino headless: `XDG_DATA_HOME=<sandbox> QT_QPA_PLATFORM=minimal QT_LOGGING_RULES="chatterino.lua.debug=true" ./chatterino`
+- Estado de Git: main limpio tras commits c6b1a47 → a484be4 → 0559ce7 (+ commit de docs pendiente al escribir esto).
+- Pruebas pendientes: ninguna bloqueante; soak GUI de horas recomendado al usuario.
 - Bloqueos: ninguno activo.
-- Próxima tarea recomendada: CYC-003 (cerrar matriz completa con cobertura real y fixtures por acción/renderer).
+- Próxima tarea recomendada: CYC-029 (push, tag, release).

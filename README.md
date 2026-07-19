@@ -2,106 +2,206 @@
 
 A complete, reliable, **read-only** YouTube Live Chat viewer plugin for Chatterino.
 
-## Status
+This project derives from the original [`yt-chat`](https://github.com/Remahy/Chatterino-Plugins/tree/main/yt-chat)
+plugin by **kararty** (MIT). See [NOTICE.md](NOTICE.md) and [LICENSE](LICENSE).
 
-- Stable target: `1.0.0`
-- Command: `/yt-chat <youtube-url>`
-- Scope: read-only visualization of YouTube Live Chat events in Chatterino
+## What it does
 
-## Read-only guarantee
+`chatterino-yt-chat` turns Chatterino into a persistent viewer for the chat
+of YouTube live streams. Moderators write and moderate from YouTube Studio;
+this plugin lets the person watching the chat stay inside Chatterino and see
+everything that happens, across as many splits as they want.
 
-This plugin does **not** send chat messages, moderate users, authenticate accounts, execute remote code, or upload telemetry.
+- **Read-only**: it never sends messages, never moderates, never logs in.
+- **Complete**: ordinary messages, Super Chats, Super Stickers, memberships,
+  gift memberships, polls, pinned messages, moderation events, mode changes,
+  tickers, placeholders/reactions and unknown future events all get a visible
+  representation. See the full matrix in [COMPATIBILITY.md](COMPATIBILITY.md).
+- **Polite**: polling intervals come from YouTube itself
+  (`timeoutMs` in continuations), with defensive clamps — no aggressive
+  fixed-rate loops.
+- **Persistent**: channels you add survive restarts; offline channels are
+  watched until a stream starts (backoff 30/60/120/300 s).
 
-## Supported message/event families
+## Requirements
 
-- Regular text messages (runs, links, Unicode emoji, YouTube emoji/custom emoji fallback)
-- Super Chat / Super Sticker
-- Membership events (including gifted flows when present in payload)
-- Moderation-visible mutations (delete/hide/remove markers)
-- Pin/banner operations
-- Poll updates
-- Placeholder/system/unknown events with safe fallback
-
-See full action/renderer matrix in [`COMPATIBILITY.md`](COMPATIBILITY.md).
-
-## Allowed network hosts
-
-Only HTTPS requests to:
-
-- `www.youtube.com`
-- `youtube.com`
-- `m.youtube.com`
-- `youtu.be`
-
-## Persisted data
-
-Stored in `YT_CHAT.json`:
-
-- configured channels/handles
-- split bindings
-- schema version
-- plugin settings
-
-Never persisted:
-
-- API keys
-- continuations
-- cookies/tokens
-- chat payloads
-- chat history
+- **Chatterino 2.5.x or newer** (built with plugin support; tested against
+  the v2.5.5 plugin API).
+- Platforms: same as Chatterino (Windows, macOS, Linux).
+- Plugin permissions requested in `info.json`: `Network`, `FilesystemRead`,
+  `FilesystemWrite` (the latter two are limited by Chatterino to the
+  plugin's own data directory).
 
 ## Installation
 
-1. Download `chatterino-yt-chat-1.0.0.zip` from release assets.
-2. Extract plugin files into Chatterino plugin directory.
-3. Ensure `init.lua`, `info.json`, `src/`, `libs/` are present.
-4. Restart Chatterino.
+1. Download `chatterino-yt-chat-1.0.0.zip` from the
+   [latest release](https://github.com/tears-mysthrala/chatterino-yt-chat/releases)
+   and verify it against the published `.sha256`.
+2. Open Chatterino's plugin directory:
+   - **Windows**: `%APPDATA%\Chatterino2\Plugins\`
+   - **macOS**: `~/Library/Application Support/chatterino/Plugins/`
+   - **Linux**: `~/.local/share/chatterino/Plugins/`
+3. Extract the ZIP so you get `Plugins/chatterino-yt-chat/` containing
+   `init.lua`, `info.json`, `src/`, `libs/` (and the docs).
+4. Restart Chatterino and enable the plugin if prompted
+   (Settings → Plugins).
 
-## Update
+## Updating
 
-1. Close Chatterino.
-2. Replace plugin files with new release ZIP.
-3. Keep `YT_CHAT.json` to preserve bindings.
-4. Start Chatterino and verify `/yt-chat` works.
+1. Close Chatterino (or disable the plugin).
+2. Replace the plugin directory contents with the new ZIP.
+3. Your configuration in `data/YT_CHAT.json` is preserved and migrated
+   automatically (schema migrations are versioned; a `.bak` copy is kept).
+4. Restart and check `/yt-chat` still works.
 
-## Uninstall
+## Uninstalling / deleting state
 
-1. Close Chatterino.
-2. Remove plugin directory.
-3. Remove `YT_CHAT.json` and `YT_CHAT.json.bak` if desired.
+- Remove the plugin directory `Plugins/chatterino-yt-chat/`.
+- To also delete its state, remove `data/YT_CHAT.json`,
+  `data/YT_CHAT.json.bak` and `data/YT_CHAT.json.tmp` inside that directory.
+- The plugin never writes outside its own data directory.
 
 ## Usage
 
-- Add active stream URL:
-  - `https://www.youtube.com/watch?v=<id>`
-  - `https://youtu.be/<id>`
-  - `https://www.youtube.com/live/<id>`
-- Add channel for offline-to-live detection:
-  - `https://www.youtube.com/channel/<id>`
-  - `https://www.youtube.com/@handle`
-  - `/live` variants
+In any Chatterino split (it must be a named channel split):
 
-The same stream can fan out to multiple Chatterino splits without duplicated polling per split.
+```text
+/yt-chat <YouTube URL>
+```
 
-## Visual degradations
+Accepted URL forms (normalized automatically, HTTPS only):
 
-When Chatterino cannot render an image/sticker/badge with native visuals, semantic text fallback is emitted (for example `[Super Sticker · €2.00] user`).
+- `https://www.youtube.com/watch?v=<id>` (extra params are fine)
+- `https://youtu.be/<id>`
+- `https://www.youtube.com/live/<id>`
+- `https://www.youtube.com/shorts/<id>`
+- `https://www.youtube.com/channel/<id>` (and `/live`)
+- `https://www.youtube.com/@handle` (and `/live`)
+- `https://www.youtube.com/c/<name>` / `/user/<name>` (and `/live`)
+
+Behavior:
+
+- **Live stream**: chat connects immediately.
+- **Offline channel**: the channel is stored and checked periodically
+  (30 s → 60 s → 120 s → 300 s backoff); when a stream starts, the chat
+  connects automatically.
+- **Multiple splits**: run `/yt-chat` with the same channel in several
+  splits — the plugin polls once per stream and distributes messages to
+  every bound split. Closing all splits stops polling for that stream.
+- **Multiple channels**: repeat per channel. Each channel gets one offline
+  check regardless of how many splits show it.
+
+## How events look
+
+The Chatterino 2.5.x plugin API renders text elements only, so everything
+image-based is represented textually (semantics preserved):
+
+```text
+[YT] 12:00 (SomeChannel) [MOD] Moderator Jane: hello chat 😀
+[YT] 12:01 [Super Chat · €5.00] Generous Viewer: keep it up 🎉
+[YT] 12:02 [Super Sticker · $2.00] Viewer One: sticker “Thanks!”
+[YT] 12:03 [New member · Gold] Viewer Two: Welcome!
+[YT] 12:04 [Gift ×5] Generous Gifter gifted 5 memberships
+[YT] 12:05 [Poll] Best option? Option A (73%) · Option B (26%)
+[yt-chat] 🗑 Message deleted (id: …)
+[yt-chat] 📌 Pinned by Channel Owner — Viewer One: announcement
+[yt-chat] ⚙ Slow mode is on — Send a message every 10 seconds
+[yt-chat] ⚠ Unsupported event: liveChatFutureRenderer2042 — …
+```
+
+See [COMPATIBILITY.md](COMPATIBILITY.md) for the exact representation of
+every action/renderer and the documented visual degradations.
+
+## Network surface
+
+Only HTTPS requests to official YouTube hosts, needed for operation:
+
+| Host | Purpose |
+| --- | --- |
+| `www.youtube.com` | watch/`/live` pages, `youtubei/v1/live_chat/get_live_chat` |
+| `youtube.com`, `m.youtube.com`, `youtu.be` | accepted input URL forms (normalized to `www.youtube.com`) |
+
+No redirects to other hosts are followed by the plugin itself; URLs are
+validated before every request. No third-party services, no analytics,
+no telemetry, no auto-update.
+
+## Persisted data
+
+Stored only in the plugin data directory (`data/YT_CHAT.json`):
+
+- configured channels (stable channel id and/or handle, display name)
+- split bindings
+- plugin settings (debug flag, polling limits)
+- schema version
+
+**Never** persisted: Innertube API keys, continuation tokens, cookies,
+chat payloads, message contents, chat history.
+
+Writes are atomic within what the Chatterino Lua sandbox allows
+(temp file + verify + write + `.bak` recovery copy), debounced, and only
+happen when something actually changed.
+
+## Settings
+
+`data/YT_CHAT.json → settings` (edit with Chatterino closed):
+
+```json
+{
+  "debug": false,
+  "offline_poll_schedule": [30, 60, 120, 300],
+  "offline_poll_max": 300,
+  "chat_poll_min_ms": 500,
+  "chat_poll_max_ms": 15000,
+  "chat_poll_fallback_ms": 1000
+}
+```
+
+- `debug`: enables verbose logging and anonymized samples of unknown
+  renderers (written through the diagnostic sample sink; off by default).
+- `offline_poll_schedule` / `offline_poll_max`: offline check backoff
+  (seconds). Keep values within 15–900 s.
+- `chat_poll_*`: clamps applied to YouTube-provided polling intervals.
 
 ## Troubleshooting
 
-- Invalid URL: only HTTPS YouTube hosts are accepted.
-- No continuation: channel may be offline or chat disabled.
-- Repeated HTTP errors: plugin retries with bounded backoff.
+- **"URL no válida"**: only HTTPS URLs on official YouTube hosts are
+  accepted; redirects to other domains are not followed.
+- **Offline channel never connects**: the channel may not have a `/live`
+  tab or the handle changed; re-add it with the canonical `/channel/<id>`
+  URL. Checks back off up to 5 minutes — be patient after many failures.
+- **Chat stops mid-stream**: the plugin detects stream end, chat disabled
+  and fatal HTTP errors (400/403/404) and returns the channel to offline
+  watch automatically. Temporary errors retry with backoff (max 30 s).
+- **Duplicate channel entries**: the plugin merges bindings that resolve
+  to the same stable channel id, even if added via different URL forms.
+- **Logs**: Chatterino log contains `[yt-chat]` lines; set `debug: true`
+  for diagnostics. Logs never contain API keys, continuations or full
+  payloads.
 
-## Compatibility
+## Security & privacy
 
-- Minimum Chatterino: stable branch with plugin API supporting `HTTPRequest`, `register_command`, `Message.new`, and timers.
-- OS support follows Chatterino official binaries (Windows/macOS/Linux).
+See [SECURITY.md](SECURITY.md). In short: read-only, no credentials, no
+remote code execution (`load`/`loadstring` are never used), no telemetry,
+strict input validation of every field coming from YouTube.
 
-## Project origin
+## Development
 
-This project is derived from the original `yt-chat` plugin in:
+- Tests: `scripts/test.sh` (unit + integration harness + fuzz + load;
+  plain Lua, no Chatterino needed).
+- Build: `scripts/build_release.sh 1.0.0` → reproducible ZIP +
+  `scripts/sha256.sh` for the checksum.
+- Architecture and internal contracts: `docs/architecture.md`.
+- Research notes: `docs/research/`.
 
-`https://github.com/Remahy/Chatterino-Plugins/tree/main/yt-chat`
+## Project origin and acknowledgements
 
-Original license and attribution are preserved (MIT). See [`NOTICE.md`](NOTICE.md) and [`LICENSE`](LICENSE).
+This repository is an independent continuation of the experimental
+[`yt-chat`](https://github.com/Remahy/Chatterino-Plugins/tree/main/yt-chat)
+plugin from the `Remahy/Chatterino-Plugins` monorepo, created by
+**kararty** under the MIT license. The relevant git history was preserved
+via subtree split. See [NOTICE.md](NOTICE.md).
+
+Continuation regexes credit: [Agash/YTLiveChat](https://github.com/Agash/YTLiveChat).
+Renderer/action field research: [chat-downloader](https://github.com/xenova/chat-downloader),
+[masterchat](https://github.com/sigvt/masterchat),
+[pytchat](https://github.com/taizan-hokuto/pytchat).

@@ -11,7 +11,7 @@ NOTICE.md. License: MIT.
 
 - `chatterino-yt-chat-1.0.0.zip` — install package (33 files)
 - `chatterino-yt-chat-1.0.0.zip.sha256` — checksum
-- SHA-256: `472e5fe6906ce1be2f43a46f9db915f566c2c79c4c47f55d64fe685828c83318`
+- SHA-256: `f0e6030e0ea6c14e34c527208cd5de45b69a407e6bf18ffd25c982e2cdafc0ed`
 - Build: reproducible (double-build hash check in CI), built by CI from the
   tagged commit (see this release's tag).
 

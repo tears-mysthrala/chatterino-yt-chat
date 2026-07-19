@@ -12,7 +12,7 @@ PKG_PATH="$DIST_DIR/$PKG_NAME"
 rm -rf "$DIST_DIR"
 mkdir -p "$DIST_DIR/package"
 
-cp -r src libs init.lua info.json "$DIST_DIR/package/"
+cp -r src libs init.lua info.json LICENSE NOTICE.md "$DIST_DIR/package/"
 
 cd "$DIST_DIR/package"
 EPOCH="${SOURCE_DATE_EPOCH:-1704067200}"

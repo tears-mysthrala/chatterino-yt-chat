@@ -1,5 +1,3 @@
-local Validation = require("src.support.validation")
-
 local Builder = {}
 
 -- Deterministic author colors (same palette idea as the original plugin).

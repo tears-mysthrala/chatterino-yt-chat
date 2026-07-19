@@ -3,7 +3,6 @@
 local T = require("tests.test_runner")
 local json = require("libs/json")
 local Actions = require("src.youtube.actions")
-local Renderers = require("src.youtube.renderers")
 local Continuations = require("src.youtube.continuations")
 local Html = require("src.youtube.html")
 local Url = require("src.youtube.url")

@@ -113,7 +113,7 @@ do
   Persistence._force_no_rename = true
   local s = Persistence.read()
   s.channels.NR1 = { channel_id = "NR1", splits = { "norename" } }
-  local h, wok = Persistence.write_if_changed(s, nil)
+  local _, wok = Persistence.write_if_changed(s, nil)
   T.ok(wok, "no-rename write ok")
   local back = Persistence.read()
   T.ok(back.channels.NR1 ~= nil, "no-rename write persisted")

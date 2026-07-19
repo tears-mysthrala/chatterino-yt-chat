@@ -14,6 +14,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - name: Install Lua toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.4 jq
+          sudo ln -sf /usr/bin/lua5.4 /usr/local/bin/lua
       - name: Validate tag/version match
         run: |
           TAG="${GITHUB_REF_NAME#v}"

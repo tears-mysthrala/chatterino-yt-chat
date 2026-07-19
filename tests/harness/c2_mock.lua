@@ -123,13 +123,13 @@ function C2Mock.new()
       local response = {
         _result = result
       }
-      function response:data()
+      response.data = function()
         return result.data or ""
       end
-      function response:status()
+      response.status = function()
         return result.status
       end
-      function response:error()
+      response.error = function()
         return result.error or ""
       end
       if result.error then

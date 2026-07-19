@@ -120,7 +120,7 @@ end
 --- Poll results delivered as viewer engagement messages (icon POLL):
 --- runs like "option (80%)" … "Poll complete: N votes".
 function Polls.from_engagement(renderer)
-  local runs, flat = Emotes.parse_runs(renderer and renderer.message)
+  local _, flat = Emotes.parse_runs(renderer and renderer.message)
   return {
     kind = "poll_closed",
     id = Common.safe_id(renderer and renderer.id),

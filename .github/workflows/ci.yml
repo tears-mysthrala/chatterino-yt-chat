@@ -14,25 +14,61 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - name: Install Lua toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.4 luacheck jq
+          sudo ln -sf /usr/bin/lua5.4 /usr/local/bin/lua
       - name: Validate info.json version
         run: |
           jq -e '.version == "1.0.0"' info.json
+          jq -e '.name == "chatterino-yt-chat"' info.json
+          jq -e '.license == "MIT"' info.json
+      - name: Lua lint
+        run: luacheck src tests init.lua --config .luacheckrc
+      - name: Format check (no tabs, no trailing whitespace)
+        run: |
+          ! grep -rInP '\t' src tests init.lua
+          ! grep -rInE ' +$' src tests init.lua
       - name: Ensure only allowed hosts in source
         run: |
-          URLS="$(grep -RhoE 'https://[A-Za-z0-9._-]+' src init.lua README.md info.json COMPATIBILITY.md SECURITY.md docs || true)"
-          BAD="$(echo "$URLS" | grep -Ev '^https://(www\.youtube\.com|youtube\.com|m\.youtube\.com|youtu\.be|raw\.githubusercontent\.com|github\.com)$' || true)"
+          # Network surface check: only official YouTube hosts (+ documented
+          # image CDN hosts referenced by chat payloads) may appear in the
+          # plugin code, fixtures and docs. tests/ is excluded on purpose:
+          # it contains hostile URL vectors used to verify validation.
+          HOSTS="$(grep -RhoE 'https://[A-Za-z0-9.-]+\.[A-Za-z]{2,}' src init.lua README.md info.json COMPATIBILITY.md SECURITY.md docs fixtures .github 2>/dev/null | sed 's|https://||' | cut -d/ -f1 | sort -u || true)"
+          BAD=""
+          for host in $HOSTS; do
+            case "$host" in
+              www.youtube.com|youtube.com|m.youtube.com|youtu.be|www.youtu.be|\
+              i.ytimg.com|yt3.ggpht.com|yt4.ggpht.com|yt3.googleusercontent.com|\
+              lh3.googleusercontent.com|fonts.gstatic.com|www.gstatic.com|\
+              github.com|raw.githubusercontent.com|objects.githubusercontent.com|\
+              chatterino.com|wiki.chatterino.com|semver.org|lua.org|www.lua.org|luarocks.org) ;;
+              *) BAD="$BAD $host" ;;
+            esac
+          done
           if [ -n "$BAD" ]; then
-            echo "$BAD"
-            echo "Unexpected host found"
+            echo "Unexpected hosts:$BAD"
             exit 1
           fi
+          echo "Allowed hosts only."
       - name: Secret scan baseline
         run: |
-          ! grep -R -n -E '(ghp_[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{20,})' .
+          ! grep -R -n -E '(ghp_[A-Za-z0-9]{20,}|gho_[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{20,})' --exclude-dir=.git .
+      - name: Validate fixtures
+        run: scripts/validate_fixtures.sh
       - name: Run tests
         run: scripts/test.sh
       - name: Build zip
         run: scripts/build_release.sh 1.0.0
+      - name: Reproducible build check
+        run: |
+          HASH1="$(sha256sum dist/chatterino-yt-chat-1.0.0.zip | cut -d' ' -f1)"
+          scripts/build_release.sh 1.0.0
+          HASH2="$(sha256sum dist/chatterino-yt-chat-1.0.0.zip | cut -d' ' -f1)"
+          test "$HASH1" = "$HASH2"
+          echo "reproducible: $HASH1"
       - name: Generate sha256
         run: scripts/sha256.sh dist/chatterino-yt-chat-1.0.0.zip
       - uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808

@@ -14,6 +14,7 @@ end
 
 --- First key of a table (action/renderer dispatch helper for specs).
 function Helpers.first_key(tbl)
+  -- luacheck: ignore 512 (loop is executed at most once — intentional)
   for k in pairs(tbl) do
     return k
   end

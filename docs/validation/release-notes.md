@@ -9,11 +9,15 @@ NOTICE.md. License: MIT.
 
 ### Assets
 
-- `chatterino-yt-chat-1.0.0.zip` — install package (33 files)
+- `chatterino-yt-chat-1.0.0.zip` — install package (36 files)
 - `chatterino-yt-chat-1.0.0.zip.sha256` — checksum
-- SHA-256: `f0e6030e0ea6c14e34c527208cd5de45b69a407e6bf18ffd25c982e2cdafc0ed`
-- Build: reproducible (double-build hash check in CI), built by CI from the
-  tagged commit (see this release's tag).
+- SHA-256: `2f8253822652a293a1784af95de88017e6b390f97ae2a4a881b13d21656be948`
+- Build: the canonical artifact is built by CI from the tagged commit
+  (`v1.0.0`); the `.sha256` asset is generated in the same job. The build
+  is deterministic per toolchain (double-build hash check in CI; local
+  `scripts/build_release.sh` uses `SOURCE_DATE_EPOCH` + `TZ=UTC` — zip
+  encoder versions can produce different bytes for identical content, so
+  always verify against this release's `.sha256` asset).
 
 ### Installation
 

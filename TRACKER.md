@@ -2,7 +2,7 @@
 
 - Objetivo: `chatterino-yt-chat v1.0.0`
 - Estado actual: En desarrollo
-- Última actualización: 2026-07-19T14:06:00+02:00
+- Última actualización: 2026-07-19T14:08:00+02:00
 - Rama actual: main
 - Último commit revisado: `42bafd31b3d72e9fac31cb108919eae0f1115f30`
 - Criterios obligatorios verificados: 3/20
@@ -38,7 +38,7 @@
 - Validación requerida: ZIP reproducible + SHA256 + checks de versión/tag + draft release
 - Resultado: pipelines y scripts creados; build local reproducible validado con hash estable en builds consecutivos
 - Commit: e104cf4
-- Notas: falta validación en GitHub Actions real y creación de draft release remota
+- Notas: primera ejecución CI falló por falso positivo en chequeo de hosts; tarea reabierta y corregida en workflow
 
 ## Pendiente
 
@@ -423,12 +423,20 @@
 - Evidencias: salida de shell de doble checksum consecutivo
 - Incidencias relacionadas: ninguna
 
+### VAL-006 — Reapertura de CYC-027 por fallo CI y corrección
+- Fecha: 2026-07-19T14:08:00+02:00
+- Entorno: GitHub Actions + local
+- Procedimiento: inspección de `gh run view --log-failed` y ajuste del step `Ensure only allowed hosts in source`
+- Resultado: identificado falso positivo por regex sobre patrones Lua; workflow ajustado a extracción de host explícita
+- Evidencias: run fallido `29686862255`, diff en `.github/workflows/ci.yml`
+- Incidencias relacionadas: CYC-027
+
 ## Estado de sesión para continuidad
 
 - Qué se hizo: importación histórica del plugin, refactor modular en `src/`, documentación base, CI base, pruebas locales y build+sha local.
 - Qué se estaba haciendo: ampliación de cobertura funcional y cierre de gaps críticos de compatibilidad.
 - Qué falta: validación real en Chatterino, investigación exhaustiva de renderers/acciones actuales y cierre de todos los criterios 1..20.
-- Qué falló: aún no hay validación end-to-end sobre instancia real de Chatterino ni publicación remota.
+- Qué falló: run CI inicial falló por validación de hosts demasiado estricta; corregido y pendiente revalidación remota.
 - Qué debe ejecutarse después:
   1. ampliar parser/fixtures para cubrir categorías pendientes (membresías regalo, reacciones, redirects, estados de chat, etc.);
   2. ejecutar checklist manual con Chatterino real y registrar evidencia;

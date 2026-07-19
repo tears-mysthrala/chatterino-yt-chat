@@ -19,8 +19,8 @@ jobs:
           jq -e '.version == "1.0.0"' info.json
       - name: Ensure only allowed hosts in source
         run: |
-          URLS="$(grep -RhoE 'https://[^" )]+' src init.lua README.md info.json || true)"
-          BAD="$(echo "$URLS" | grep -Ev '^https://(www\.youtube\.com|youtube\.com|m\.youtube\.com|youtu\.be|raw\.githubusercontent\.com|github\.com|tears-mysthrala\.github\.io)/' || true)"
+          URLS="$(grep -RhoE 'https://[A-Za-z0-9._-]+' src init.lua README.md info.json COMPATIBILITY.md SECURITY.md docs || true)"
+          BAD="$(echo "$URLS" | grep -Ev '^https://(www\.youtube\.com|youtube\.com|m\.youtube\.com|youtu\.be|raw\.githubusercontent\.com|github\.com)$' || true)"
           if [ -n "$BAD" ]; then
             echo "$BAD"
             echo "Unexpected host found"

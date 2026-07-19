@@ -44,6 +44,7 @@ jobs:
               www.youtube.com|youtube.com|m.youtube.com|youtu.be|www.youtu.be|\
               i.ytimg.com|yt3.ggpht.com|yt4.ggpht.com|yt3.googleusercontent.com|\
               lh3.googleusercontent.com|fonts.gstatic.com|www.gstatic.com|\
+              example.com|www.example.com|\
               github.com|raw.githubusercontent.com|objects.githubusercontent.com|\
               chatterino.com|wiki.chatterino.com|semver.org|lua.org|www.lua.org|luarocks.org) ;;
               *) BAD="$BAD $host" ;;

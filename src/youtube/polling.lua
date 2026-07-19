@@ -204,6 +204,10 @@ function Polling._request(data)
   if not entry then
     return
   end
+  if #prune_splits(video_id) == 0 then
+    stop(video_id, "no_splits")
+    return
+  end
   if ActiveStreams.is_in_flight(video_id) then
     -- A previous request is still open; retry shortly instead of piling up.
     schedule(video_id, data, 1000)
@@ -385,11 +389,10 @@ local function offline_check(state, persist, key, entry, splits)
   request:execute()
 end
 
---- One pass over persisted channels; schedules the next pass with a wake
---- time derived from the nearest due channel (no busy loop, one timer).
+--- One pass over persisted channels; schedules the next pass at the
+--- nearest due time across channels (no busy loop, one timer chain).
 function Polling.poll_offline_once(state, persist)
   local now = math.floor(Clock.now_ms() / 1000)
-  local next_wakeup = 300
   for key, entry in pairs(state.channels or {}) do
     local splits = {}
     for _, split in ipairs(entry.splits or {}) do
@@ -401,15 +404,21 @@ function Polling.poll_offline_once(state, persist)
       local due = offline.next_due[key] or 0
       if now >= due then
         offline_check(state, persist, key, entry, splits)
-      else
-        local remaining = due - now
-        if remaining < next_wakeup then
-          next_wakeup = remaining
-        end
       end
     end
   end
-  local wake_ms = math.floor(math.max(30, next_wakeup) * 1000)
+  -- Next wake: nearest pending due across active channels.
+  local next_wakeup = 300
+  for key, entry in pairs(state.channels or {}) do
+    if type(entry) == "table" and type(entry.splits) == "table" and #entry.splits > 0 then
+      local due = offline.next_due[key] or now
+      local remaining = due - now
+      if remaining < next_wakeup then
+        next_wakeup = remaining
+      end
+    end
+  end
+  local wake_ms = math.floor(math.max(5, next_wakeup) * 1000)
   Adapter.later(function()
     Polling.poll_offline_once(state, persist)
   end, wake_ms)
@@ -423,6 +432,13 @@ function Polling.start_offline_monitor(state, persist)
   Adapter.later(function()
     Polling.poll_offline_once(state, persist)
   end, 1000)
+end
+
+--- Test helper: wipe every polling loop and offline-monitor state.
+function Polling._reset()
+  streams = {}
+  offline.next_due = {}
+  offline.running = false
 end
 
 return Polling

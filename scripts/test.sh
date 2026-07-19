@@ -16,7 +16,8 @@ local specs = {
   "tests.unit.persistence_spec",
   "tests.unit.state_spec",
   "tests.integration.chatterino_harness_spec",
-  "tests.fuzz.parser_fuzz_spec"
+  "tests.fuzz.parser_fuzz_spec",
+  "tests.perf.load_spec"
 }
 
 for _, mod in ipairs(specs) do

@@ -278,42 +278,42 @@
 
 ### CYC-022 — Rendimiento y limpieza de recursos
 - Requisito de GOAL.md: Rendimiento
-- Estado: Pendiente
+- Estado: Implementado, pendiente de prueba (suite verde; pendiente consolidar `docs/validation/performance.md`)
 - Dependencias: CYC-006, CYC-007, CYC-017, CYC-019
-- Archivos: `tests/perf/**`, `docs/validation/performance.md`
+- Archivos: `tests/perf/load_spec.lua`
 - Validación requerida: escenarios 1 canal, 10 offline, 5 directos, multi-split, alta actividad y ejecución prolongada
-- Resultado: Pendiente
-- Commit: N/A
-- Notas:
+- Resultado: 5 directos × 120 msg/poll × 120 s, multi-split sin requests extra, split cerrado detiene polling sin request final, 10 canales offline 1 check/canal, backoff 30/60/120/300 verificado, 3 h simuladas (~39 checks/canal), timers acotados, dedupe ≤5000, 0 escrituras de persistencia durante tráfico; verde (VAL-010)
+- Commit: pendiente en este bloque
+- Notas: corregidos: wake del monitor offline (dormía 300 s fijos) y prune pre-request al cerrar splits
 
 ### CYC-024 — Harness de integración de API de Chatterino
 - Requisito de GOAL.md: Pruebas de integración
-- Estado: Pendiente
+- Estado: Implementado, pendiente de prueba (suite verde)
 - Dependencias: CYC-004, CYC-023
-- Archivos: `tests/integration/**`, `tests/harness/**`
+- Archivos: `tests/harness/c2_mock.lua`, `tests/integration/chatterino_harness_spec.lua`
 - Validación requerida: comandos, mensajes, splits, timers, requests, reconexión y mutaciones
-- Resultado: Pendiente
-- Commit: N/A
+- Resultado: mock c2 completo (comandos, canales, mensajes, timers, HTTP síncrono controlado); flujo e2e: /yt-chat → watch page → polling → multi-split sin duplicar polling → dedupe → borrado in-place → evento desconocido visible → fin de directo + limpieza → offline → detección de directo; verde (VAL-010)
+- Commit: pendiente en este bloque
 - Notas:
 
 ### CYC-025 — Validación real/manual con checklist
 - Requisito de GOAL.md: Validación real
 - Estado: Pendiente
-- Dependencias: CYC-024
+- Dependencias: CYC-024, CYC-032
 - Archivos: `docs/validation/manual-checklist.md`, `TRACKER.md`
 - Validación requerida: ejecución documentada de checklist completa
-- Resultado: Pendiente
+- Resultado: Pendiente; capturas reales parciales ya hechas (VAL-009)
 - Commit: N/A
 - Notas: anonimizar cualquier evidencia de usuarios reales
 
 ### CYC-026 — Fuzzing defensivo de parsers
 - Requisito de GOAL.md: Fuzzing defensivo
-- Estado: Pendiente
+- Estado: Implementado, pendiente de prueba (suite verde)
 - Dependencias: CYC-023
-- Archivos: `tests/fuzz/**`
+- Archivos: `tests/fuzz/parser_fuzz_spec.lua`
 - Validación requerida: parser robusto sin loops infinitos ni caída global por evento único
-- Resultado: Pendiente
-- Commit: N/A
+- Resultado: 400 árboles aleatorios + degenerados + anidación profunda (500) + strings enormes + URLs maliciosas + validate_schema fuzz; bug real encontrado y corregido (`first_key` con claves numéricas); verde (VAL-010)
+- Commit: pendiente en este bloque
 - Notas:
 
 ### CYC-028 — Documentación completa de producto y seguridad
@@ -494,6 +494,14 @@
 - Resultado: verde — `Assertions: 450, Failures: 0`; sintaxis verificada con `luac5.4 -p` en todos los módulos
 - Evidencias: salida de `scripts/test.sh`; captura real `/tmp/cyc_research/chat1.json` (75 acciones reales, no publicada); `fixtures/real/`
 - Incidencias relacionadas: CYC-008..CYC-016, CYC-031
+
+### VAL-010 — Suite completa: unitarias + integración + fuzz + carga
+- Fecha: 2026-07-19T17:05:00+02:00
+- Entorno: `/home/tears/stream` (Lua 5.5.0)
+- Procedimiento: `scripts/test.sh` con nuevo harness `tests/harness/c2_mock.lua`, integración e2e, fuzz (400 árboles + degenerados) y carga (`tests/perf/load_spec.lua`)
+- Resultado: verde — `Assertions: 1298, Failures: 0` (~7 s)
+- Evidencias: salida de `scripts/test.sh`
+- Incidencias relacionadas: bugs encontrados y corregidos durante esta fase: (1) wake fijo de 300 s del monitor offline; (2) polling final tras cierre de splits (prune pre-request); (3) `first_key` con claves numéricas (fuzz); (4) aislamiento de estado entre specs (`Polling._reset`)
 
 ### VAL-009 — Captura real de YouTube Live Chat (conectividad y protocolo)
 - Fecha: 2026-07-19T16:10:00+02:00

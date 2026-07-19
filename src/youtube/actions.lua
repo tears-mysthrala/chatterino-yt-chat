@@ -10,6 +10,9 @@ local Actions = {}
 local SKIP_KEYS = { clickTrackingParams = true, trackingParams = true }
 
 local function skippable(key)
+  if type(key) ~= "string" then
+    return true
+  end
   return SKIP_KEYS[key] == true or key:sub(1, 1) == "_"
 end
 

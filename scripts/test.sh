@@ -12,7 +12,9 @@ local specs = {
   "tests.unit.url_spec",
   "tests.unit.continuations_spec",
   "tests.unit.actions_renderers_spec",
+  "tests.unit.support_spec",
   "tests.unit.persistence_spec",
+  "tests.unit.state_spec",
   "tests.integration.chatterino_harness_spec",
   "tests.fuzz.parser_fuzz_spec"
 }

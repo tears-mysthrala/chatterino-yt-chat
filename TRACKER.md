@@ -2,23 +2,65 @@
 
 - Objetivo: `chatterino-yt-chat v1.0.0`
 - Estado actual: En desarrollo
-- Última actualización: 2026-07-19T14:08:00+02:00
+- Última actualización: 2026-07-19T15:05:00+02:00
 - Rama actual: main
-- Último commit revisado: `42bafd31b3d72e9fac31cb108919eae0f1115f30`
+- Último commit revisado: `bfa62da` (sincronizado con `origin/main`)
 - Criterios obligatorios verificados: 3/20
 - Bloqueos activos: 0
+- Contrato interno: `docs/architecture.md` (evento normalizado IR + esquema de estado v2)
+- Entorno verificado: Lua 5.5.0 (`/usr/bin/lua`, también 5.1/5.4/luajit), `gh` autenticado como `tears-mysthrala` (scopes repo+workflow), red a `www.youtube.com` OK (HTTP 200), remoto `origin` = `https://github.com/tears-mysthrala/chatterino-yt-chat.git`
 
 ## En curso
+
+### CYC-002 — Investigación de API de plugins de Chatterino
+- Requisito de GOAL.md: Compatibilidad de Chatterino
+- Estado: En curso
+- Dependencias: CYC-001
+- Archivos: `docs/research/chatterino-plugin-api.md` (nuevo), `README.md`, `COMPATIBILITY.md`
+- Validación requerida: versión mínima compatible documentada con capacidades y limitaciones verificables
+- Resultado: Agente de investigación lanzado 2026-07-19T14:44 (API actual, elementos de mensaje, mutación de mensajes, info.json, rutas de instalación)
+- Commit: N/A
+- Notas: se contrastará con `types/plugin_chatterino_types.lua` del historial (API 2023)
+
+### CYC-003 — Matriz completa de acciones/renderers de YouTube Live Chat
+- Requisito de GOAL.md: Compatibilidad real, Acciones/renderers desconocidos
+- Estado: En curso
+- Dependencias: CYC-001
+- Archivos: `COMPATIBILITY.md`, `docs/research/youtube-live-chat-renderers.md`
+- Validación requerida: matriz con acción, renderer, handler, fixture, resultado esperado y estado `Full`/`Degraded by Chatterino API`
+- Resultado: Agente de investigación lanzado 2026-07-19T14:44 (inventario desde chat-downloader, pytchat, YTLiveChat y fuentes abiertas)
+- Commit: N/A
+- Notas: `Unsupported` no permitido para tipos obligatorios en release 1.0.0; se añadirán capturas reales anonimizadas (CYC-031)
 
 ### CYC-029 — Configuración del repositorio GitHub y publicación v1.0.0
 - Requisito de GOAL.md: Repositorio y atribución, Release, Criterios 1.0.0
 - Estado: En curso
-- Dependencias: CYC-001..CYC-028
+- Dependencias: CYC-001..CYC-028, CYC-031, CYC-032
 - Archivos: remotos git/tags/releases
 - Validación requerida: repo público creado, tag `v1.0.0`, release publicada tras checklist completa
-- Resultado: Pendiente
-- Commit: e104cf4
-- Notas: no se publicará release estable hasta completar criterios pendientes
+- Resultado: Repositorio remoto existente y sincronizado (`origin/main` = `bfa62da`); falta verificar configuración (descripción, topics, issues) y completar criterios antes de tag/release
+- Commit: bfa62da
+- Notas: no se publicará release estable hasta completar criterios pendientes; `gh` autenticado y operativo
+
+### CYC-031 — Captura y anonimización de fixtures reales de YouTube
+- Requisito de GOAL.md: Validación real, Pruebas automatizadas, Compatibilidad real
+- Estado: En curso
+- Dependencias: CYC-003
+- Archivos: `fixtures/real/**` (nuevo), `scripts/capture_fixture.sh` (nuevo, opcional)
+- Validación requerida: fixtures procedentes de respuestas reales de `get_live_chat`, anonimizados (sin nombres/IDs reales), usados por la suite
+- Resultado: Pendiente; red a YouTube verificada (200) en este entorno
+- Commit: N/A
+- Notas: no publicar contenido identificable; redactar autores, IDs de canal y continuation tokens
+
+### CYC-032 — Validación de instalación en Chatterino estable
+- Requisito de GOAL.md: Criterio 16 y 17 (instalación limpia + actualización)
+- Estado: En curso
+- Dependencias: CYC-004, CYC-002
+- Archivos: `docs/validation/chatterino-install.md` (nuevo), posible modo selftest en el plugin
+- Validación requerida: instalar ZIP en Chatterino estable, comprobar carga del plugin, comandos y recepción de chat; actualización desde versión anterior
+- Resultado: Pendiente; se evaluará ejecución offscreen (QT_QPA_PLATFORM=offscreen) con selftest del plugin volcado a log
+- Commit: N/A
+- Notas: si el entorno no permite ejecutar Chatterino, queda como bloqueo documentado y NO se publica release
 
 ### CYC-023 — Sistema de pruebas unitarias + fixtures anonimizados
 - Requisito de GOAL.md: Pruebas automatizadas
@@ -28,7 +70,7 @@
 - Validación requerida: ejecución de suite con casos de renderers/acciones/continuations y robustez
 - Resultado: Suite base ejecuta unitarias + integración simulada + fuzz ligero
 - Commit: e104cf4
-- Notas: cobertura aún parcial frente a todos los renderers/eventos exigidos
+- Notas: cobertura aún parcial frente a todos los renderers/eventos exigidos; se ampliará tras CYC-003/CYC-031
 
 ### CYC-027 — CI, release automation y packaging reproducible
 - Requisito de GOAL.md: CI, Release
@@ -38,7 +80,7 @@
 - Validación requerida: ZIP reproducible + SHA256 + checks de versión/tag + draft release
 - Resultado: pipelines y scripts creados; build local reproducible validado con hash estable en builds consecutivos
 - Commit: e104cf4
-- Notas: primera ejecución CI falló por falso positivo en chequeo de hosts; tarea reabierta y corregida en workflow
+- Notas: primera ejecución CI falló por falso positivo en chequeo de hosts; tarea reabierta y corregida en workflow; pendiente revalidación remota tras próximos pushes
 
 ## Pendiente
 
@@ -63,26 +105,6 @@
 - Notas: Importación hecha desde `Remahy/Chatterino-Plugins` sin arrastrar otros plugins; falta refactor completo y estructura objetivo 1.0.0
 
 ## Pendiente
-
-### CYC-002 — Investigación de API de plugins de Chatterino
-- Requisito de GOAL.md: Compatibilidad de Chatterino
-- Estado: Pendiente
-- Dependencias: CYC-001
-- Archivos: `docs/chatterino-plugin-api.md`, `README.md`, `COMPATIBILITY.md`
-- Validación requerida: versión mínima compatible documentada con capacidades y limitaciones verificables
-- Resultado: Pendiente
-- Commit: N/A
-- Notas: Debe basarse en documentación oficial/implementaciones auditables
-
-### CYC-003 — Matriz completa de acciones/renderers de YouTube Live Chat
-- Requisito de GOAL.md: Compatibilidad real, Acciones/renderers desconocidos
-- Estado: Pendiente
-- Dependencias: CYC-001
-- Archivos: `COMPATIBILITY.md`, `docs/research/youtube-live-chat-renderers.md`
-- Validación requerida: matriz con acción, renderer, handler, fixture, resultado esperado y estado `Full`/`Degraded by Chatterino API`
-- Resultado: Pendiente
-- Commit: N/A
-- Notas: `Unsupported` no permitido para tipos obligatorios en release 1.0.0
 
 ### CYC-005 — Descubrimiento y normalización de URLs/canales
 - Requisito de GOAL.md: Descubrimiento de canales y directos
@@ -226,32 +248,32 @@
 
 ### CYC-019 — Persistencia segura con migraciones y recuperación
 - Requisito de GOAL.md: Persistencia
-- Estado: Pendiente
+- Estado: Implementado, pendiente de prueba (suite verde; pendiente prueba en Chatterino real)
 - Dependencias: CYC-004
-- Archivos: `src/state/persistence.lua`, `src/state/migrations.lua`, `tests/**`
+- Archivos: `src/state/persistence.lua`, `src/state/migrations.lua`, `tests/unit/persistence_spec.lua`
 - Validación requerida: write-temp+flush+replace+.bak+recovery+schema+debounce+no concurrent write
-- Resultado: Pendiente
-- Commit: N/A
-- Notas: no persistir continuation/API key/payloads/chat content
+- Resultado: tmp+flush+rename, .bak, recuperación bak/default con marcador, schema v2 validado, lock con liberación garantizada (pcall), escritura solo si cambia, flusher con debounce; 61 aserciones verdes (VAL-007)
+- Commit: pendiente de commit en este bloque
+- Notas: no persistir continuation/API key/payloads/chat content (validado por validate_schema que descarta claves desconocidas)
 
 ### CYC-020 — Seguridad y validación de superficie de red/entrada
 - Requisito de GOAL.md: Seguridad y privacidad
-- Estado: Pendiente
+- Estado: En curso
 - Dependencias: CYC-005, CYC-007, CYC-019
-- Archivos: `src/support/validation.lua`, `SECURITY.md`, `tests/**`
+- Archivos: `src/support/validation.lua`, `SECURITY.md`, `tests/unit/support_spec.lua`
 - Validación requerida: allowlist de hosts, límites de tamaños/tipos y sin eval/código remoto
-- Resultado: Pendiente
-- Commit: N/A
+- Resultado: allowlist hosts YouTube + hosts de imagen separados, sanitize_text/sanitize_id, límites de tamaño, color y retry-after validados; 53 aserciones verdes (VAL-007). Falta: límites de respuesta HTTP en capa youtube (CYC-007) y auditoría final
+- Commit: pendiente de commit en este bloque
 - Notas:
 
 ### CYC-021 — Logging seguro con niveles y deduplicación
 - Requisito de GOAL.md: Logs
-- Estado: Pendiente
+- Estado: Implementado, pendiente de prueba (suite verde)
 - Dependencias: CYC-016, CYC-020
-- Archivos: `src/support/logging.lua`, `tests/**`, `README.md`
+- Archivos: `src/support/logging.lua`, `src/support/rate_limit.lua`, `tests/unit/support_spec.lua`
 - Validación requerida: niveles error/warn/info/debug, debug off por defecto, sin campos sensibles
-- Resultado: Pendiente
-- Commit: N/A
+- Resultado: niveles + ruta a `c2.log` con fallback a print, redacción de claves sensibles (continuation/cookie/token/key/...), deduplicación 3+resumen/ventana, rate_limit con reloj de pared y buckets acotados (256), muestras anonimizadas solo en debug vía sink inyectable; verde (VAL-007)
+- Commit: pendiente de commit en este bloque
 - Notas:
 
 ### CYC-022 — Rendimiento y limpieza de recursos
@@ -430,6 +452,14 @@
 - Resultado: identificado falso positivo por regex sobre patrones Lua; workflow ajustado a extracción de host explícita
 - Evidencias: run fallido `29686862255`, diff en `.github/workflows/ci.yml`
 - Incidencias relacionadas: CYC-027
+
+### VAL-007 — Suite tras endurecer capas support y state
+- Fecha: 2026-07-19T15:05:00+02:00
+- Entorno: `/home/tears/stream` (Lua 5.5.0)
+- Procedimiento: `scripts/test.sh` completo tras reescribir `validation.lua`, `rate_limit.lua`, `logging.lua`, `backoff.lua`, `persistence.lua`, `migrations.lua`, `channels.lua`, `active_streams.lua` y añadir `support_spec.lua`, `state_spec.lua`, reescritura de `persistence_spec.lua`
+- Resultado: verde — `Assertions: 136, Failures: 0`
+- Evidencias: salida de `scripts/test.sh`
+- Incidencias relacionadas: corregido defecto de doble consumo de bucket en deduplicación de logs antes del commit
 
 ## Estado de sesión para continuidad
 

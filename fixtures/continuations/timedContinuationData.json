@@ -1,0 +1,14 @@
+{
+  "continuationContents": {
+    "liveChatContinuation": {
+      "continuations": [
+        {
+          "timedContinuationData": {
+            "continuation": "CONT-123",
+            "timeoutMs": 1500
+          }
+        }
+      ]
+    }
+  }
+}

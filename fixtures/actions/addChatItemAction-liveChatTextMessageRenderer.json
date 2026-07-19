@@ -1,0 +1,17 @@
+{
+  "addChatItemAction": {
+    "item": {
+      "liveChatTextMessageRenderer": {
+        "id": "msg-001",
+        "authorName": { "simpleText": "viewer" },
+        "timestampUsec": "1720000000000",
+        "message": {
+          "runs": [
+            { "text": "Hello " },
+            { "text": "chat" }
+          ]
+        }
+      }
+    }
+  }
+}

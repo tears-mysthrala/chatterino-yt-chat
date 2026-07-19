@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - name: Validate info.json version
+        run: |
+          jq -e '.version == "1.0.0"' info.json
+      - name: Ensure only allowed hosts in source
+        run: |
+          URLS="$(grep -RhoE 'https://[^" )]+' src init.lua README.md info.json || true)"
+          BAD="$(echo "$URLS" | grep -Ev '^https://(www\.youtube\.com|youtube\.com|m\.youtube\.com|youtu\.be|raw\.githubusercontent\.com|github\.com|tears-mysthrala\.github\.io)/' || true)"
+          if [ -n "$BAD" ]; then
+            echo "$BAD"
+            echo "Unexpected host found"
+            exit 1
+          fi
+      - name: Secret scan baseline
+        run: |
+          ! grep -R -n -E '(ghp_[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{20,})' .
+      - name: Run tests
+        run: scripts/test.sh
+      - name: Build zip
+        run: scripts/build_release.sh 1.0.0
+      - name: Generate sha256
+        run: scripts/sha256.sh dist/chatterino-yt-chat-1.0.0.zip
+      - uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        with:
+          name: release-artifacts
+          path: |
+            dist/chatterino-yt-chat-1.0.0.zip
+            dist/chatterino-yt-chat-1.0.0.zip.sha256

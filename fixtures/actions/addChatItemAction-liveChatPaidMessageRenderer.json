@@ -1,0 +1,16 @@
+{
+  "addChatItemAction": {
+    "item": {
+      "liveChatPaidMessageRenderer": {
+        "id": "paid-001",
+        "authorName": { "simpleText": "donor" },
+        "purchaseAmountText": { "simpleText": "$10.00" },
+        "message": {
+          "runs": [
+            { "text": "Great stream!" }
+          ]
+        }
+      }
+    }
+  }
+}

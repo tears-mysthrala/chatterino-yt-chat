@@ -1,17 +1,20 @@
 {
   "$schema": "https://raw.githubusercontent.com/Chatterino/chatterino2/master/docs/plugin-info.schema.json",
-  "name": "yt-chat",
-  "description": "Read YouTube livestream chats, inside your Chatterino!",
+  "name": "chatterino-yt-chat",
+  "description": "A complete, reliable, read-only YouTube Live Chat viewer plugin for Chatterino.",
   "authors": [
-    "kararty"
+    "kararty",
+    "tears-mysthrala"
   ],
-  "homepage": "https://github.com/Remahy/Chatterino-Plugins/tree/main/yt-chat",
+  "homepage": "https://github.com/tears-mysthrala/chatterino-yt-chat",
   "tags": [
     "commands",
     "utility",
-    "youtube"
+    "youtube",
+    "youtube-live",
+    "chat"
   ],
-  "version": "0.2.0",
+  "version": "1.0.0",
   "license": "MIT",
   "permissions": [
     {

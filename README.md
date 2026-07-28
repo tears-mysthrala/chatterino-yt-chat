@@ -5,6 +5,12 @@ A complete, reliable, **read-only** YouTube Live Chat viewer plugin for Chatteri
 This project derives from the original [`yt-chat`](https://github.com/Remahy/Chatterino-Plugins/tree/main/yt-chat)
 plugin by **kararty** (MIT). See [NOTICE.md](NOTICE.md) and [LICENSE](LICENSE).
 
+> **Unofficial project.** `chatterino-yt-chat` is a community plugin. It is
+> **not** affiliated with, endorsed by, or supported by the Chatterino
+> project, YouTube, or Google. "Chatterino" and "YouTube" are trademarks of
+> their respective owners. It relies on undocumented YouTube internals
+> (Innertube) that may change or break at any time without notice.
+
 ## What it does
 
 `chatterino-yt-chat` turns Chatterino into a persistent viewer for the chat
@@ -31,6 +37,23 @@ everything that happens, across as many splits as they want.
 - Plugin permissions requested in `info.json`: `Network`, `FilesystemRead`,
   `FilesystemWrite` (the latter two are limited by Chatterino to the
   plugin's own data directory).
+
+## Authentication and scopes
+
+There is **no authentication**: no login, no OAuth flow, no user
+credentials, no YouTube API key to configure, and no Google account
+scopes are requested. The plugin works exactly like an anonymous web
+browser visiting the stream page:
+
+1. It fetches the public watch/`/live` page over HTTPS.
+2. It extracts the public `INNERTUBE_API_KEY` and client version embedded
+   in that page (the same values every visitor's browser receives).
+3. It polls `youtubei/v1/live_chat/get_live_chat` with a continuation
+   token — a read-only endpoint. There is no code path that sends chat
+   messages, moderates, subscribes, or likes.
+
+The Innertube key and continuation tokens are held in memory only and are
+never written to disk or logs (see [Persisted data](#persisted-data)).
 
 ## Installation
 
@@ -124,6 +147,24 @@ Only HTTPS requests to official YouTube hosts, needed for operation:
 No redirects to other hosts are followed by the plugin itself; URLs are
 validated before every request. No third-party services, no analytics,
 no telemetry, no auto-update.
+
+## Rate limiting and error handling
+
+The plugin is deliberately polite towards YouTube:
+
+- **Chat polling** intervals are dictated by YouTube itself (`timeoutMs`
+  in each continuation response), clamped to 500–15000 ms with a 1000 ms
+  fallback when YouTube does not provide one (configurable, see
+  [Settings](#settings)). One poller per stream, no matter how many
+  splits display it.
+- **Offline channel checks** back off 30 → 60 → 120 → 300 s (plus small
+  jitter) and stay at 300 s until a stream starts.
+- **Transient errors** (network failures, empty/oversize/invalid
+  responses, non-fatal HTTP statuses) retry with exponential backoff
+  capped at 30 s, honoring `Retry-After` when present.
+- **Fatal conditions** (HTTP 400/403/404, chat disabled, stream ended)
+  stop polling and return the channel to offline watch automatically —
+  it reconnects on its own if the stream comes back.
 
 ## Persisted data
 

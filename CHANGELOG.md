@@ -5,6 +5,8 @@
 - Accepts bare YouTube handles such as `/yt-chat @creator`.
 - Adds the compact `auto` command to persist a handle-to-conversation binding
   and reconnect automatically whenever that channel goes live.
+- Lets `/yt-chat auto` infer the YouTube handle from the current conversation,
+  while retaining `/yt-chat auto @creator` as an explicit override.
 - Uses one international command vocabulary in every interface language, with
   compact `lang` and hidden backward-compatible Spanish aliases.
 

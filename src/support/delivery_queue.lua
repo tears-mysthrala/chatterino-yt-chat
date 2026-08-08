@@ -74,7 +74,7 @@ function DeliveryQueue.enqueue(key, delay_ms, callback, later_fn)
     return a.due_ms < b.due_ms or (a.due_ms == b.due_ms and a.sequence < b.sequence)
   end)
   schedule_next(key, later_fn)
-  Health.gauge("max_queue_depth", math.max(Health.snapshot().gauges.max_queue_depth or 0, #queue.items))
+  Health.max_gauge("max_queue_depth", #queue.items)
   return true
 end
 

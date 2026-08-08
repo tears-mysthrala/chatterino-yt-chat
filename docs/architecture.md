@@ -24,6 +24,8 @@ por `video_id` con orden estable. La cola mantiene un único timer activo por
 stream, aísla fallos de callbacks y se cancela cuando el stream se detiene sin
 drain. Al finalizar naturalmente, el marcador de fin se encola detrás de los
 eventos pendientes para no perder el último lote.
+En Chatterino 2.5.5 el reloj monotónico tiene resolución de 100 ms; el timer
+solicita el delay configurado y la entrega queda sujeta a esa granularidad.
 
 La cola limita cada stream a 128 lotes. Si un upstream anómalo alcanza ese
 límite, aplica backpressure entregando el lote más antiguo y registra el hecho

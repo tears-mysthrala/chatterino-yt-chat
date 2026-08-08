@@ -82,7 +82,8 @@ never written to disk or logs (see [Persisted data](#persisted-data)).
 - Remove the plugin directory `Plugins/chatterino-yt-chat/`.
 - To also delete its state, remove `data/YT_CHAT.json`,
   `data/YT_CHAT.json.bak`, `data/YT_CHAT.json.tmp` and any explicitly created
-  `data/YT_CHAT.export.json` inside that directory.
+  `data/YT_CHAT.export.json*` or `data/YT_CHAT.diagnostics.json*` files inside
+  that directory.
 - The plugin never writes outside its own data directory.
 
 ## Usage
@@ -231,6 +232,8 @@ happen when something actually changed.
 - `chat_sync_delay_ms`: presentation delay applied to normalized event batches
   without slowing YouTube polling (`0`–`30000` ms). Change it live with
   `/yt-chat delay <ms>`; run `/yt-chat delay` to inspect the current value.
+  Chatterino 2.5.5 uses a 100 ms monotonic heartbeat, so delivery targets that
+  value with up to one heartbeat of scheduler granularity.
 
 Chatterino 2.5.5 does not expose a plugin API for adding controls to its
 Settings GUI. `/yt-chat config` therefore reports the effective configuration,

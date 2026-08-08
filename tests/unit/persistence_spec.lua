@@ -102,6 +102,8 @@ do
     channels = { UCEXPORT = { channel_id = "UCEXPORT", paused = true, splits = { "s" } } }
   })
   T.ok(Persistence.export_snapshot(exported), "configuration export written")
+  T.ok(Persistence.export_snapshot(exported), "configuration export can be replaced durably")
+  T.ok(read_raw(test_dir .. "/YT_CHAT.export.json.bak") ~= nil, "configuration export keeps a backup")
   local imported, import_err = Persistence.import_snapshot()
   T.eq(import_err, nil, "valid export imports without error")
   T.eq(imported.settings.chat_sync_delay_ms, 250, "settings survive export/import")
@@ -109,6 +111,12 @@ do
   T.ok(imported.channels.UCEXPORT.paused, "paused state survives export/import")
   T.ok(Persistence.export_diagnostics({ version = "1.2.0", counters = { requests = 2 } }),
     "bounded diagnostics export written")
+  local incomplete_file = io.open(test_dir .. "/YT_CHAT.export.json", "w")
+  incomplete_file:write("{}")
+  incomplete_file:close()
+  local incomplete, incomplete_err = Persistence.import_snapshot()
+  T.eq(incomplete, nil, "incomplete export is rejected")
+  T.eq(incomplete_err, "incomplete_export", "incomplete export reports explicit error")
 end
 
 -- Debounced flusher: bursts produce a single write

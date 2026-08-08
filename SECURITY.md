@@ -54,6 +54,9 @@ permissions):
 - `YT_CHAT.export.json` — explicit user-requested configuration export
 - `YT_CHAT.diagnostics.json` — explicit content-free health export
 
+Explicit exports use the same verified tmp+backup write protocol as state;
+their `.tmp` and `.bak` recovery files can therefore also exist.
+
 Write protocol: temp file → flush → verify → backup current → write →
 verify → restore-from-backup on failure. The Chatterino Lua sandbox has
 no `os.rename`, so rename-atomic replace is impossible there; this

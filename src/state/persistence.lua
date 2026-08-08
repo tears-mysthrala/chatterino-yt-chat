@@ -135,19 +135,25 @@ local function write_file(path, content)
   return true, nil
 end
 
+local write_atomic
+
 function Persistence.export_snapshot(state)
   local encoded = json.encode(Persistence.validate_schema(state))
-  return write_file(dir .. "/YT_CHAT.export.json", encoded)
+  return write_atomic(dir .. "/YT_CHAT.export.json", encoded)
 end
 
 function Persistence.export_diagnostics(snapshot)
-  return write_file(dir .. "/YT_CHAT.diagnostics.json", json.encode(snapshot))
+  return write_atomic(dir .. "/YT_CHAT.diagnostics.json", json.encode(snapshot))
 end
 
 function Persistence.import_snapshot()
   local decoded = safe_decode(read_all(dir .. "/YT_CHAT.export.json"))
   if not decoded then
     return nil, "missing_or_invalid_export"
+  end
+  if type(decoded.schema_version) ~= "number" or type(decoded.settings) ~= "table" or
+      type(decoded.channels) ~= "table" then
+    return nil, "incomplete_export"
   end
   return Persistence.validate_schema(decoded), nil
 end
@@ -166,7 +172,7 @@ local function restore_from_backup(path)
   end
 end
 
-local function write_atomic(path, encoded)
+write_atomic = function(path, encoded)
   local tmp = path .. TMP_SUFFIX
   local ok, err = write_file(tmp, encoded)
   if not ok then

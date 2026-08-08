@@ -129,6 +129,9 @@ local completions = mock.callbacks[mock.c2.EventType.CompletionRequested]({
   query = "sta", full_text_content = "/yt-chat sta", cursor_position = 12, is_first_word = false
 })
 T.eq(completions.values[1], "status", "status command completion offered")
+mock.run_command("/yt-chat", "splitA", "pause")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Uso:", 1, true) ~= nil,
+  "channel controls report usage when argument is missing")
 
 -- Runtime sync delay setting is validated, persisted and immediately active.
 mock.run_command("/yt-chat", "splitA", "delay", "750")
@@ -185,6 +188,9 @@ T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]
 mock.run_command("/yt-chat", "splitA", "language", "en")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Language", 1, true) ~= nil,
   "language can be changed live")
+mock.run_command("/yt-chat", "splitA", "health", "export")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Diagnostics exported", 1, true) ~= nil,
+  "diagnostics export follows selected language")
 mock.run_command("/yt-chat", "splitA", "help")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Commands", 1, true) ~= nil,
   "help follows selected language")

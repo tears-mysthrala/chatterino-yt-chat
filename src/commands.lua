@@ -64,8 +64,8 @@ local function handle_control(state, persist, ctx, command)
   if command == "config" then
     local caps = Capabilities.detect()
     sys(ctx, "language=" .. I18n.get() .. " · delay=" .. tostring(Polling.get_sync_delay()) .. " ms" ..
-      " · GUI=" .. (caps.settings_gui and I18n.t("yes") or "no (API 2.5.5)") ..
-      " · images=" .. I18n.t(caps.images and "image_available" or "image_fallback"))
+      " · GUI=" .. (caps.settings_gui and I18n.t("yes") or I18n.t("gui_unavailable")) ..
+      " · " .. I18n.t("images_label") .. "=" .. I18n.t(caps.images and "image_available" or "image_fallback"))
     return true
   end
   if command == "health" then
@@ -79,7 +79,7 @@ local function handle_control(state, persist, ctx, command)
     if ctx.words[3] == "export" then
       local snapshot = { version = "1.2.0", health = health, streams = Polling.status(), capabilities = Capabilities.detect() }
       local ok = Persistence.export_diagnostics(snapshot)
-      sys(ctx, ok and "Diagnóstico exportado a data/YT_CHAT.diagnostics.json." or "No se pudo exportar el diagnóstico.")
+      sys(ctx, I18n.t(ok and "diagnostic_exported" or "diagnostic_failed"))
     end
     return true
   end
@@ -104,14 +104,20 @@ local function handle_control(state, persist, ctx, command)
       return true
     end
     for _, item in ipairs(Polling.status()) do Polling.stop(item.video_id, "reconfigured") end
+    for key in pairs(state.channels or {}) do Polling.invalidate_channel(key) end
     replace_state(state, imported)
     Polling.set_sync_delay(state.settings.chat_sync_delay_ms)
     I18n.set(state.settings.language)
     persist(state)
+    for _, key in ipairs(Channels.iter_active(state)) do Polling.check_channel_now(state, persist, key) end
     sys(ctx, I18n.t("imported"))
     return true
   end
   if command == "pause" or command == "resume" or command == "remove" then
+    if type(ctx.words[3]) ~= "string" or ctx.words[3] == "" then
+      sys(ctx, I18n.t("usage_channel", { command = command }))
+      return true
+    end
     local key = Channels.find(state, ctx.words[3])
     if not key then
       sys(ctx, I18n.t("channel_missing"))
@@ -119,6 +125,7 @@ local function handle_control(state, persist, ctx, command)
     end
     local entry = state.channels[key]
     if command == "remove" then
+      Polling.invalidate_channel(key)
       if entry.channel_id then Polling.stop_by_channel(entry.channel_id, "removed") end
       Channels.remove(state, key)
       persist(state)
@@ -126,6 +133,7 @@ local function handle_control(state, persist, ctx, command)
     else
       local paused = command == "pause"
       Channels.set_paused(state, key, paused)
+      if paused then Polling.invalidate_channel(key) end
       if paused and entry.channel_id then Polling.stop_by_channel(entry.channel_id, "paused") end
       if not paused then Polling.check_channel_now(state, persist, key) end
       persist(state)
@@ -180,6 +188,10 @@ local function handle_url(state, persist, ctx, normalized)
       Channels.set_display_name(state, key, parsed.channelName)
     end
     persist(state)
+    if state.channels[key] and state.channels[key].paused == true then
+      sys(ctx, I18n.t("paused_url", { channel = key }))
+      return
+    end
     if parsed.continuation then
       if start_chat(state, parsed, split) then
         sys(ctx, I18n.t("connected"))

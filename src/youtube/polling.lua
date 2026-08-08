@@ -130,6 +130,7 @@ local function retry(data, reason)
   Health.increment("poll_retries")
   entry.last_error = reason
   local delay = Backoff.chat_error_delay(entry.errors)
+  entry.next_poll_ms = Clock.now_ms() + math.floor(delay * 1000)
   Logging.rate_limited("warning", "chat-retry:" .. video_id, 30000, 2, "chat_retry",
     { video = video_id, reason = reason, attempt = entry.errors, retry_s = math.floor(delay) })
   schedule(video_id, data, delay * 1000)
@@ -416,6 +417,7 @@ local Html = require("src.youtube.html")
 
 local offline = {
   next_due = {}, -- channel key -> epoch seconds
+  generation = {}, -- invalidates callbacks from removed/reconfigured channels
   running = false
 }
 
@@ -440,9 +442,16 @@ local function offline_check(state, persist, key, entry, splits)
     max_seconds = state.settings.offline_poll_max
   })
   offline.next_due[key] = math.floor(Clock.now_ms() / 1000) + math.floor(delay)
+  local generation = offline.generation[key] or 0
+
+  local function still_current()
+    return state.channels and state.channels[key] == entry and entry.paused ~= true and
+        (offline.generation[key] or 0) == generation
+  end
 
   local request = Adapter.http_get(url)
   request:on_success(function(result)
+    if not still_current() then return end
     local status_ok = (result:status() or 0) == 200
     if not status_ok then
       Logging.rate_limited("warning", "offline-http:" .. key, 300000, 1, "offline_http_status",
@@ -486,10 +495,16 @@ local function offline_check(state, persist, key, entry, splits)
     end
   end)
   request:on_error(function(result)
+    if not still_current() then return end
     Logging.rate_limited("warning", "offline-net:" .. key, 300000, 1, "offline_network_issue",
       { channel = key })
   end)
   request:execute()
+end
+
+function Polling.invalidate_channel(key)
+  offline.generation[key] = (offline.generation[key] or 0) + 1
+  offline.next_due[key] = nil
 end
 
 function Polling.check_channel_now(state, persist, key)
@@ -561,6 +576,7 @@ function Polling._reset()
   sync_delay_ms = 0
   DeliveryQueue._reset()
   offline.next_due = {}
+  offline.generation = {}
   offline.running = false
 end
 

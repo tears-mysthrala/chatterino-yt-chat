@@ -440,7 +440,7 @@ Ninguno abierto al publicar. Riesgos residuales documentados (no bloqueantes):
 
 ### ADR-003 — Reloj monotónico propio (sin librería `os`)
 - Contexto: el sandbox de Chatterino no expone `os` (verificado en `PluginController.cpp` v2.5.5: `LUA_OSLIBNAME` comentado). backoff, rate-limit, dedupe TTL y debounce necesitan tiempo.
-- Decisión: `src/support/clock.lua` con heartbeat de 1 s encadenado en `c2.later` (monotónico, relativo); en tests/plain-Lua usa `os.time`. Todos los módulos inyectan `Clock.now_ms()`.
+- Decisión: `src/support/clock.lua` con heartbeat de 100 ms encadenado en `c2.later` (monotónico, relativo); en tests/plain-Lua usa `os.time`. Todos los módulos inyectan `Clock.now_ms()`.
 - Alternativas: depender de timestamps de YouTube (no cubre timers locales); asumir `os` (rompería en Chatterino).
 - Consecuencias: deriva de segundos aceptable para backoff/rate-limit; ninguna lógica depende de hora absoluta.
 - Evidencia: `src/support/clock.lua`, `PluginController.cpp` v2.5.5 líneas 144-167.

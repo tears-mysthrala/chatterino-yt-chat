@@ -216,7 +216,9 @@ T.eq(#mock.channels.splitA.messages, 0, "initial messages wait for presentation 
 
 -- Multi-split: same channel added from splitB — no duplicate polling --------
 
-mock.run_command("/yt-chat", "splitB", "@test")
+mock.run_command("/yt-chat", "splitB", "auto", "@test")
+T.ok(mock.requests[#mock.requests].url:find("youtube.com/@test/live", 1, true) ~= nil,
+  "explicit auto override uses the supplied YouTube handle")
 T.eq(mock.count_requests("get_live_chat"), 1, "no second polling for same video")
 mock.run_command("/yt-chat", "splitA", "status")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("próximo sondeo", 1, true) ~= nil,

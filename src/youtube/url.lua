@@ -71,6 +71,10 @@ end
 --- Returns result table or nil + error. Only HTTPS on official hosts passes.
 function Url.normalize(input)
   local raw = trim(input)
+  local bare_handle = raw:match("^@([%w%._-]+)$")
+  if bare_handle then
+    return handle_result(bare_handle)
+  end
   if not Validation.is_safe_https_youtube(raw) then
     return nil, "invalid_url"
   end

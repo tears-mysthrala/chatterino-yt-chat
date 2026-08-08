@@ -134,12 +134,15 @@ end
 T.ok(mock.commands["/yt-chat"] ~= nil, "command registered")
 T.ok(mock.callbacks[mock.c2.EventType.CompletionRequested] ~= nil, "command completion registered")
 local completions = mock.callbacks[mock.c2.EventType.CompletionRequested]({
-  query = "est", full_text_content = "/yt-chat est", cursor_position = 12, is_first_word = false
+  query = "sta", full_text_content = "/yt-chat sta", cursor_position = 12, is_first_word = false
 })
-T.eq(completions.values[1], "estado", "localized status command completion offered")
+T.eq(completions.values[1], "status", "international status command completion offered")
 mock.run_command("/yt-chat", "splitA", "ayuda")
-T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("lista", 1, true) ~= nil,
-  "Spanish help uses real Spanish command aliases")
+local international_help = mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]
+for _, usage in ipairs({ "help", "auto @usuario", "list", "status", "health [export]", "pause <canal>",
+    "resume <canal>", "remove <canal>", "delay [0-30000]", "lang [es|en]", "config [gui]", "export", "import" }) do
+  T.ok(international_help:find(usage, 1, true) ~= nil, "Spanish help documents " .. usage)
+end
 mock.run_command("/yt-chat", "splitA", "configurar", "interfaz", "sí")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("no permite", 1, true) ~= nil,
   "GUI activation attempt explains the upstream limitation")
@@ -196,13 +199,15 @@ payload_queue[1] = chat_payload({
   text_action("m2", "bob", "second message")
 }, 2000)
 
-mock.run_command("/yt-chat", "splitA", "https://www.youtube.com/@test/live")
+mock.run_command("/yt-chat", "splitA", "auto", "@test")
 T.eq(mock.count_requests("get_live_chat"), 1, "polling started immediately")
+T.eq(Plugin._state().channels.UCFAKECHANNEL0000000001.handle, "test",
+  "auto command persists the handle against its stable channel id")
 T.eq(#mock.channels.splitA.messages, 0, "initial messages wait for presentation delay")
 
 -- Multi-split: same channel added from splitB — no duplicate polling --------
 
-mock.run_command("/yt-chat", "splitB", "https://www.youtube.com/@test/live")
+mock.run_command("/yt-chat", "splitB", "@test")
 T.eq(mock.count_requests("get_live_chat"), 1, "no second polling for same video")
 mock.run_command("/yt-chat", "splitA", "status")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("próximo sondeo", 1, true) ~= nil,
@@ -210,10 +215,12 @@ T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]
 mock.run_command("/yt-chat", "splitA", "list")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Test Channel", 1, true) ~= nil,
   "list command reports configured channel")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("panel(es)", 1, true) ~= nil,
+  "Spanish channel list avoids untranslated split labels")
 mock.run_command("/yt-chat", "splitA", "health")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("solicitudes", 1, true) ~= nil,
   "health command reports content-free counters")
-mock.run_command("/yt-chat", "splitA", "language", "en")
+mock.run_command("/yt-chat", "splitA", "lang", "en")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Language", 1, true) ~= nil,
   "language can be changed live")
 mock.run_command("/yt-chat", "splitA", "health", "export")
@@ -222,7 +229,7 @@ T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]
 mock.run_command("/yt-chat", "splitA", "help")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Commands", 1, true) ~= nil,
   "help follows selected language")
-mock.run_command("/yt-chat", "splitA", "language", "es")
+mock.run_command("/yt-chat", "splitA", "lang", "es")
 mock.advance(749)
 T.eq(#mock.channels.splitA.messages, 0, "presentation delay has not elapsed")
 mock.advance(1)
@@ -308,10 +315,17 @@ live = false
 mock.run_command("/yt-chat", "splitA", "https://www.youtube.com/@offline/live")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("offline", 1, true) ~= nil,
   "offline registration announced")
+local offline_watch_url = "youtube.com/channel/UCFAKECHANNEL0000000002/live"
+local offline_checks = mock.count_requests(offline_watch_url)
+mock.advance(29000)
+T.eq(mock.count_requests(offline_watch_url), offline_checks,
+  "new offline binding is not checked before its 30 second cadence")
 
 live = true
 payload_queue[1] = chat_payload({ text_action("m9", "erin", "we are live") }, 2000)
-mock.advance(31000) -- offline monitor interval (30 s first attempt)
+mock.advance(1000) -- scheduled first check at exactly 30 s
+T.eq(mock.count_requests(offline_watch_url), offline_checks + 1,
+  "new offline binding is checked after 30 seconds even if the global monitor was sleeping")
 T.ok(mock.count_requests("get_live_chat") > polls_after_end, "offline monitor detected live stream")
 T.ok(#mock.channels.splitA.messages >= 5, "live chat resumed after detection")
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.0 - Unreleased
+
+- Accepts bare YouTube handles such as `/yt-chat @creator`.
+- Adds the compact `auto` command to persist a handle-to-conversation binding
+  and reconnect automatically whenever that channel goes live.
+- Uses one international command vocabulary in every interface language, with
+  compact `lang` and hidden backward-compatible Spanish aliases.
+
 ## 1.2.1 - 2026-08-08
 
 - Adds complete Spanish aliases and localized completion for every operational

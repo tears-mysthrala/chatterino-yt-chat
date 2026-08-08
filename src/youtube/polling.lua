@@ -527,6 +527,27 @@ function Polling.check_channel_now(state, persist, key)
   return true
 end
 
+--- Ensures a newly persisted offline channel gets its first follow-up check
+--- without waiting for an already-sleeping global monitor. If the monitor
+--- checks it first, the advanced due time makes this callback a no-op.
+function Polling.schedule_channel_check(state, persist, key, delay_seconds)
+  local entry = state.channels and state.channels[key]
+  if not entry or entry.paused == true then return false end
+  local delay = math.max(1, math.floor(tonumber(delay_seconds) or 30))
+  local due = math.floor(Clock.now_ms() / 1000) + delay
+  local current_due = offline.next_due[key]
+  if not current_due or due < current_due then offline.next_due[key] = due end
+  local generation = offline.generation[key] or 0
+  Adapter.later(function()
+    if not state.channels or state.channels[key] ~= entry or entry.paused == true or
+        (offline.generation[key] or 0) ~= generation then return end
+    local now = math.floor(Clock.now_ms() / 1000)
+    if (offline.next_due[key] or (now + 1)) > now then return end
+    Polling.check_channel_now(state, persist, key)
+  end, delay * 1000)
+  return true
+end
+
 --- One pass over persisted channels; schedules the next pass at the
 --- nearest due time across channels (no busy loop, one timer chain).
 function Polling.poll_offline_once(state, persist)

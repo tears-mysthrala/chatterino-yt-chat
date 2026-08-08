@@ -18,7 +18,7 @@ local operation_generation = 0
 local COMMAND_ALIASES = {
   ayuda = "help", lista = "list", estado = "status", salud = "health",
   pausar = "pause", reanudar = "resume", eliminar = "remove", retardo = "delay",
-  idioma = "language", configurar = "config", exportar = "export", importar = "import"
+  idioma = "language", lang = "language", configurar = "config", exportar = "export", importar = "import"
 }
 
 local function canonical_command(value)
@@ -57,7 +57,8 @@ local function handle_control(state, persist, ctx, command)
     for _, key in ipairs(keys) do
       local entry = state.channels[key]
       sys(ctx, key .. " · " .. channel_label(key, entry) .. " · " ..
-        I18n.t(entry.paused and "state_paused" or "state_active") .. " · " .. tostring(#entry.splits) .. " split(s)")
+        I18n.t(entry.paused and "state_paused" or "state_active") .. " · " ..
+        I18n.t("split_count", { count = #entry.splits }))
     end
     return true
   end
@@ -97,7 +98,7 @@ local function handle_control(state, persist, ctx, command)
       unknown = counters.unknown_events or 0
     }))
     if canonical_command(ctx.words[3]) == "export" then
-      local snapshot = { version = "1.2.1", health = health, streams = Polling.status(), capabilities = Capabilities.detect() }
+      local snapshot = { version = "1.3.0", health = health, streams = Polling.status(), capabilities = Capabilities.detect() }
       local ok = Persistence.export_diagnostics(snapshot)
       sys(ctx, I18n.t(ok and "diagnostic_exported" or "diagnostic_failed"))
     end
@@ -222,6 +223,7 @@ local function handle_url(state, persist, ctx, normalized)
         sys(ctx, I18n.t("already"))
       end
     else
+      Polling.schedule_channel_check(state, persist, key, 30)
       sys(ctx, I18n.t("offline"))
     end
     Logging.info("channel_added", { split = split, channel = key })
@@ -261,7 +263,15 @@ function Commands.register(state, persist)
       sys(ctx, I18n.t("delay_set", { delay = delay }))
       return
     end
-    local normalized, err = Url.normalize(ctx.words[2])
+    local target = ctx.words[2]
+    if command == "auto" then
+      target = ctx.words[3]
+      if type(target) ~= "string" or target == "" then
+        sys(ctx, I18n.t("usage_auto"))
+        return
+      end
+    end
+    local normalized, err = Url.normalize(target)
     if not normalized then
       sys(ctx, I18n.t("invalid_url", { error = err }))
       return
@@ -275,14 +285,8 @@ function Commands.register(state, persist)
       if not event.full_text_content:match("^/yt%-chat") then
         return { hide_others = false, values = {} }
       end
-      local values
-      if I18n.get() == "es" then
-        values = { "ayuda", "lista", "estado", "salud", "pausar", "reanudar", "eliminar", "retardo",
-          "idioma", "configurar", "exportar", "importar" }
-      else
-        values = { "help", "list", "status", "health", "pause", "resume", "remove", "delay", "language",
-          "config", "export", "import" }
-      end
+      local values = { "help", "list", "status", "health", "pause", "resume", "remove", "auto", "delay",
+        "lang", "config", "export", "import" }
       for _, key in ipairs(Channels.iter_active(state)) do values[#values + 1] = key end
       local matches = {}
       local query = tostring(event.query or ""):lower()

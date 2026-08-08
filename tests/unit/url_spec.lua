@@ -45,6 +45,12 @@ T.eq(n5.canonical, "https://www.youtube.com/@SomeHandle/live", "handle canonical
 local n5b = Url.normalize("https://www.youtube.com/@SomeHandle/live")
 T.eq(n5b.handle, "SomeHandle", "handle /live tab")
 
+-- Bare @handle shorthand
+local n5c = Url.normalize("@SomeHandle")
+T.eq(n5c.kind, "channel_handle", "bare handle kind")
+T.eq(n5c.handle, "SomeHandle", "bare handle value")
+T.eq(n5c.canonical, "https://www.youtube.com/@SomeHandle/live", "bare handle canonical /live")
+
 -- m.youtube.com host
 local n6 = Url.normalize("https://m.youtube.com/watch?v=mobi123")
 T.eq(n6.video_id, "mobi123", "mobile host ok")
@@ -66,3 +72,5 @@ local _, e7 = Url.normalize("https://www.youtube.com/watch?v=a b")
 T.eq(e7, "invalid_video_id", "spaces in video id rejected")
 local _, e8 = Url.normalize("https://youtu.be/")
 T.eq(e8, "unsupported_url", "empty short id rejected")
+local _, e9 = Url.normalize("@bad handle")
+T.eq(e9, "invalid_url", "invalid bare handle rejected")

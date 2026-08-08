@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-VERSION="${1:-1.2.1}"
+VERSION="${1:-1.3.0}"
 DIST_DIR="$ROOT/dist"
 PKG_NAME="chatterino-yt-chat-${VERSION}.zip"
 PKG_PATH="$DIST_DIR/$PKG_NAME"

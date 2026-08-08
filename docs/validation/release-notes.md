@@ -46,7 +46,7 @@ verify against the `.sha256` asset from this release.
 
 ## Validation gate
 
-- Automated suite: 1,388 assertions, 0 failures.
+- Automated suite: 1,391 assertions, 0 failures.
 - Fixtures: 40 checked, 0 failures.
 - Lua lint: 0 warnings and 0 errors across 47 files.
 - Reproducible local package verified before tagging; the canonical checksum is

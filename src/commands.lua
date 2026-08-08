@@ -267,8 +267,7 @@ function Commands.register(state, persist)
     if command == "auto" then
       target = ctx.words[3]
       if type(target) ~= "string" or target == "" then
-        sys(ctx, I18n.t("usage_auto"))
-        return
+        target = "@" .. tostring(ctx.channel:get_name() or ""):gsub("^@", "")
       end
     end
     local normalized, err = Url.normalize(target)

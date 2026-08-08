@@ -3,7 +3,7 @@ local language = "es"
 
 local TEXT = {
   es = {
-    help = "Comandos: help | <url|@usuario> | auto @usuario | list | status | health [export] | " ..
+    help = "Comandos: help | <url|@usuario> | auto [@usuario] | list | status | health [export] | " ..
         "pause <canal> | resume <canal> | remove <canal> | delay [0-30000] | lang [es|en] | " ..
         "config [gui] | export | import",
     no_channels = "No hay canales configurados.", channel_missing = "Canal no encontrado. Usa /yt-chat list.",
@@ -12,7 +12,6 @@ local TEXT = {
     paused = "Canal pausado: {channel}.", resumed = "Canal reanudado: {channel}.", removed = "Canal eliminado: {channel}.",
     language = "Idioma: {language}.", invalid_language = "Idioma no válido. Usa es o en.",
     usage_channel = "Uso: /yt-chat {command} <canal>", paused_url = "El canal está pausado. Usa /yt-chat resume {channel}.",
-    usage_auto = "Uso: /yt-chat auto @usuario",
     gui_unavailable = "no (API 2.5.5)", images_label = "imágenes",
     gui_not_supported = "Chatterino 2.5.5 no permite que los plugins añadan controles a Ajustes. " ..
         "No se puede activar una GUI desde este plugin.",
@@ -44,7 +43,7 @@ local TEXT = {
     live = "Directo detectado: chat conectado."
   },
   en = {
-    help = "Commands: help | <url|@handle> | auto @handle | list | status | health [export] | " ..
+    help = "Commands: help | <url|@handle> | auto [@handle] | list | status | health [export] | " ..
         "pause <channel> | resume <channel> | remove <channel> | delay [0-30000] | lang [es|en] | " ..
         "config [gui] | export | import",
     no_channels = "No channels configured.", channel_missing = "Channel not found. Use /yt-chat list.",
@@ -53,7 +52,6 @@ local TEXT = {
     paused = "Channel paused: {channel}.", resumed = "Channel resumed: {channel}.", removed = "Channel removed: {channel}.",
     language = "Language: {language}.", invalid_language = "Invalid language. Use es or en.",
     usage_channel = "Usage: /yt-chat {command} <channel>", paused_url = "The channel is paused. Use /yt-chat resume {channel}.",
-    usage_auto = "Usage: /yt-chat auto @handle",
     gui_unavailable = "no (API 2.5.5)", images_label = "images",
     gui_not_supported = "Chatterino 2.5.5 does not let plugins add controls to Settings. " ..
         "This plugin cannot enable a GUI.",

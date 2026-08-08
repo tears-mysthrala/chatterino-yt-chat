@@ -139,7 +139,7 @@ local completions = mock.callbacks[mock.c2.EventType.CompletionRequested]({
 T.eq(completions.values[1], "status", "international status command completion offered")
 mock.run_command("/yt-chat", "splitA", "ayuda")
 local international_help = mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]
-for _, usage in ipairs({ "help", "auto @usuario", "list", "status", "health [export]", "pause <canal>",
+for _, usage in ipairs({ "help", "auto [@usuario]", "list", "status", "health [export]", "pause <canal>",
     "resume <canal>", "remove <canal>", "delay [0-30000]", "lang [es|en]", "config [gui]", "export", "import" }) do
   T.ok(international_help:find(usage, 1, true) ~= nil, "Spanish help documents " .. usage)
 end
@@ -153,6 +153,13 @@ T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]
 mock.run_command("/yt-chat", "splitA", "status")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("directo(s)", 1, true) ~= nil,
   "English command aliases remain accepted in Spanish mode")
+mock.add_channel("not a handle")
+local requests_before_invalid_auto = #mock.requests
+mock.run_command("/yt-chat", "not a handle", "auto")
+T.eq(#mock.requests, requests_before_invalid_auto, "invalid inferred handle does not issue a request")
+T.ok(mock.channels["not a handle"].system_messages[#mock.channels["not a handle"].system_messages]:find(
+  "URL no válida", 1, true) ~= nil, "invalid inferred handle reports a safe validation error")
+mock.remove_channel("not a handle")
 
 -- Runtime sync delay setting is validated, persisted and immediately active.
 mock.run_command("/yt-chat", "splitA", "delay", "750")
@@ -199,10 +206,12 @@ payload_queue[1] = chat_payload({
   text_action("m2", "bob", "second message")
 }, 2000)
 
-mock.run_command("/yt-chat", "splitA", "auto", "@test")
+mock.run_command("/yt-chat", "splitA", "auto")
 T.eq(mock.count_requests("get_live_chat"), 1, "polling started immediately")
-T.eq(Plugin._state().channels.UCFAKECHANNEL0000000001.handle, "test",
-  "auto command persists the handle against its stable channel id")
+T.eq(Plugin._state().channels.UCFAKECHANNEL0000000001.handle, "splitA",
+  "argument-free auto infers and persists the current conversation name")
+T.ok(mock.requests[#mock.requests - 1].url:find("youtube.com/@splitA/live", 1, true) ~= nil,
+  "argument-free auto resolves the inferred YouTube handle")
 T.eq(#mock.channels.splitA.messages, 0, "initial messages wait for presentation delay")
 
 -- Multi-split: same channel added from splitB — no duplicate polling --------

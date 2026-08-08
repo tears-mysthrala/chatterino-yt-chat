@@ -1,12 +1,12 @@
 ## Estado global
 
 - Objetivo: `chatterino-yt-chat v1.3.0`
-- Estado actual: **v1.3.0 EN DESARROLLO; v1.2.1 EN BORRADOR NO PUBLICADO**
+- Estado actual: **v1.3.0 LISTA PARA RELEASE; v1.2.1 EN BORRADOR NO PUBLICADO**
 - Última actualización: 2026-08-08
 - Rama actual: `main`
-- Último commit publicado: `bd7211a`
-- Tag: `v1.0.0` (release workflow verde, run `29694238438`)
-- Release: https://github.com/tears-mysthrala/chatterino-yt-chat/releases/tag/v1.0.0 (publicada 2026-07-19T16:15:37Z)
+- Último commit publicado: `d7f2d8a` (`v1.2.0`)
+- Tag publicado más reciente: `v1.2.0`; `v1.2.1` permanece en borrador
+- Release: https://github.com/tears-mysthrala/chatterino-yt-chat/releases/tag/v1.2.0
 - Criterios obligatorios verificados: 20/20
 - Bloqueos activos: 0; soak largo recomendado pero no bloqueante
 - Contrato interno: `docs/architecture.md` (evento normalizado IR + esquema de estado v5)

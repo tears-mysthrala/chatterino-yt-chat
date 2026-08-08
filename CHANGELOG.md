@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.2.1 - Unreleased
+## 1.2.1 - 2026-08-08
 
 - Adds complete Spanish aliases and localized completion for every operational
   subcommand while retaining the English command set.

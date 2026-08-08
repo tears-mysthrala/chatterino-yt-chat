@@ -57,7 +57,7 @@ never written to disk or logs (see [Persisted data](#persisted-data)).
 
 ## Installation
 
-1. Download the versioned ZIP (for example, `chatterino-yt-chat-1.2.1.zip`) from
+1. Download the versioned ZIP from
    [the corresponding published release](https://github.com/tears-mysthrala/chatterino-yt-chat/releases)
    and verify it against the published `.sha256`.
 2. Open Chatterino's plugin directory:

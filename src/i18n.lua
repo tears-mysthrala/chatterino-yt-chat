@@ -10,7 +10,7 @@ local TEXT = {
     imported = "Configuración importada y validada.", import_failed = "No se pudo importar: {error}.",
     paused = "Canal pausado: {channel}.", resumed = "Canal reanudado: {channel}.", removed = "Canal eliminado: {channel}.",
     language = "Idioma: {language}.", invalid_language = "Idioma no válido. Usa es o en.",
-    usage_channel = "Uso: /yt-chat {command} <canal>", paused_url = "El canal está pausado. Usa /yt-chat resume {channel}.",
+    usage_channel = "Uso: /yt-chat {command} <canal>", paused_url = "El canal está pausado. Usa /yt-chat reanudar {channel}.",
     gui_unavailable = "no (API 2.5.5)", images_label = "imágenes",
     gui_not_supported = "Chatterino 2.5.5 no permite que los plugins añadan controles a Ajustes. " ..
         "No se puede activar una GUI desde este plugin.",

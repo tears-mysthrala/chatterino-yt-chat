@@ -136,7 +136,7 @@ local function handle_control(state, persist, ctx, command)
   end
   if command == "pause" or command == "resume" or command == "remove" then
     if type(ctx.words[3]) ~= "string" or ctx.words[3] == "" then
-      sys(ctx, I18n.t("usage_channel", { command = command }))
+      sys(ctx, I18n.t("usage_channel", { command = tostring(ctx.words[2] or command) }))
       return true
     end
     local key = Channels.find(state, ctx.words[3])

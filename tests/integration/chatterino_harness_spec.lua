@@ -143,9 +143,13 @@ T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]
 mock.run_command("/yt-chat", "splitA", "configurar", "interfaz", "sí")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("no permite", 1, true) ~= nil,
   "GUI activation attempt explains the upstream limitation")
-mock.run_command("/yt-chat", "splitA", "pause")
-T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Uso:", 1, true) ~= nil,
-  "channel controls report usage when argument is missing")
+mock.run_command("/yt-chat", "splitA", "pausar")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find(
+  "/yt-chat pausar <canal>", 1, true) ~= nil,
+  "localized channel controls preserve their alias in usage errors")
+mock.run_command("/yt-chat", "splitA", "status")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("directo(s)", 1, true) ~= nil,
+  "English command aliases remain accepted in Spanish mode")
 
 -- Runtime sync delay setting is validated, persisted and immediately active.
 mock.run_command("/yt-chat", "splitA", "delay", "750")

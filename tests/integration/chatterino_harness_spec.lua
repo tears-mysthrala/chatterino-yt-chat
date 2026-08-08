@@ -315,10 +315,17 @@ live = false
 mock.run_command("/yt-chat", "splitA", "https://www.youtube.com/@offline/live")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("offline", 1, true) ~= nil,
   "offline registration announced")
+local offline_watch_url = "youtube.com/channel/UCFAKECHANNEL0000000002/live"
+local offline_checks = mock.count_requests(offline_watch_url)
+mock.advance(29000)
+T.eq(mock.count_requests(offline_watch_url), offline_checks,
+  "new offline binding is not checked before its 30 second cadence")
 
 live = true
 payload_queue[1] = chat_payload({ text_action("m9", "erin", "we are live") }, 2000)
-mock.advance(31000) -- offline monitor interval (30 s first attempt)
+mock.advance(1000) -- scheduled first check at exactly 30 s
+T.eq(mock.count_requests(offline_watch_url), offline_checks + 1,
+  "new offline binding is checked after 30 seconds even if the global monitor was sleeping")
 T.ok(mock.count_requests("get_live_chat") > polls_after_end, "offline monitor detected live stream")
 T.ok(#mock.channels.splitA.messages >= 5, "live chat resumed after detection")
 

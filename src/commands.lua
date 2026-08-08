@@ -223,6 +223,7 @@ local function handle_url(state, persist, ctx, normalized)
         sys(ctx, I18n.t("already"))
       end
     else
+      Polling.schedule_channel_check(state, persist, key, 30)
       sys(ctx, I18n.t("offline"))
     end
     Logging.info("channel_added", { split = split, channel = key })

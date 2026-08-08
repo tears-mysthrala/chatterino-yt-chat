@@ -1,6 +1,6 @@
 local Migrations = {}
 
-Migrations.SCHEMA_VERSION = 4
+Migrations.SCHEMA_VERSION = 5
 
 local DEFAULT_SETTINGS = {
   debug = false,
@@ -9,7 +9,8 @@ local DEFAULT_SETTINGS = {
   chat_poll_min_ms = 500,
   chat_poll_max_ms = 15000,
   chat_poll_fallback_ms = 1000,
-  chat_sync_delay_ms = 0
+  chat_sync_delay_ms = 0,
+  language = "es"
 }
 
 local function default_settings()
@@ -113,11 +114,19 @@ local function migrate_to_v4(state)
   return state
 end
 
+local function migrate_to_v5(state)
+  state.settings = type(state.settings) == "table" and state.settings or {}
+  if state.settings.language ~= "en" then state.settings.language = "es" end
+  state.schema_version = 5
+  return state
+end
+
 local STEPS = {
   [1] = migrate_to_v1,
   [2] = migrate_to_v2,
   [3] = migrate_to_v3,
-  [4] = migrate_to_v4
+  [4] = migrate_to_v4,
+  [5] = migrate_to_v5
 }
 
 --- Applies every pending migration in order. Idempotent and total:

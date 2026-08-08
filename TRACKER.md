@@ -1,15 +1,15 @@
 ## Estado global
 
-- Objetivo: `chatterino-yt-chat v1.1.0`
-- Estado actual: **v1.1.0 EN DESARROLLO; v1.0.0 PUBLICADO Y ESTABLE PROVISIONALMENTE**
+- Objetivo: `chatterino-yt-chat v1.2.0` (apilado sobre la PR de v1.1.0)
+- Estado actual: **v1.2.0 EN DESARROLLO; v1.0.0 PUBLICADO Y ESTABLE PROVISIONALMENTE**
 - Última actualización: 2026-08-08
-- Rama actual: `agent/v1-1-product-controls`
+- Rama actual: `agent/v1-2-quality-leap`
 - Último commit publicado: `bd7211a`
 - Tag: `v1.0.0` (release workflow verde, run `29694238438`)
 - Release: https://github.com/tears-mysthrala/chatterino-yt-chat/releases/tag/v1.0.0 (publicada 2026-07-19T16:15:37Z)
 - Criterios obligatorios verificados: 20/20
 - Bloqueos activos: 0
-- Contrato interno: `docs/architecture.md` (evento normalizado IR + esquema de estado v4)
+- Contrato interno: `docs/architecture.md` (evento normalizado IR + esquema de estado v5)
 - Validación en app real: Chatterino 2.5.5 oficial headless, e2e con chat real OK (VAL-011/012/014)
 - Validación de usuario: Chatterino 2.5.5 GUI conectado a un directo y recibiendo mensajes sin fallos observados; soak largo todavía pendiente (`docs/validation/user-smoke-2026-08-08.md`).
 
@@ -440,7 +440,7 @@ Ninguno abierto al publicar. Riesgos residuales documentados (no bloqueantes):
 
 ### ADR-003 — Reloj monotónico propio (sin librería `os`)
 - Contexto: el sandbox de Chatterino no expone `os` (verificado en `PluginController.cpp` v2.5.5: `LUA_OSLIBNAME` comentado). backoff, rate-limit, dedupe TTL y debounce necesitan tiempo.
-- Decisión: `src/support/clock.lua` con heartbeat de 1 s encadenado en `c2.later` (monotónico, relativo); en tests/plain-Lua usa `os.time`. Todos los módulos inyectan `Clock.now_ms()`.
+- Decisión: `src/support/clock.lua` con heartbeat de 100 ms encadenado en `c2.later` (monotónico, relativo); en tests/plain-Lua usa `os.time`. Todos los módulos inyectan `Clock.now_ms()`.
 - Alternativas: depender de timestamps de YouTube (no cubre timers locales); asumir `os` (rompería en Chatterino).
 - Consecuencias: deriva de segundos aceptable para backoff/rate-limit; ninguna lógica depende de hora absoluta.
 - Evidencia: `src/support/clock.lua`, `PluginController.cpp` v2.5.5 líneas 144-167.

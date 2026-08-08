@@ -69,6 +69,9 @@ local function badge_tag(event)
 end
 
 local function author_element(elements, event)
+  if type(event.author_photo) == "string" and event.author_photo ~= "" then
+    elements[#elements + 1] = { type = "remote-image", url = event.author_photo, size = 18, circular = true }
+  end
   local author = event.author or "[?]"
   local tag = badge_tag(event)
   local label = tag and (tag .. " " .. author .. ":") or (author .. ":")
@@ -141,6 +144,10 @@ handlers.super_sticker = function(event, elements)
     { color = "system", style = "ChatMediumBold" })
   author_element(elements, event)
   local alt = event.sticker and event.sticker.alt or "sticker"
+  local sticker_url = event.sticker and event.sticker.url
+  if type(sticker_url) == "string" and sticker_url ~= "" then
+    elements[#elements + 1] = { type = "remote-image", url = sticker_url, size = 32 }
+  end
   elements[#elements + 1] = text_element("sticker “" .. alt .. "”")
   return chat_spec(event, elements,
     "Super Sticker " .. (event.amount or "") .. " " .. (event.author or "") .. ": sticker " .. alt)

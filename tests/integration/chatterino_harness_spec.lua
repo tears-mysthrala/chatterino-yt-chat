@@ -105,12 +105,41 @@ local Plugin = require("src.init")
 mock.add_channel("splitA")
 mock.add_channel("splitB")
 Plugin.bootstrap()
+
+-- Future image API: declarative remote images materialize only when the
+-- verified Chatterino capability exists; stable 2.5.5 keeps text fallback.
+do
+  local Adapter = require("src.c2_adapter")
+  mock.c2.MessageElementFlag = { AlwaysShow = 1, EmoteImage = 2 }
+  mock.c2.Image = { from_url = function(url) return { url = url } end }
+  Adapter.deliver({
+    message_text = "image probe",
+    elements = { { type = "remote-image", url = "https://yt3.ggpht.com/avatar", circular = true } }
+  }, { "splitA" })
+  local probe = mock.channels.splitA.messages[#mock.channels.splitA.messages]
+  T.eq(probe.elements[1].type, "circular-image", "future image capability materializes avatar")
+  T.eq(probe.elements[1].image.url, "https://yt3.ggpht.com/avatar", "future image keeps validated URL")
+  table.remove(mock.channels.splitA.messages)
+  mock.c2.Image = nil
+  mock.c2.MessageElementFlag = nil
+  Adapter.deliver({
+    message_text = "text-only image fallback",
+    elements = { { type = "remote-image", url = "https://yt3.ggpht.com/avatar", circular = true } }
+  }, { "splitA" })
+  local fallback = mock.channels.splitA.messages[#mock.channels.splitA.messages]
+  T.eq(fallback.message_text, "text-only image fallback", "stable API retains textual fallback")
+  T.eq(#fallback.elements, 0, "stable API does not leak unsupported image elements")
+  table.remove(mock.channels.splitA.messages)
+end
 T.ok(mock.commands["/yt-chat"] ~= nil, "command registered")
 T.ok(mock.callbacks[mock.c2.EventType.CompletionRequested] ~= nil, "command completion registered")
 local completions = mock.callbacks[mock.c2.EventType.CompletionRequested]({
   query = "sta", full_text_content = "/yt-chat sta", cursor_position = 12, is_first_word = false
 })
 T.eq(completions.values[1], "status", "status command completion offered")
+mock.run_command("/yt-chat", "splitA", "pause")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Uso:", 1, true) ~= nil,
+  "channel controls report usage when argument is missing")
 
 -- Runtime sync delay setting is validated, persisted and immediately active.
 mock.run_command("/yt-chat", "splitA", "delay", "750")
@@ -123,6 +152,16 @@ T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]
   "sync delay command reports current value")
 mock.run_command("/yt-chat", "splitA", "delay", "30001")
 T.eq(require("src.youtube.polling").get_sync_delay(), 750, "invalid sync delay leaves current value unchanged")
+
+-- Import invalidates URL callbacks that started against the previous state.
+Persistence.export_snapshot(Plugin._state())
+mock.defer_http = true
+mock.run_command("/yt-chat", "splitA", "https://www.youtube.com/@offline/live")
+mock.run_command("/yt-chat", "splitA", "import")
+mock.flush_http()
+mock.defer_http = false
+T.eq(Plugin._state().channels["UCFAKECHANNEL0000000002"], nil,
+  "stale URL callback cannot restore a channel removed by import")
 
 -- If rich c2.Message construction is unavailable, textual fallback still
 -- identifies the message as originating from YouTube.
@@ -156,17 +195,33 @@ T.eq(#mock.channels.splitA.messages, 0, "initial messages wait for presentation 
 mock.run_command("/yt-chat", "splitB", "https://www.youtube.com/@test/live")
 T.eq(mock.count_requests("get_live_chat"), 1, "no second polling for same video")
 mock.run_command("/yt-chat", "splitA", "status")
-T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("próximo poll", 1, true) ~= nil,
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("próximo sondeo", 1, true) ~= nil,
   "status command reports active stream timing")
 mock.run_command("/yt-chat", "splitA", "list")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Test Channel", 1, true) ~= nil,
   "list command reports configured channel")
+mock.run_command("/yt-chat", "splitA", "health")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("solicitudes", 1, true) ~= nil,
+  "health command reports content-free counters")
+mock.run_command("/yt-chat", "splitA", "language", "en")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Language", 1, true) ~= nil,
+  "language can be changed live")
+mock.run_command("/yt-chat", "splitA", "health", "export")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Diagnostics exported", 1, true) ~= nil,
+  "diagnostics export follows selected language")
+mock.run_command("/yt-chat", "splitA", "help")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Commands", 1, true) ~= nil,
+  "help follows selected language")
+mock.run_command("/yt-chat", "splitA", "language", "es")
 mock.advance(749)
 T.eq(#mock.channels.splitA.messages, 0, "presentation delay has not elapsed")
 mock.advance(1)
 T.eq(#mock.channels.splitA.messages, 2, "initial batch delivered after exact delay")
 T.eq(#mock.channels.splitB.messages, 2, "new split receives still-queued initial batch")
 T.eq(mock.channels.splitA.messages[1].id, "yt-chat-m1", "message id prefixed")
+mock.run_command("/yt-chat", "splitA", "health")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("lotes 1", 1, true) ~= nil,
+  "health counts actual chat batches instead of queue callbacks")
 
 payload_queue[1] = chat_payload({ text_action("m3", "carol", "after split join") }, 2000)
 mock.advance(1250)

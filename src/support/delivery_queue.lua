@@ -1,10 +1,21 @@
 local Clock = require("src.support.clock")
 local Logging = require("src.support.logging")
+local Health = require("src.support.health")
 
 local DeliveryQueue = {}
 local queues = {}
 local sequence = 0
 local generation = 0
+local MAX_ITEMS_PER_KEY = 128
+
+local function run_item(key, item)
+  local ok, err = pcall(item.callback)
+  if not ok then
+    Health.increment("delivery_errors")
+    Logging.rate_limited("error", "delivery-queue:" .. key, 60000, 2,
+      "delivery_queue_callback_error", { queue = key, error = tostring(err) })
+  end
+end
 
 local function schedule_next(key, later_fn)
   local queue = queues[key]
@@ -23,11 +34,7 @@ local function schedule_next(key, later_fn)
     local now = Clock.now_ms()
     while #current.items > 0 and current.items[1].due_ms <= now do
       local item = table.remove(current.items, 1)
-      local ok, err = pcall(item.callback)
-      if not ok then
-        Logging.rate_limited("error", "delivery-queue:" .. key, 60000, 2,
-          "delivery_queue_callback_error", { queue = key, error = tostring(err) })
-      end
+      run_item(key, item)
     end
     if #current.items == 0 then
       queues[key] = nil
@@ -57,10 +64,15 @@ function DeliveryQueue.enqueue(key, delay_ms, callback, later_fn)
     sequence = sequence,
     callback = callback
   }
+  if #queue.items > MAX_ITEMS_PER_KEY then
+    Health.increment("queue_backpressure")
+    run_item(key, table.remove(queue.items, 1))
+  end
   table.sort(queue.items, function(a, b)
     return a.due_ms < b.due_ms or (a.due_ms == b.due_ms and a.sequence < b.sequence)
   end)
   schedule_next(key, later_fn)
+  Health.max_gauge("max_queue_depth", #queue.items)
   return true
 end
 

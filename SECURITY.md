@@ -34,8 +34,9 @@ HTTPS only, strict allowlist checked before every request:
 Redirect-unwrapping for chat links never issues requests. Image URLs found
 in payloads (emotes, stickers, avatars) are validated against a separate
 image-host allowlist (`yt3/yt4.ggpht.com`, `i.ytimg.com`,
-`lh3.googleusercontent.com`, `fonts.gstatic.com`) but are **not fetched**
-by the current Chatterino plugin API — they are shown as text.
+`lh3.googleusercontent.com`, `fonts.gstatic.com`). Chatterino 2.5.5 shows
+textual fallbacks; future builds with `c2.Image` may fetch only those
+validated assets through Chatterino's own image cache.
 
 Response limits: chat responses capped at 4 MiB, watch pages at 8 MiB.
 Strings, ids, runs and URLs are length-capped before use
@@ -51,6 +52,10 @@ permissions):
 - `YT_CHAT.json.bak` — last-known-good backup
 - `YT_CHAT.json.tmp` — staging file during writes
 - `YT_CHAT.export.json` — explicit user-requested configuration export
+- `YT_CHAT.diagnostics.json` — explicit content-free health export
+
+Explicit exports use the same verified tmp+backup write protocol as state;
+their `.tmp` and `.bak` recovery files can therefore also exist.
 
 Write protocol: temp file → flush → verify → backup current → write →
 verify → restore-from-backup on failure. The Chatterino Lua sandbox has

@@ -11,6 +11,8 @@ local Innertube = require("src.youtube.innertube")
 local Adapter = require("src.c2_adapter")
 local Validation = require("src.support.validation")
 local DeliveryQueue = require("src.support.delivery_queue")
+local Health = require("src.support.health")
+local I18n = require("src.i18n")
 
 local Polling = {}
 
@@ -82,14 +84,13 @@ local function finish_stop(video_id, reason)
   end
   streams[video_id] = nil
   if reason == "paused" then
-    system_to_splits(video_id, "Vigilancia del canal pausada.")
+    system_to_splits(video_id, I18n.t("stopped_paused"))
   elseif reason == "removed" then
-    system_to_splits(video_id, "Canal eliminado de la vigilancia.")
+    system_to_splits(video_id, I18n.t("stopped_removed"))
   elseif reason == "reconfigured" then
-    system_to_splits(video_id, "Chat detenido para aplicar la configuración importada.")
+    system_to_splits(video_id, I18n.t("stopped_import"))
   else
-    system_to_splits(video_id, "Directo finalizado o chat cerrado (" .. reason ..
-      "). El canal vuelve a vigilancia offline.")
+    system_to_splits(video_id, I18n.t("stopped", { reason = reason }))
   end
   ActiveStreams.cleanup_video(video_id)
   Logging.info("chat_stopped", { video = video_id, reason = reason })
@@ -126,8 +127,10 @@ local function retry(data, reason)
     return
   end
   entry.errors = entry.errors + 1
+  Health.increment("poll_retries")
   entry.last_error = reason
   local delay = Backoff.chat_error_delay(entry.errors)
+  entry.next_poll_ms = Clock.now_ms() + math.floor(delay * 1000)
   Logging.rate_limited("warning", "chat-retry:" .. video_id, 30000, 2, "chat_retry",
     { video = video_id, reason = reason, attempt = entry.errors, retry_s = math.floor(delay) })
   schedule(video_id, data, delay * 1000)
@@ -228,6 +231,7 @@ local function handle_payload(data, payload)
       for _, event in ipairs(batch) do
         deliver_event(video_id, data.channelName, event)
       end
+      Health.increment("delivered_batches")
     end
     if sync_delay_ms == 0 and DeliveryQueue.pending(video_id) == 0 then
       deliver_batch()
@@ -276,6 +280,7 @@ function Polling._request(data)
     return
   end
   ActiveStreams.set_in_flight(video_id, true)
+  Health.increment("poll_requests")
 
   local request = Adapter.http_post_json(
     Innertube.live_chat_url(data.apiKey),
@@ -287,6 +292,9 @@ function Polling._request(data)
       return
     end
     local status = result:status() or 0
+    if status >= 400 then
+      Health.increment("http_errors")
+    end
     if FATAL_STATUS[status] then
       stop(video_id, "http_" .. status, true)
       return
@@ -310,6 +318,7 @@ function Polling._request(data)
       return
     end
     streams[video_id].errors = 0
+    Health.increment("poll_successes")
     handle_payload(data, payload)
   end)
 
@@ -411,6 +420,7 @@ local Html = require("src.youtube.html")
 
 local offline = {
   next_due = {}, -- channel key -> epoch seconds
+  generation = {}, -- invalidates callbacks from removed/reconfigured channels
   running = false
 }
 
@@ -435,9 +445,16 @@ local function offline_check(state, persist, key, entry, splits)
     max_seconds = state.settings.offline_poll_max
   })
   offline.next_due[key] = math.floor(Clock.now_ms() / 1000) + math.floor(delay)
+  local generation = offline.generation[key] or 0
+
+  local function still_current()
+    return state.channels and state.channels[key] == entry and entry.paused ~= true and
+        (offline.generation[key] or 0) == generation
+  end
 
   local request = Adapter.http_get(url)
   request:on_success(function(result)
+    if not still_current() then return end
     local status_ok = (result:status() or 0) == 200
     if not status_ok then
       Logging.rate_limited("warning", "offline-http:" .. key, 300000, 1, "offline_http_status",
@@ -476,15 +493,21 @@ local function offline_check(state, persist, key, entry, splits)
           fallback_ms = state.settings.chat_poll_fallback_ms
         }
       })
-      system_to_splits(parsed.videoId, "Directo detectado: chat conectado.")
+      system_to_splits(parsed.videoId, I18n.t("live"))
       Logging.info("stream_went_live", { channel = key, video = parsed.videoId })
     end
   end)
   request:on_error(function(result)
+    if not still_current() then return end
     Logging.rate_limited("warning", "offline-net:" .. key, 300000, 1, "offline_network_issue",
       { channel = key })
   end)
   request:execute()
+end
+
+function Polling.invalidate_channel(key)
+  offline.generation[key] = (offline.generation[key] or 0) + 1
+  offline.next_due[key] = nil
 end
 
 function Polling.check_channel_now(state, persist, key)
@@ -556,6 +579,7 @@ function Polling._reset()
   sync_delay_ms = 0
   DeliveryQueue._reset()
   offline.next_due = {}
+  offline.generation = {}
   offline.running = false
 end
 

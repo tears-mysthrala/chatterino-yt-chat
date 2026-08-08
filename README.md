@@ -57,7 +57,7 @@ never written to disk or logs (see [Persisted data](#persisted-data)).
 
 ## Installation
 
-1. Download the versioned ZIP (for example, `chatterino-yt-chat-1.1.0.zip`) from
+1. Download the versioned ZIP (for example, `chatterino-yt-chat-1.2.0.zip`) from
    [the corresponding published release](https://github.com/tears-mysthrala/chatterino-yt-chat/releases)
    and verify it against the published `.sha256`.
 2. Open Chatterino's plugin directory:
@@ -82,7 +82,8 @@ never written to disk or logs (see [Persisted data](#persisted-data)).
 - Remove the plugin directory `Plugins/chatterino-yt-chat/`.
 - To also delete its state, remove `data/YT_CHAT.json`,
   `data/YT_CHAT.json.bak`, `data/YT_CHAT.json.tmp` and any explicitly created
-  `data/YT_CHAT.export.json` inside that directory.
+  `data/YT_CHAT.export.json*` or `data/YT_CHAT.diagnostics.json*` files inside
+  that directory.
 - The plugin never writes outside its own data directory.
 
 ## Usage
@@ -98,10 +99,12 @@ Operational commands:
 ```text
 /yt-chat list
 /yt-chat status
+/yt-chat health [export]
 /yt-chat pause <channel>
 /yt-chat resume <channel>
 /yt-chat remove <channel>
 /yt-chat delay [0-30000]
+/yt-chat language [es|en]
 /yt-chat config
 /yt-chat export
 /yt-chat import
@@ -197,6 +200,10 @@ chat payloads, message contents, chat history.
 non-sensitive configuration schema. `/yt-chat import` only reads that fixed
 path and revalidates the complete snapshot before applying it.
 
+`/yt-chat health export` creates `data/YT_CHAT.diagnostics.json`. It contains
+only version/capability data, aggregate counters and stream timing/state; it
+never includes API keys, continuations, message text or response payloads.
+
 Writes are atomic within what the Chatterino Lua sandbox allows
 (temp file + verify + write + `.bak` recovery copy), debounced, and only
 happen when something actually changed.
@@ -213,7 +220,8 @@ happen when something actually changed.
   "chat_poll_min_ms": 500,
   "chat_poll_max_ms": 15000,
   "chat_poll_fallback_ms": 1000,
-  "chat_sync_delay_ms": 0
+  "chat_sync_delay_ms": 0,
+  "language": "es"
 }
 ```
 
@@ -225,6 +233,10 @@ happen when something actually changed.
 - `chat_sync_delay_ms`: presentation delay applied to normalized event batches
   without slowing YouTube polling (`0`–`30000` ms). Change it live with
   `/yt-chat delay <ms>`; run `/yt-chat delay` to inspect the current value.
+  Chatterino 2.5.5 uses a 100 ms monotonic heartbeat, so delivery targets that
+  value with up to one heartbeat of scheduler granularity.
+- `language`: operational UI language; accepts only `"es"` or `"en"` and can
+  be changed live with `/yt-chat language <es|en>`.
 
 Chatterino 2.5.5 does not expose a plugin API for adding controls to its
 Settings GUI. `/yt-chat config` therefore reports the effective configuration,
@@ -258,7 +270,7 @@ strict input validation of every field coming from YouTube.
 
 - Tests: `scripts/test.sh` (unit + integration harness + fuzz + load;
   plain Lua, no Chatterino needed).
-- Build: `scripts/build_release.sh 1.1.0` → reproducible ZIP +
+- Build: `scripts/build_release.sh 1.2.0` → reproducible ZIP +
   `scripts/sha256.sh` for the checksum.
 - Architecture and internal contracts: `docs/architecture.md`.
 - Research notes: `docs/research/`.

@@ -80,6 +80,12 @@ function Persistence.validate_schema(data)
         number = math.floor(math.max(0, math.min(30000, number)))
       end
       out.settings[key] = number
+    elseif type(default_value) == "string" then
+      if key == "language" then
+        out.settings[key] = value == "en" and "en" or "es"
+      else
+        out.settings[key] = type(value) == "string" and value or default_value
+      end
     elseif type(default_value) == "table" then
       if type(value) == "table" and #value > 0 then
         local list = {}
@@ -129,17 +135,31 @@ local function write_file(path, content)
   return true, nil
 end
 
+local write_atomic
+
 function Persistence.export_snapshot(state)
   local encoded = json.encode(Persistence.validate_schema(state))
-  return write_file(dir .. "/YT_CHAT.export.json", encoded)
+  return write_atomic(dir .. "/YT_CHAT.export.json", encoded)
+end
+
+function Persistence.export_diagnostics(snapshot)
+  return write_atomic(dir .. "/YT_CHAT.diagnostics.json", json.encode(snapshot))
 end
 
 function Persistence.import_snapshot()
-  local decoded = safe_decode(read_all(dir .. "/YT_CHAT.export.json"))
-  if not decoded then
-    return nil, "missing_or_invalid_export"
+  local path = dir .. "/YT_CHAT.export.json"
+  local saw_decoded = false
+  for _, candidate in ipairs({ path, path .. BACKUP_SUFFIX }) do
+    local decoded = safe_decode(read_all(candidate))
+    if decoded then
+      saw_decoded = true
+      if type(decoded.schema_version) == "number" and type(decoded.settings) == "table" and
+          type(decoded.channels) == "table" then
+        return Persistence.validate_schema(decoded), nil
+      end
+    end
   end
-  return Persistence.validate_schema(decoded), nil
+  return nil, saw_decoded and "incomplete_export" or "missing_or_invalid_export"
 end
 
 local function backup_current(path)
@@ -156,7 +176,7 @@ local function restore_from_backup(path)
   end
 end
 
-local function write_atomic(path, encoded)
+write_atomic = function(path, encoded)
   local tmp = path .. TMP_SUFFIX
   local ok, err = write_file(tmp, encoded)
   if not ok then

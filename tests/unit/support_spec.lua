@@ -5,6 +5,24 @@ local Backoff = require("src.support.backoff")
 local Logging = require("src.support.logging")
 local DeliveryQueue = require("src.support.delivery_queue")
 local Clock = require("src.support.clock")
+local Health = require("src.support.health")
+local I18n = require("src.i18n")
+
+-- localization and health snapshots are deterministic and content-free
+do
+  I18n.set("en")
+  T.eq(I18n.t("removed", { channel = "UC1" }), "Channel removed: UC1.", "English interpolation")
+  T.ok(not I18n.set("xx"), "unsupported language rejected")
+  I18n.set("es")
+  Health.reset()
+  Health.increment("requests")
+  Health.increment("requests", 2)
+  Health.increment("requests", 1.9)
+  Health.gauge("depth", 4)
+  local health = Health.snapshot()
+  T.eq(health.counters.requests, 4, "health counter accumulates integer increments")
+  T.eq(health.gauges.depth, 4, "health gauge updates")
+end
 
 -- validation: hosts
 T.ok(Validation.is_safe_https_youtube("https://www.youtube.com/watch?v=abc"), "youtube https ok")
@@ -81,6 +99,15 @@ do
   now = 1600
   timers[3].cb()
   T.eq(table.concat(delivered), "aby", "replacement queue runs only on its own timer")
+
+  Health.reset()
+  local overflowed = 0
+  for _ = 1, 129 do
+    DeliveryQueue.enqueue("bounded", 1000, function() overflowed = overflowed + 1 end, later)
+  end
+  T.eq(DeliveryQueue.pending("bounded"), 128, "delivery queue has a per-stream bound")
+  T.eq(overflowed, 1, "backpressure delivers oldest batch instead of dropping it")
+  T.eq(Health.snapshot().counters.queue_backpressure, 1, "queue backpressure is observable")
   Clock._reset()
   DeliveryQueue._reset()
 end

@@ -24,6 +24,17 @@ por `video_id` con orden estable. La cola mantiene un único timer activo por
 stream, aísla fallos de callbacks y se cancela cuando el stream se detiene sin
 drain. Al finalizar naturalmente, el marcador de fin se encola detrás de los
 eventos pendientes para no perder el último lote.
+En Chatterino 2.5.5 el reloj monotónico tiene resolución de 100 ms; el timer
+solicita el delay configurado y la entrega queda sujeta a esa granularidad.
+
+La cola limita cada stream a 128 lotes. Si un upstream anómalo alcanza ese
+límite, aplica backpressure entregando el lote más antiguo y registra el hecho
+en métricas locales; nunca crece sin límite ni pierde silenciosamente eventos.
+
+`support/health.lua` conserva solo contadores y gauges en memoria. El comando
+de exportación escribe un snapshot sin contenido, tokens ni payloads. La capa
+de adaptador materializa elementos declarativos `remote-image` únicamente si
+la API verificada `c2.Image` existe y la URL supera la allowlist.
 
 ## Evento normalizado (IR)
 
@@ -104,11 +115,12 @@ Reglas:
 }
 ```
 
-Chatterino (API de plugins actual) solo soporta elementos de texto,
-mención, timestamp y salto de línea: emotes, stickers, avatares e insignias
-se representan textualmente (degradación documentada en COMPATIBILITY.md).
-La API no permite editar/borrar mensajes existentes: las mutaciones se
-representan como eventos informativos inequívocos con id/autor afectado.
+Chatterino 2.5.5 solo construye elementos de texto, mención, timestamp y salto
+de línea: emotes, stickers, avatares e insignias se representan textualmente
+(degradación documentada en COMPATIBILITY.md). La imagen remota nativa queda
+condicionada a detectar la API verificada `c2.Image` en una versión futura.
+Las mutaciones usan `find_message_by_id` y `replace_message` cuando existe el
+mensaje original; en caso contrario producen un evento informativo inequívoco.
 
 ## Módulos y responsabilidades
 
@@ -140,7 +152,7 @@ representan como eventos informativos inequívocos con id/autor afectado.
 
 ```json
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "settings": { "debug": false, "offline_poll": {"start":30,"max":300} },
   "channels": {
     "<key>": { "channel_id": "UC...", "handle": "nombre",

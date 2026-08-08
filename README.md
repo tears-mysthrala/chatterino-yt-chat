@@ -57,7 +57,7 @@ never written to disk or logs (see [Persisted data](#persisted-data)).
 
 ## Installation
 
-1. Download the versioned ZIP (for example, `chatterino-yt-chat-1.2.0.zip`) from
+1. Download the versioned ZIP (for example, `chatterino-yt-chat-1.2.1.zip`) from
    [the corresponding published release](https://github.com/tears-mysthrala/chatterino-yt-chat/releases)
    and verify it against the published `.sha256`.
 2. Open Chatterino's plugin directory:
@@ -109,6 +109,11 @@ Operational commands:
 /yt-chat export
 /yt-chat import
 ```
+
+When `language=es`, every subcommand also has a Spanish alias: `lista`,
+`estado`, `salud`, `pausar`, `reanudar`, `eliminar`, `retardo`, `idioma`,
+`configurar`, `exportar`, `importar` and `ayuda`. English forms remain
+available for compatibility.
 
 Accepted URL forms (normalized automatically, HTTPS only):
 
@@ -270,7 +275,7 @@ strict input validation of every field coming from YouTube.
 
 - Tests: `scripts/test.sh` (unit + integration harness + fuzz + load;
   plain Lua, no Chatterino needed).
-- Build: `scripts/build_release.sh 1.2.0` → reproducible ZIP +
+- Build: `scripts/build_release.sh 1.2.1` → reproducible ZIP +
   `scripts/sha256.sh` for the checksum.
 - Architecture and internal contracts: `docs/architecture.md`.
 - Research notes: `docs/research/`.

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.1 - Unreleased
+
+- Adds complete Spanish aliases and localized completion for every operational
+  subcommand while retaining the English command set.
+- Explains explicitly that Chatterino 2.5.5 cannot expose plugin configuration
+  in its native Settings GUI.
+- Removes remaining mixed-language labels from the Spanish operational UI.
+- Updates GitHub Actions to Node 24-native pinned releases.
+
 ## 1.2.0 - 2026-08-08
 
 - Adds persistent Spanish/English operational UI with live language switching.

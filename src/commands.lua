@@ -15,6 +15,17 @@ local Commands = {}
 local MAX_SYNC_DELAY_MS = 30000
 local operation_generation = 0
 
+local COMMAND_ALIASES = {
+  ayuda = "help", lista = "list", estado = "status", salud = "health",
+  pausar = "pause", reanudar = "resume", eliminar = "remove", retardo = "delay",
+  idioma = "language", configurar = "config", exportar = "export", importar = "import"
+}
+
+local function canonical_command(value)
+  local command = tostring(value or ""):lower()
+  return COMMAND_ALIASES[command] or command
+end
+
 local function sys(ctx, msg)
   Adapter.system(ctx.channel:get_name(), msg)
 end
@@ -64,6 +75,11 @@ local function handle_control(state, persist, ctx, command)
     return true
   end
   if command == "config" then
+    local option = tostring(ctx.words[3] or ""):lower()
+    if option == "gui" or option == "interfaz" then
+      sys(ctx, I18n.t("gui_not_supported"))
+      return true
+    end
     local caps = Capabilities.detect()
     sys(ctx, I18n.t("config_summary", {
       language = I18n.get(), delay = Polling.get_sync_delay(),
@@ -80,8 +96,8 @@ local function handle_control(state, persist, ctx, command)
       retries = counters.poll_retries or 0, batches = counters.delivered_batches or 0,
       unknown = counters.unknown_events or 0
     }))
-    if ctx.words[3] == "export" then
-      local snapshot = { version = "1.2.0", health = health, streams = Polling.status(), capabilities = Capabilities.detect() }
+    if canonical_command(ctx.words[3]) == "export" then
+      local snapshot = { version = "1.2.1", health = health, streams = Polling.status(), capabilities = Capabilities.detect() }
       local ok = Persistence.export_diagnostics(snapshot)
       sys(ctx, I18n.t(ok and "diagnostic_exported" or "diagnostic_failed"))
     end
@@ -225,10 +241,11 @@ function Commands.register(state, persist)
       show_help(ctx)
       return
     end
-    if handle_control(state, persist, ctx, ctx.words[2]) then
+    local command = canonical_command(ctx.words[2])
+    if handle_control(state, persist, ctx, command) then
       return
     end
-    if ctx.words[2] == "delay" then
+    if command == "delay" then
       if #ctx.words < 3 then
         sys(ctx, I18n.t("delay_current", { delay = Polling.get_sync_delay() }))
         return
@@ -258,8 +275,14 @@ function Commands.register(state, persist)
       if not event.full_text_content:match("^/yt%-chat") then
         return { hide_others = false, values = {} }
       end
-      local values = { "help", "list", "status", "health", "pause", "resume", "remove", "delay", "language",
-        "config", "export", "import" }
+      local values
+      if I18n.get() == "es" then
+        values = { "ayuda", "lista", "estado", "salud", "pausar", "reanudar", "eliminar", "retardo",
+          "idioma", "configurar", "exportar", "importar" }
+      else
+        values = { "help", "list", "status", "health", "pause", "resume", "remove", "delay", "language",
+          "config", "export", "import" }
+      end
       for _, key in ipairs(Channels.iter_active(state)) do values[#values + 1] = key end
       local matches = {}
       local query = tostring(event.query or ""):lower()

@@ -7,6 +7,7 @@ local ActiveStreams = require("src.state.active_streams")
 local Adapter = require("src.c2_adapter")
 
 local Commands = {}
+local MAX_SYNC_DELAY_MS = 30000
 
 local function sys(ctx, msg)
   Adapter.system(ctx.channel:get_name(), msg)
@@ -78,7 +79,23 @@ function Commands.register(state, persist)
   local c2 = rawget(_G, "c2")
   c2.register_command("/yt-chat", function(ctx)
     if #ctx.words < 2 then
-      sys(ctx, "Uso: /yt-chat <url de vídeo, /live, /channel o @handle de YouTube>")
+      sys(ctx, "Uso: /yt-chat <url de YouTube> | /yt-chat delay [0-30000 ms]")
+      return
+    end
+    if ctx.words[2] == "delay" then
+      if #ctx.words < 3 then
+        sys(ctx, "Delay de sincronización: " .. tostring(Polling.get_sync_delay()) .. " ms.")
+        return
+      end
+      local raw = ctx.words[3]
+      local delay = type(raw) == "string" and raw:match("^%d+$") and tonumber(raw) or nil
+      if not delay or delay > MAX_SYNC_DELAY_MS then
+        sys(ctx, "Delay no válido. Usa un entero entre 0 y 30000 ms.")
+        return
+      end
+      state.settings.chat_sync_delay_ms = Polling.set_sync_delay(delay)
+      persist(state)
+      sys(ctx, "Delay de sincronización ajustado a " .. tostring(delay) .. " ms.")
       return
     end
     local normalized, err = Url.normalize(ctx.words[2])

@@ -120,16 +120,16 @@ The Chatterino 2.5.x plugin API renders text elements only, so everything
 image-based is represented textually (semantics preserved):
 
 ```text
-[YT] 12:00 (SomeChannel) [MOD] Moderator Jane: hello chat 😀
-[YT] 12:01 [Super Chat · €5.00] Generous Viewer: keep it up 🎉
-[YT] 12:02 [Super Sticker · $2.00] Viewer One: sticker “Thanks!”
-[YT] 12:03 [New member · Gold] Viewer Two: Welcome!
-[YT] 12:04 [Gift ×5] Generous Gifter gifted 5 memberships
-[YT] 12:05 [Poll] Best option? Option A (73%) · Option B (26%)
-[yt-chat] 🗑 Message deleted (id: …)
-[yt-chat] 📌 Pinned by Channel Owner — Viewer One: announcement
-[yt-chat] ⚙ Slow mode is on — Send a message every 10 seconds
-[yt-chat] ⚠ Unsupported event: liveChatFutureRenderer2042 — …
+▶️ YT 12:00 (SomeChannel) [MOD] Moderator Jane: hello chat 😀
+▶️ YT 12:01 [Super Chat · €5.00] Generous Viewer: keep it up 🎉
+▶️ YT 12:02 [Super Sticker · $2.00] Viewer One: sticker “Thanks!”
+▶️ YT 12:03 [New member · Gold] Viewer Two: Welcome!
+▶️ YT 12:04 [Gift ×5] Generous Gifter gifted 5 memberships
+▶️ YT 12:05 [Poll] Best option? Option A (73%) · Option B (26%)
+▶️ YT 🗑 Message deleted (id: …)
+▶️ YT 📌 Pinned by Channel Owner — Viewer One: announcement
+▶️ YT ⚙ Slow mode is on — Send a message every 10 seconds
+▶️ YT ⚠ Unsupported event: liveChatFutureRenderer2042 — …
 ```
 
 See [COMPATIBILITY.md](COMPATIBILITY.md) for the exact representation of
@@ -193,7 +193,8 @@ happen when something actually changed.
   "offline_poll_max": 300,
   "chat_poll_min_ms": 500,
   "chat_poll_max_ms": 15000,
-  "chat_poll_fallback_ms": 1000
+  "chat_poll_fallback_ms": 1000,
+  "chat_sync_delay_ms": 0
 }
 ```
 
@@ -202,6 +203,9 @@ happen when something actually changed.
 - `offline_poll_schedule` / `offline_poll_max`: offline check backoff
   (seconds). Keep values within 15–900 s.
 - `chat_poll_*`: clamps applied to YouTube-provided polling intervals.
+- `chat_sync_delay_ms`: extra delay added to YouTube's requested interval
+  (`0`–`30000` ms). Change it live with `/yt-chat delay <ms>`; run
+  `/yt-chat delay` to inspect the current value.
 
 ## Troubleshooting
 

@@ -73,7 +73,7 @@ end
 function Adapter.system(split, text)
   local ch = Adapter.channel(split)
   if ch then
-    ch:add_system_message("[yt-chat] " .. tostring(text))
+    ch:add_system_message("▶️ YT " .. tostring(text))
   end
 end
 
@@ -120,6 +120,7 @@ function Adapter.replace_by_youtube_id(youtube_id, marker_text, splits)
   return Adapter.replace_spec_by_youtube_id(youtube_id, {
     message_text = marker_text,
     elements = {
+      { type = "text", text = "▶️", color = "red", style = "ChatMediumBold" },
       { type = "text", text = "YT", color = "system", style = "ChatMediumBold" },
       { type = "text", text = marker_text, color = "system", style = "ChatMediumItalic" }
     }

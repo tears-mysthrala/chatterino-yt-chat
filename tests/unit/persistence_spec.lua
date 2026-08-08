@@ -24,10 +24,11 @@ end
 -- Fresh read yields defaults
 local state = Persistence.read()
 T.ok(type(state) == "table", "state read returns table")
-T.eq(state.schema_version, 2, "schema version is 2")
+T.eq(state.schema_version, 3, "schema version is 3")
 T.eq(Persistence.last_recovery, "default", "fresh read marked as default")
 T.eq(state.settings.debug, false, "debug default false")
 T.eq(state.settings.offline_poll_max, 300, "offline max default")
+T.eq(state.settings.chat_sync_delay_ms, 0, "sync delay defaults to zero")
 
 -- Write round-trip
 state.channels.UC1 = { channel_id = "UC1", splits = { "demo" } }
@@ -82,8 +83,16 @@ T.eq(dirty.hacker, nil, "unknown top-level key dropped")
 T.eq(dirty.settings.debug, false, "non-boolean debug coerced")
 T.eq(dirty.settings.evil, nil, "unknown setting dropped")
 T.eq(dirty.settings.offline_poll_max, 120, "numeric string coerced")
+T.eq(dirty.settings.chat_sync_delay_ms, 0, "missing sync delay gets default")
 T.eq(#dirty.channels.UCX.splits, 2, "non-string splits dropped")
 T.eq(dirty.channels.UCX.payload, nil, "channel junk dropped")
+
+local bounded_delay = Persistence.validate_schema({
+  schema_version = 3,
+  settings = { chat_sync_delay_ms = "999999" },
+  channels = {}
+})
+T.eq(bounded_delay.settings.chat_sync_delay_ms, 30000, "sync delay is capped when loaded")
 
 -- Debounced flusher: bursts produce a single write
 do
@@ -134,7 +143,7 @@ do
   wf2:write(require("libs/json").encode(legacy))
   wf2:close()
   local migrated = Persistence.read()
-  T.eq(migrated.schema_version, 2, "legacy migrated to v2")
+  T.eq(migrated.schema_version, 3, "legacy migrated to v3")
   T.ok(migrated.channels.UCLEGACY123 ~= nil, "channel id key kept")
   T.eq(migrated.channels.UCLEGACY123.channel_id, "UCLEGACY123", "channel_id inferred from key")
   T.eq(migrated.channels.UCLEGACY123.splits[2], "splitB", "splits preserved")

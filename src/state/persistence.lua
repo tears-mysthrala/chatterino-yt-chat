@@ -75,7 +75,11 @@ function Persistence.validate_schema(data)
     if type(default_value) == "boolean" then
       out.settings[key] = value == true
     elseif type(default_value) == "number" then
-      out.settings[key] = tonumber(value) or default_value
+      local number = tonumber(value) or default_value
+      if key == "chat_sync_delay_ms" then
+        number = math.floor(math.max(0, math.min(30000, number)))
+      end
+      out.settings[key] = number
     elseif type(default_value) == "table" then
       if type(value) == "table" and #value > 0 then
         local list = {}

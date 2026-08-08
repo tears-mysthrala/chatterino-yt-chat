@@ -22,6 +22,7 @@ end
 
 function Plugin.bootstrap()
   Logging.set_debug(state.settings and state.settings.debug or false)
+  Polling.set_sync_delay(state.settings and state.settings.chat_sync_delay_ms or 0)
   local c2 = rawget(_G, "c2")
   Clock.start_heartbeat(c2 and c2.later)
   Commands.register(state, persist)

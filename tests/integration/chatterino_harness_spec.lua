@@ -196,13 +196,15 @@ payload_queue[1] = chat_payload({
   text_action("m2", "bob", "second message")
 }, 2000)
 
-mock.run_command("/yt-chat", "splitA", "https://www.youtube.com/@test/live")
+mock.run_command("/yt-chat", "splitA", "autoconectar", "@test")
 T.eq(mock.count_requests("get_live_chat"), 1, "polling started immediately")
+T.eq(Plugin._state().channels.UCFAKECHANNEL0000000001.handle, "test",
+  "autoconnect command persists the handle against its stable channel id")
 T.eq(#mock.channels.splitA.messages, 0, "initial messages wait for presentation delay")
 
 -- Multi-split: same channel added from splitB — no duplicate polling --------
 
-mock.run_command("/yt-chat", "splitB", "https://www.youtube.com/@test/live")
+mock.run_command("/yt-chat", "splitB", "@test")
 T.eq(mock.count_requests("get_live_chat"), 1, "no second polling for same video")
 mock.run_command("/yt-chat", "splitA", "status")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("próximo sondeo", 1, true) ~= nil,

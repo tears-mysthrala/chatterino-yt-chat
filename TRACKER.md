@@ -1,7 +1,7 @@
 ## Estado global
 
-- Objetivo: `chatterino-yt-chat v1.2.1`
-- Estado actual: **v1.2.1 LISTA PARA RELEASE; v1.2.0 EN BORRADOR NO PUBLICADO**
+- Objetivo: `chatterino-yt-chat v1.3.0`
+- Estado actual: **v1.3.0 EN DESARROLLO; v1.2.1 EN BORRADOR NO PUBLICADO**
 - Última actualización: 2026-08-08
 - Rama actual: `main`
 - Último commit publicado: `bd7211a`

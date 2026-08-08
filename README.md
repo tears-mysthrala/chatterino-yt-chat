@@ -100,6 +100,8 @@ Operational commands:
 /yt-chat list
 /yt-chat status
 /yt-chat health [export]
+/yt-chat @handle
+/yt-chat autoconnect @handle
 /yt-chat pause <channel>
 /yt-chat resume <channel>
 /yt-chat remove <channel>
@@ -112,11 +114,12 @@ Operational commands:
 
 When `language=es`, every subcommand also has a Spanish alias: `lista`,
 `estado`, `salud`, `pausar`, `reanudar`, `eliminar`, `retardo`, `idioma`,
-`configurar`, `exportar`, `importar` and `ayuda`. English forms remain
+`configurar`, `autoconectar`, `exportar`, `importar` and `ayuda`. English forms remain
 available for compatibility.
 
-Accepted URL forms (normalized automatically, HTTPS only):
+Accepted inputs (URLs are normalized automatically and restricted to HTTPS on official hosts):
 
+- `@handle` (short form; binds it to the current conversation)
 - `https://www.youtube.com/watch?v=<id>` (extra params are fine)
 - `https://youtu.be/<id>`
 - `https://www.youtube.com/live/<id>`
@@ -131,6 +134,9 @@ Behavior:
 - **Offline channel**: the channel is stored and checked periodically
   (30 s → 60 s → 120 s → 300 s backoff); when a stream starts, the chat
   connects automatically.
+- **Persistent autoconnect**: `/yt-chat autoconnect @handle` (or
+  `/yt-chat autoconectar @handle`) stores the current conversation binding;
+  after restarting Chatterino it resumes monitoring and connects when live.
 - **Multiple splits**: run `/yt-chat` with the same channel in several
   splits — the plugin polls once per stream and distributes messages to
   every bound split. Closing all splits stops polling for that stream.
@@ -275,7 +281,7 @@ strict input validation of every field coming from YouTube.
 
 - Tests: `scripts/test.sh` (unit + integration harness + fuzz + load;
   plain Lua, no Chatterino needed).
-- Build: `scripts/build_release.sh 1.2.1` → reproducible ZIP +
+- Build: `scripts/build_release.sh 1.3.0` → reproducible ZIP +
   `scripts/sha256.sh` for the checksum.
 - Architecture and internal contracts: `docs/architecture.md`.
 - Research notes: `docs/research/`.

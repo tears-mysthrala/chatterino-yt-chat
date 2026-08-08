@@ -109,7 +109,7 @@ do
   T.eq(imported.settings.chat_sync_delay_ms, 250, "settings survive export/import")
   T.eq(imported.settings.language, "es", "missing language defaults safely")
   T.ok(imported.channels.UCEXPORT.paused, "paused state survives export/import")
-  T.ok(Persistence.export_diagnostics({ version = "1.2.1", counters = { requests = 2 } }),
+  T.ok(Persistence.export_diagnostics({ version = "1.3.0", counters = { requests = 2 } }),
     "bounded diagnostics export written")
   local incomplete_file = io.open(test_dir .. "/YT_CHAT.export.json", "w")
   incomplete_file:write("{}")

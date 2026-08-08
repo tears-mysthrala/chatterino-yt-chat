@@ -44,6 +44,10 @@ verify against the `.sha256` asset from this release.
 
 ### Validation gate
 
-Automated tests, lint, fixtures, reproducible packaging and a real Chatterino
-smoke test are required before tagging. A long GUI soak remains a release
-confidence check and must be recorded without overstating it as completed.
+- Automated suite: 1,365 assertions, 0 failures.
+- Fixtures: 40 checked, 0 failures.
+- Lua lint: 0 warnings and 0 errors across 47 files.
+- Reproducible local package verified before tagging; the canonical checksum is
+  generated again from the tagged commit by the release workflow.
+- User smoke test: connected and receiving real messages in Chatterino 2.5.5
+  without observed failures. A long GUI soak remains pending and is not claimed.

@@ -14,8 +14,6 @@ local function run_item(key, item)
     Health.increment("delivery_errors")
     Logging.rate_limited("error", "delivery-queue:" .. key, 60000, 2,
       "delivery_queue_callback_error", { queue = key, error = tostring(err) })
-  else
-    Health.increment("delivered_batches")
   end
 end
 

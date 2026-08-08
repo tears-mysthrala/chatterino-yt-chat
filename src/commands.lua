@@ -13,6 +13,7 @@ local I18n = require("src.i18n")
 
 local Commands = {}
 local MAX_SYNC_DELAY_MS = 30000
+local operation_generation = 0
 
 local function sys(ctx, msg)
   Adapter.system(ctx.channel:get_name(), msg)
@@ -51,31 +52,34 @@ local function handle_control(state, persist, ctx, command)
   end
   if command == "status" then
     local statuses = Polling.status()
-    sys(ctx, tostring(#statuses) .. " stream(s) · delay " .. tostring(Polling.get_sync_delay()) .. " ms")
+    sys(ctx, I18n.t("status_summary", { streams = #statuses, delay = Polling.get_sync_delay() }))
     for _, item in ipairs(statuses) do
       local next_ms = math.max(0, math.floor(((item.next_poll_ms or Clock.now_ms()) - Clock.now_ms()) / 1000))
-      sys(ctx, tostring(item.channel_name or item.video_id) .. " · " .. tostring(item.splits) ..
-        " split(s) · " .. I18n.t("queue") .. " " .. tostring(item.queued_batches) ..
-        " · " .. I18n.t("next_poll") .. " " .. tostring(next_ms) ..
-        " s" .. (item.last_error and (" · error " .. item.last_error) or ""))
+      local error_suffix = item.last_error and I18n.t("status_error", { error = item.last_error }) or ""
+      sys(ctx, I18n.t("status_item", {
+        channel = item.channel_name or item.video_id, splits = item.splits,
+        queued = item.queued_batches, next = next_ms, error = error_suffix
+      }))
     end
     return true
   end
   if command == "config" then
     local caps = Capabilities.detect()
-    sys(ctx, "language=" .. I18n.get() .. " · delay=" .. tostring(Polling.get_sync_delay()) .. " ms" ..
-      " · GUI=" .. (caps.settings_gui and I18n.t("yes") or I18n.t("gui_unavailable")) ..
-      " · " .. I18n.t("images_label") .. "=" .. I18n.t(caps.images and "image_available" or "image_fallback"))
+    sys(ctx, I18n.t("config_summary", {
+      language = I18n.get(), delay = Polling.get_sync_delay(),
+      gui = caps.settings_gui and I18n.t("yes") or I18n.t("gui_unavailable"),
+      images = I18n.t(caps.images and "image_available" or "image_fallback")
+    }))
     return true
   end
   if command == "health" then
     local health = Health.snapshot()
     local counters = health.counters
-    sys(ctx, "health · uptime " .. tostring(math.floor(health.uptime_ms / 1000)) .. " s" ..
-      " · requests " .. tostring(counters.poll_requests or 0) ..
-      " · retries " .. tostring(counters.poll_retries or 0) ..
-      " · batches " .. tostring(counters.delivered_batches or 0) ..
-      " · unknown " .. tostring(counters.unknown_events or 0))
+    sys(ctx, I18n.t("health_summary", {
+      uptime = math.floor(health.uptime_ms / 1000), requests = counters.poll_requests or 0,
+      retries = counters.poll_retries or 0, batches = counters.delivered_batches or 0,
+      unknown = counters.unknown_events or 0
+    }))
     if ctx.words[3] == "export" then
       local snapshot = { version = "1.2.0", health = health, streams = Polling.status(), capabilities = Capabilities.detect() }
       local ok = Persistence.export_diagnostics(snapshot)
@@ -103,6 +107,7 @@ local function handle_control(state, persist, ctx, command)
       sys(ctx, I18n.t("import_failed", { error = err }))
       return true
     end
+    operation_generation = operation_generation + 1
     for _, item in ipairs(Polling.status()) do Polling.stop(item.video_id, "reconfigured") end
     for key in pairs(state.channels or {}) do Polling.invalidate_channel(key) end
     replace_state(state, imported)
@@ -164,8 +169,10 @@ end
 
 local function handle_url(state, persist, ctx, normalized)
   local split = ctx.channel:get_name()
+  local generation = operation_generation
   local request = Adapter.http_get(normalized.canonical)
   request:on_success(function(result)
+    if generation ~= operation_generation then return end
     if (result:status() or 0) ~= 200 then
       sys(ctx, I18n.t("http_read", { status = result:status() }))
       return
@@ -204,6 +211,7 @@ local function handle_url(state, persist, ctx, normalized)
     Logging.info("channel_added", { split = split, channel = key })
   end)
   request:on_error(function()
+    if generation ~= operation_generation then return end
     Logging.warning("url_read_error", { host = "www.youtube.com" })
     sys(ctx, I18n.t("network"))
   end)

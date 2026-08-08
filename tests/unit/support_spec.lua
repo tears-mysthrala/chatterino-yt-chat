@@ -17,9 +17,10 @@ do
   Health.reset()
   Health.increment("requests")
   Health.increment("requests", 2)
+  Health.increment("requests", 1.9)
   Health.gauge("depth", 4)
   local health = Health.snapshot()
-  T.eq(health.counters.requests, 3, "health counter accumulates")
+  T.eq(health.counters.requests, 4, "health counter accumulates integer increments")
   T.eq(health.gauges.depth, 4, "health gauge updates")
 end
 

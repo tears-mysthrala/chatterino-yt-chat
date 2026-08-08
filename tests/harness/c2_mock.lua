@@ -10,6 +10,8 @@ function C2Mock.new()
     callbacks = {},
     timers = {},
     requests = {},
+    pending_http = {},
+    defer_http = false,
     logs = {},
     now_ms = 0,
     -- test-controlled: fn(method, url, payload) -> {status=, data=, error=}
@@ -125,31 +127,24 @@ function C2Mock.new()
     end
     function req:execute()
       mock.requests[#mock.requests + 1] = { method = method, url = url, payload = self.payload }
-      local result = mock.http_responder and mock.http_responder(method, url, self.payload) or
-          { status = 0, error = "no responder" }
-      local response = {
-        _result = result
-      }
-      response.data = function()
-        return result.data or ""
-      end
-      response.status = function()
-        return result.status
-      end
-      response.error = function()
-        return result.error or ""
-      end
-      if result.error then
-        if self._error then
-          self._error(response)
-        end
-      else
-        if self._success then
+      local function resolve()
+        local result = mock.http_responder and mock.http_responder(method, url, self.payload) or
+            { status = 0, error = "no responder" }
+        local response = { _result = result }
+        response.data = function() return result.data or "" end
+        response.status = function() return result.status end
+        response.error = function() return result.error or "" end
+        if result.error then
+          if self._error then self._error(response) end
+        elseif self._success then
           self._success(response)
         end
+        if self._finally then self._finally() end
       end
-      if self._finally then
-        self._finally()
+      if mock.defer_http then
+        mock.pending_http[#mock.pending_http + 1] = resolve
+      else
+        resolve()
       end
     end
     return req
@@ -200,6 +195,12 @@ function C2Mock.new()
 
   function mock.pending_timers()
     return #mock.timers
+  end
+
+  function mock.flush_http()
+    local pending = mock.pending_http
+    mock.pending_http = {}
+    for _, resolve in ipairs(pending) do resolve() end
   end
 
   function mock.count_requests(url_substring)

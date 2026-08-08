@@ -7,7 +7,7 @@ local gauges = {}
 
 function Health.increment(name, amount)
   if type(name) ~= "string" then return end
-  counters[name] = (counters[name] or 0) + math.max(0, tonumber(amount) or 1)
+  counters[name] = (counters[name] or 0) + math.floor(math.max(0, tonumber(amount) or 1))
 end
 
 function Health.gauge(name, value)

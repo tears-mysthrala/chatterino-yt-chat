@@ -144,8 +144,9 @@ handlers.super_sticker = function(event, elements)
     { color = "system", style = "ChatMediumBold" })
   author_element(elements, event)
   local alt = event.sticker and event.sticker.alt or "sticker"
-  if event.sticker and event.sticker.url then
-    elements[#elements + 1] = { type = "remote-image", url = event.sticker.url, size = 32 }
+  local sticker_url = event.sticker and event.sticker.url
+  if type(sticker_url) == "string" and sticker_url ~= "" then
+    elements[#elements + 1] = { type = "remote-image", url = sticker_url, size = 32 }
   end
   elements[#elements + 1] = text_element("sticker “" .. alt .. "”")
   return chat_spec(event, elements,

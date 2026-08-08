@@ -220,7 +220,8 @@ happen when something actually changed.
   "chat_poll_min_ms": 500,
   "chat_poll_max_ms": 15000,
   "chat_poll_fallback_ms": 1000,
-  "chat_sync_delay_ms": 0
+  "chat_sync_delay_ms": 0,
+  "language": "es"
 }
 ```
 
@@ -234,6 +235,8 @@ happen when something actually changed.
   `/yt-chat delay <ms>`; run `/yt-chat delay` to inspect the current value.
   Chatterino 2.5.5 uses a 100 ms monotonic heartbeat, so delivery targets that
   value with up to one heartbeat of scheduler granularity.
+- `language`: operational UI language; accepts only `"es"` or `"en"` and can
+  be changed live with `/yt-chat language <es|en>`.
 
 Chatterino 2.5.5 does not expose a plugin API for adding controls to its
 Settings GUI. `/yt-chat config` therefore reports the effective configuration,

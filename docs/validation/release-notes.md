@@ -1,4 +1,4 @@
-## chatterino-yt-chat 1.2.0
+# chatterino-yt-chat 1.2.0
 
 Quality and diagnostics update for the read-only YouTube Live Chat viewer plugin.
 

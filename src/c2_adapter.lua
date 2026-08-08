@@ -64,6 +64,7 @@ function Adapter.deliver(spec, splits)
   if type(spec) ~= "table" then
     return
   end
+  local elements = spec.system and nil or materialize_elements(spec.elements)
   for _, split in ipairs(splits or {}) do
     local ch = Adapter.channel(split)
     if ch then
@@ -76,7 +77,7 @@ function Adapter.deliver(spec, splits)
           local ok, created = pcall(api.Message.new, {
             id = spec.id,
             message_text = spec.message_text,
-            elements = materialize_elements(spec.elements),
+            elements = elements,
             login_name = spec.login_name,
             display_name = spec.display_name,
             username_color = spec.username_color,
@@ -118,6 +119,7 @@ function Adapter.replace_spec_by_youtube_id(youtube_id, spec, splits)
     return false
   end
   local mutated = false
+  local elements = materialize_elements(spec.elements)
   for _, split in ipairs(splits or {}) do
     local ch = Adapter.channel(split)
     if ch and ch.find_message_by_id and ch.replace_message then
@@ -126,7 +128,7 @@ function Adapter.replace_spec_by_youtube_id(youtube_id, spec, splits)
         local init = {
           id = "yt-chat-" .. youtube_id,
           message_text = spec.message_text,
-          elements = materialize_elements(spec.elements),
+          elements = elements,
           login_name = spec.login_name,
           display_name = spec.display_name,
           highlight_color = spec.highlight_color

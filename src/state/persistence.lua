@@ -147,15 +147,19 @@ function Persistence.export_diagnostics(snapshot)
 end
 
 function Persistence.import_snapshot()
-  local decoded = safe_decode(read_all(dir .. "/YT_CHAT.export.json"))
-  if not decoded then
-    return nil, "missing_or_invalid_export"
+  local path = dir .. "/YT_CHAT.export.json"
+  local saw_decoded = false
+  for _, candidate in ipairs({ path, path .. BACKUP_SUFFIX }) do
+    local decoded = safe_decode(read_all(candidate))
+    if decoded then
+      saw_decoded = true
+      if type(decoded.schema_version) == "number" and type(decoded.settings) == "table" and
+          type(decoded.channels) == "table" then
+        return Persistence.validate_schema(decoded), nil
+      end
+    end
   end
-  if type(decoded.schema_version) ~= "number" or type(decoded.settings) ~= "table" or
-      type(decoded.channels) ~= "table" then
-    return nil, "incomplete_export"
-  end
-  return Persistence.validate_schema(decoded), nil
+  return nil, saw_decoded and "incomplete_export" or "missing_or_invalid_export"
 end
 
 local function backup_current(path)

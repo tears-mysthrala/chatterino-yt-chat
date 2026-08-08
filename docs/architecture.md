@@ -115,11 +115,12 @@ Reglas:
 }
 ```
 
-Chatterino (API de plugins actual) solo soporta elementos de texto,
-mención, timestamp y salto de línea: emotes, stickers, avatares e insignias
-se representan textualmente (degradación documentada en COMPATIBILITY.md).
-La API no permite editar/borrar mensajes existentes: las mutaciones se
-representan como eventos informativos inequívocos con id/autor afectado.
+Chatterino 2.5.5 solo construye elementos de texto, mención, timestamp y salto
+de línea: emotes, stickers, avatares e insignias se representan textualmente
+(degradación documentada en COMPATIBILITY.md). La imagen remota nativa queda
+condicionada a detectar la API verificada `c2.Image` en una versión futura.
+Las mutaciones usan `find_message_by_id` y `replace_message` cuando existe el
+mensaje original; en caso contrario producen un evento informativo inequívoco.
 
 ## Módulos y responsabilidades
 

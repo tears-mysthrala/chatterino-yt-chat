@@ -231,6 +231,7 @@ local function handle_payload(data, payload)
       for _, event in ipairs(batch) do
         deliver_event(video_id, data.channelName, event)
       end
+      Health.increment("delivered_batches")
     end
     if sync_delay_ms == 0 and DeliveryQueue.pending(video_id) == 0 then
       deliver_batch()
@@ -291,12 +292,14 @@ function Polling._request(data)
       return
     end
     local status = result:status() or 0
+    if status >= 400 then
+      Health.increment("http_errors")
+    end
     if FATAL_STATUS[status] then
       stop(video_id, "http_" .. status, true)
       return
     end
     if status >= 400 then
-      Health.increment("http_errors")
       retry(data, "http_" .. status)
       return
     end

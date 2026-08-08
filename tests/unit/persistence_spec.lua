@@ -114,9 +114,19 @@ do
   local incomplete_file = io.open(test_dir .. "/YT_CHAT.export.json", "w")
   incomplete_file:write("{}")
   incomplete_file:close()
+  local incomplete_backup = io.open(test_dir .. "/YT_CHAT.export.json.bak", "w")
+  incomplete_backup:write("{}")
+  incomplete_backup:close()
   local incomplete, incomplete_err = Persistence.import_snapshot()
   T.eq(incomplete, nil, "incomplete export is rejected")
   T.eq(incomplete_err, "incomplete_export", "incomplete export reports explicit error")
+
+  local backup_file = io.open(test_dir .. "/YT_CHAT.export.json.bak", "w")
+  backup_file:write(require("libs/json").encode(exported))
+  backup_file:close()
+  local recovered_export, recovered_err = Persistence.import_snapshot()
+  T.eq(recovered_err, nil, "valid export backup recovers unusable primary")
+  T.eq(recovered_export.settings.chat_sync_delay_ms, 250, "recovered export preserves settings")
 end
 
 -- Debounced flusher: bursts produce a single write

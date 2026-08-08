@@ -1,4 +1,5 @@
 local RateLimit = require("src.support.rate_limit")
+local Health = require("src.support.health")
 
 local Logging = {}
 
@@ -221,6 +222,7 @@ end
 --- Always rate-limited; the sink only fires in debug mode.
 function Logging.sample(name, renderer_table)
   local safe_name = tostring(name or "unknown"):sub(1, 80)
+  Health.increment("unknown_events")
   if not RateLimit.allow("sample:" .. safe_name, 60000, 1) then
     return
   end

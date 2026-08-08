@@ -80,6 +80,12 @@ function Persistence.validate_schema(data)
         number = math.floor(math.max(0, math.min(30000, number)))
       end
       out.settings[key] = number
+    elseif type(default_value) == "string" then
+      if key == "language" then
+        out.settings[key] = value == "en" and "en" or "es"
+      else
+        out.settings[key] = type(value) == "string" and value or default_value
+      end
     elseif type(default_value) == "table" then
       if type(value) == "table" and #value > 0 then
         local list = {}
@@ -132,6 +138,10 @@ end
 function Persistence.export_snapshot(state)
   local encoded = json.encode(Persistence.validate_schema(state))
   return write_file(dir .. "/YT_CHAT.export.json", encoded)
+end
+
+function Persistence.export_diagnostics(snapshot)
+  return write_file(dir .. "/YT_CHAT.diagnostics.json", json.encode(snapshot))
 end
 
 function Persistence.import_snapshot()

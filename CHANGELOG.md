@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.0 - Unreleased
+
+- Adds persistent Spanish/English operational UI with live language switching.
+- Adds local health counters and a content-free diagnostic export for support.
+- Bounds delayed-delivery queues and records backpressure instead of allowing
+  unbounded growth during abnormal upstream behavior.
+- Materializes validated YouTube avatars and stickers when Chatterino exposes
+  its new image API, while preserving the 2.5.5 textual fallback.
+- Adds schema v5 for the language preference and expands compatibility tests.
+
 ## 1.1.0 - Unreleased
 
 - Adds the visible `▶️ YT` origin marker to rich and degraded messages.

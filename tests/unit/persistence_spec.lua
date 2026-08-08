@@ -24,7 +24,7 @@ end
 -- Fresh read yields defaults
 local state = Persistence.read()
 T.ok(type(state) == "table", "state read returns table")
-T.eq(state.schema_version, 4, "schema version is 4")
+T.eq(state.schema_version, 5, "schema version is 5")
 T.eq(Persistence.last_recovery, "default", "fresh read marked as default")
 T.eq(state.settings.debug, false, "debug default false")
 T.eq(state.settings.offline_poll_max, 300, "offline max default")
@@ -97,7 +97,7 @@ T.eq(bounded_delay.settings.chat_sync_delay_ms, 30000, "sync delay is capped whe
 
 do
   local exported = Persistence.validate_schema({
-    schema_version = 4,
+    schema_version = 5,
     settings = { chat_sync_delay_ms = 250 },
     channels = { UCEXPORT = { channel_id = "UCEXPORT", paused = true, splits = { "s" } } }
   })
@@ -105,7 +105,10 @@ do
   local imported, import_err = Persistence.import_snapshot()
   T.eq(import_err, nil, "valid export imports without error")
   T.eq(imported.settings.chat_sync_delay_ms, 250, "settings survive export/import")
+  T.eq(imported.settings.language, "es", "missing language defaults safely")
   T.ok(imported.channels.UCEXPORT.paused, "paused state survives export/import")
+  T.ok(Persistence.export_diagnostics({ version = "1.2.0", counters = { requests = 2 } }),
+    "bounded diagnostics export written")
 end
 
 -- Debounced flusher: bursts produce a single write
@@ -157,7 +160,8 @@ do
   wf2:write(require("libs/json").encode(legacy))
   wf2:close()
   local migrated = Persistence.read()
-  T.eq(migrated.schema_version, 4, "legacy migrated to v4")
+  T.eq(migrated.schema_version, 5, "legacy migrated to v5")
+  T.eq(migrated.settings.language, "es", "legacy migration defaults to Spanish")
   T.ok(migrated.channels.UCLEGACY123 ~= nil, "channel id key kept")
   T.eq(migrated.channels.UCLEGACY123.channel_id, "UCLEGACY123", "channel_id inferred from key")
   T.eq(migrated.channels.UCLEGACY123.splits[2], "splitB", "splits preserved")

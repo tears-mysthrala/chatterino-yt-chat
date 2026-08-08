@@ -1,11 +1,38 @@
 -- Single module allowed to touch the Chatterino `c2` API for channels,
 -- messages, HTTP and timers. Everything else stays pure and testable.
 local Innertube = require("src.youtube.innertube")
+local Validation = require("src.support.validation")
 
 local Adapter = {}
 
 local function c2()
   return rawget(_G, "c2")
+end
+
+local function materialize_elements(elements)
+  local api = c2()
+  local image_flag = api and api.MessageElementFlag and
+      (api.MessageElementFlag.AlwaysShow or api.MessageElementFlag.EmoteImage) or nil
+  local supports_images = api and api.Image and type(api.Image.from_url) == "function" and image_flag ~= nil
+  local out = {}
+  for _, element in ipairs(elements or {}) do
+    if element.type ~= "remote-image" then
+      out[#out + 1] = element
+    elseif supports_images and Validation.is_safe_image_url(element.url) then
+      local size = math.max(8, math.min(64, tonumber(element.size) or 18))
+      local ok, image = pcall(api.Image.from_url, element.url, 1, { size, size })
+      if ok and image then
+        out[#out + 1] = {
+          type = element.circular and "circular-image" or "image",
+          image = image,
+          padding = element.circular and 0 or nil,
+          background = element.circular and "#00000000" or nil,
+          flags = image_flag
+        }
+      end
+    end
+  end
+  return out
 end
 
 function Adapter.available()
@@ -49,7 +76,7 @@ function Adapter.deliver(spec, splits)
           local ok, created = pcall(api.Message.new, {
             id = spec.id,
             message_text = spec.message_text,
-            elements = spec.elements,
+            elements = materialize_elements(spec.elements),
             login_name = spec.login_name,
             display_name = spec.display_name,
             username_color = spec.username_color,
@@ -99,7 +126,7 @@ function Adapter.replace_spec_by_youtube_id(youtube_id, spec, splits)
         local init = {
           id = "yt-chat-" .. youtube_id,
           message_text = spec.message_text,
-          elements = spec.elements,
+          elements = materialize_elements(spec.elements),
           login_name = spec.login_name,
           display_name = spec.display_name,
           highlight_color = spec.highlight_color

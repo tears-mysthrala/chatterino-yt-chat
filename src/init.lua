@@ -3,6 +3,7 @@ local Commands = require("src.commands")
 local Polling = require("src.youtube.polling")
 local Logging = require("src.support.logging")
 local Clock = require("src.support.clock")
+local I18n = require("src.i18n")
 
 local Plugin = {}
 
@@ -22,6 +23,7 @@ end
 
 function Plugin.bootstrap()
   Logging.set_debug(state.settings and state.settings.debug or false)
+  I18n.set(state.settings and state.settings.language or "es")
   Polling.set_sync_delay(state.settings and state.settings.chat_sync_delay_ms or 0)
   local c2 = rawget(_G, "c2")
   Clock.start_heartbeat(c2 and c2.later)

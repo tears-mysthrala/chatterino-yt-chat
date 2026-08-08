@@ -105,6 +105,24 @@ local Plugin = require("src.init")
 mock.add_channel("splitA")
 mock.add_channel("splitB")
 Plugin.bootstrap()
+
+-- Future image API: declarative remote images materialize only when the
+-- verified Chatterino capability exists; stable 2.5.5 keeps text fallback.
+do
+  local Adapter = require("src.c2_adapter")
+  mock.c2.MessageElementFlag = { AlwaysShow = 1, EmoteImage = 2 }
+  mock.c2.Image = { from_url = function(url) return { url = url } end }
+  Adapter.deliver({
+    message_text = "image probe",
+    elements = { { type = "remote-image", url = "https://yt3.ggpht.com/avatar", circular = true } }
+  }, { "splitA" })
+  local probe = mock.channels.splitA.messages[#mock.channels.splitA.messages]
+  T.eq(probe.elements[1].type, "circular-image", "future image capability materializes avatar")
+  T.eq(probe.elements[1].image.url, "https://yt3.ggpht.com/avatar", "future image keeps validated URL")
+  table.remove(mock.channels.splitA.messages)
+  mock.c2.Image = nil
+  mock.c2.MessageElementFlag = nil
+end
 T.ok(mock.commands["/yt-chat"] ~= nil, "command registered")
 T.ok(mock.callbacks[mock.c2.EventType.CompletionRequested] ~= nil, "command completion registered")
 local completions = mock.callbacks[mock.c2.EventType.CompletionRequested]({
@@ -161,6 +179,16 @@ T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]
 mock.run_command("/yt-chat", "splitA", "list")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Test Channel", 1, true) ~= nil,
   "list command reports configured channel")
+mock.run_command("/yt-chat", "splitA", "health")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("requests", 1, true) ~= nil,
+  "health command reports content-free counters")
+mock.run_command("/yt-chat", "splitA", "language", "en")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Language", 1, true) ~= nil,
+  "language can be changed live")
+mock.run_command("/yt-chat", "splitA", "help")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Commands", 1, true) ~= nil,
+  "help follows selected language")
+mock.run_command("/yt-chat", "splitA", "language", "es")
 mock.advance(749)
 T.eq(#mock.channels.splitA.messages, 0, "presentation delay has not elapsed")
 mock.advance(1)

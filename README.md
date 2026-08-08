@@ -57,7 +57,7 @@ never written to disk or logs (see [Persisted data](#persisted-data)).
 
 ## Installation
 
-1. Download the versioned ZIP (for example, `chatterino-yt-chat-1.1.0.zip`) from
+1. Download the versioned ZIP (for example, `chatterino-yt-chat-1.2.0.zip`) from
    [the corresponding published release](https://github.com/tears-mysthrala/chatterino-yt-chat/releases)
    and verify it against the published `.sha256`.
 2. Open Chatterino's plugin directory:
@@ -98,10 +98,12 @@ Operational commands:
 ```text
 /yt-chat list
 /yt-chat status
+/yt-chat health [export]
 /yt-chat pause <channel>
 /yt-chat resume <channel>
 /yt-chat remove <channel>
 /yt-chat delay [0-30000]
+/yt-chat language [es|en]
 /yt-chat config
 /yt-chat export
 /yt-chat import
@@ -197,6 +199,10 @@ chat payloads, message contents, chat history.
 non-sensitive configuration schema. `/yt-chat import` only reads that fixed
 path and revalidates the complete snapshot before applying it.
 
+`/yt-chat health export` creates `data/YT_CHAT.diagnostics.json`. It contains
+only version/capability data, aggregate counters and stream timing/state; it
+never includes API keys, continuations, message text or response payloads.
+
 Writes are atomic within what the Chatterino Lua sandbox allows
 (temp file + verify + write + `.bak` recovery copy), debounced, and only
 happen when something actually changed.
@@ -258,7 +264,7 @@ strict input validation of every field coming from YouTube.
 
 - Tests: `scripts/test.sh` (unit + integration harness + fuzz + load;
   plain Lua, no Chatterino needed).
-- Build: `scripts/build_release.sh 1.1.0` → reproducible ZIP +
+- Build: `scripts/build_release.sh 1.2.0` → reproducible ZIP +
   `scripts/sha256.sh` for the checksum.
 - Architecture and internal contracts: `docs/architecture.md`.
 - Research notes: `docs/research/`.

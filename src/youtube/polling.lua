@@ -11,6 +11,8 @@ local Innertube = require("src.youtube.innertube")
 local Adapter = require("src.c2_adapter")
 local Validation = require("src.support.validation")
 local DeliveryQueue = require("src.support.delivery_queue")
+local Health = require("src.support.health")
+local I18n = require("src.i18n")
 
 local Polling = {}
 
@@ -82,14 +84,13 @@ local function finish_stop(video_id, reason)
   end
   streams[video_id] = nil
   if reason == "paused" then
-    system_to_splits(video_id, "Vigilancia del canal pausada.")
+    system_to_splits(video_id, I18n.t("stopped_paused"))
   elseif reason == "removed" then
-    system_to_splits(video_id, "Canal eliminado de la vigilancia.")
+    system_to_splits(video_id, I18n.t("stopped_removed"))
   elseif reason == "reconfigured" then
-    system_to_splits(video_id, "Chat detenido para aplicar la configuración importada.")
+    system_to_splits(video_id, I18n.t("stopped_import"))
   else
-    system_to_splits(video_id, "Directo finalizado o chat cerrado (" .. reason ..
-      "). El canal vuelve a vigilancia offline.")
+    system_to_splits(video_id, I18n.t("stopped", { reason = reason }))
   end
   ActiveStreams.cleanup_video(video_id)
   Logging.info("chat_stopped", { video = video_id, reason = reason })
@@ -126,6 +127,7 @@ local function retry(data, reason)
     return
   end
   entry.errors = entry.errors + 1
+  Health.increment("poll_retries")
   entry.last_error = reason
   local delay = Backoff.chat_error_delay(entry.errors)
   Logging.rate_limited("warning", "chat-retry:" .. video_id, 30000, 2, "chat_retry",
@@ -276,6 +278,7 @@ function Polling._request(data)
     return
   end
   ActiveStreams.set_in_flight(video_id, true)
+  Health.increment("poll_requests")
 
   local request = Adapter.http_post_json(
     Innertube.live_chat_url(data.apiKey),
@@ -292,6 +295,7 @@ function Polling._request(data)
       return
     end
     if status >= 400 then
+      Health.increment("http_errors")
       retry(data, "http_" .. status)
       return
     end
@@ -310,6 +314,7 @@ function Polling._request(data)
       return
     end
     streams[video_id].errors = 0
+    Health.increment("poll_successes")
     handle_payload(data, payload)
   end)
 
@@ -476,7 +481,7 @@ local function offline_check(state, persist, key, entry, splits)
           fallback_ms = state.settings.chat_poll_fallback_ms
         }
       })
-      system_to_splits(parsed.videoId, "Directo detectado: chat conectado.")
+      system_to_splits(parsed.videoId, I18n.t("live"))
       Logging.info("stream_went_live", { channel = key, video = parsed.videoId })
     end
   end)

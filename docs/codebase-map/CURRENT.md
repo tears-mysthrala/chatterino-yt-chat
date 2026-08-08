@@ -5,7 +5,7 @@
 - Branch: `main`
 - Working tree: clean before documentation generation; dirty afterward only due to these new map files
 - Generated at: `2026-08-08` (`Europe/Madrid`)
-- Repo root: `D:/github/chatterino-yt-chat`
+- Repo root: `.`
 - Mode: initial
 - Overview: [2026-08-08_e11668a_overview.md](2026-08-08_e11668a_overview.md)
 - Module index: [2026-08-08_e11668a_module-index.md](2026-08-08_e11668a_module-index.md)

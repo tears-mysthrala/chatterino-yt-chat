@@ -3,8 +3,9 @@ local language = "es"
 
 local TEXT = {
   es = {
-    help = "Comandos: <url|@usuario> | list | status | health | pause <canal> | resume <canal> | " ..
-        "remove <canal> | auto <@usuario> | delay [ms] | lang [es|en] | config | export | import",
+    help = "Comandos: help | <url|@usuario> | auto @usuario | list | status | health [export] | " ..
+        "pause <canal> | resume <canal> | remove <canal> | delay [0-30000] | lang [es|en] | " ..
+        "config [gui] | export | import",
     no_channels = "No hay canales configurados.", channel_missing = "Canal no encontrado. Usa /yt-chat list.",
     exported = "Configuración exportada a data/YT_CHAT.export.json.", export_failed = "No se pudo exportar la configuración.",
     imported = "Configuración importada y validada.", import_failed = "No se pudo importar: {error}.",
@@ -43,8 +44,9 @@ local TEXT = {
     live = "Directo detectado: chat conectado."
   },
   en = {
-    help = "Commands: <url|@handle> | list | status | health | pause <channel> | resume <channel> | " ..
-        "remove <channel> | auto <@handle> | delay [ms] | lang [es|en] | config | export | import",
+    help = "Commands: help | <url|@handle> | auto @handle | list | status | health [export] | " ..
+        "pause <channel> | resume <channel> | remove <channel> | delay [0-30000] | lang [es|en] | " ..
+        "config [gui] | export | import",
     no_channels = "No channels configured.", channel_missing = "Channel not found. Use /yt-chat list.",
     exported = "Configuration exported to data/YT_CHAT.export.json.", export_failed = "Could not export configuration.",
     imported = "Configuration imported and validated.", import_failed = "Could not import: {error}.",

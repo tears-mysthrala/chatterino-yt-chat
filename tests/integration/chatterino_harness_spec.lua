@@ -138,8 +138,11 @@ local completions = mock.callbacks[mock.c2.EventType.CompletionRequested]({
 })
 T.eq(completions.values[1], "status", "international status command completion offered")
 mock.run_command("/yt-chat", "splitA", "ayuda")
-T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("list", 1, true) ~= nil,
-  "Spanish help uses the international command vocabulary")
+local international_help = mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]
+for _, usage in ipairs({ "help", "auto @usuario", "list", "status", "health [export]", "pause <canal>",
+    "resume <canal>", "remove <canal>", "delay [0-30000]", "lang [es|en]", "config [gui]", "export", "import" }) do
+  T.ok(international_help:find(usage, 1, true) ~= nil, "Spanish help documents " .. usage)
+end
 mock.run_command("/yt-chat", "splitA", "configurar", "interfaz", "sí")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("no permite", 1, true) ~= nil,
   "GUI activation attempt explains the upstream limitation")

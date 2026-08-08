@@ -111,6 +111,7 @@ function Persistence.validate_schema(data)
           normalized[field] = entry[field]
         end
       end
+      normalized.paused = entry.paused == true
       out.channels[key] = normalized
     end
   end
@@ -126,6 +127,19 @@ local function write_file(path, content)
   f:flush()
   f:close()
   return true, nil
+end
+
+function Persistence.export_snapshot(state)
+  local encoded = json.encode(Persistence.validate_schema(state))
+  return write_file(dir .. "/YT_CHAT.export.json", encoded)
+end
+
+function Persistence.import_snapshot()
+  local decoded = safe_decode(read_all(dir .. "/YT_CHAT.export.json"))
+  if not decoded then
+    return nil, "missing_or_invalid_export"
+  end
+  return Persistence.validate_schema(decoded), nil
 end
 
 local function backup_current(path)

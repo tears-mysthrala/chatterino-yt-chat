@@ -22,7 +22,7 @@ jobs:
           sudo luarocks install luacheck
       - name: Validate info.json version
         run: |
-          jq -e '.version == "1.0.0"' info.json
+          jq -e '.version == "1.1.0"' info.json
           jq -e '.name == "chatterino-yt-chat"' info.json
           jq -e '.license == "MIT"' info.json
       - name: Lua lint
@@ -63,19 +63,19 @@ jobs:
       - name: Run tests
         run: scripts/test.sh
       - name: Build zip
-        run: scripts/build_release.sh 1.0.0
+        run: scripts/build_release.sh 1.1.0
       - name: Reproducible build check
         run: |
-          HASH1="$(sha256sum dist/chatterino-yt-chat-1.0.0.zip | cut -d' ' -f1)"
-          scripts/build_release.sh 1.0.0
-          HASH2="$(sha256sum dist/chatterino-yt-chat-1.0.0.zip | cut -d' ' -f1)"
+          HASH1="$(sha256sum dist/chatterino-yt-chat-1.1.0.zip | cut -d' ' -f1)"
+          scripts/build_release.sh 1.1.0
+          HASH2="$(sha256sum dist/chatterino-yt-chat-1.1.0.zip | cut -d' ' -f1)"
           test "$HASH1" = "$HASH2"
           echo "reproducible: $HASH1"
       - name: Generate sha256
-        run: scripts/sha256.sh dist/chatterino-yt-chat-1.0.0.zip
+        run: scripts/sha256.sh dist/chatterino-yt-chat-1.1.0.zip
       - uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
         with:
           name: release-artifacts
           path: |
-            dist/chatterino-yt-chat-1.0.0.zip
-            dist/chatterino-yt-chat-1.0.0.zip.sha256
+            dist/chatterino-yt-chat-1.1.0.zip
+            dist/chatterino-yt-chat-1.1.0.zip.sha256

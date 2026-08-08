@@ -1,16 +1,23 @@
 ## Estado global
 
-- Objetivo: `chatterino-yt-chat v1.0.0`
-- Estado actual: **PUBLICADO v1.0.0**
-- Última actualización: 2026-07-19T18:20:00+02:00
-- Rama actual: main
-- Último commit revisado: `de90a61`
+- Objetivo: `chatterino-yt-chat v1.1.0`
+- Estado actual: **v1.1.0 EN DESARROLLO; v1.0.0 PUBLICADO Y ESTABLE PROVISIONALMENTE**
+- Última actualización: 2026-08-08
+- Rama actual: `agent/v1-1-product-controls`
+- Último commit publicado: `bd7211a`
 - Tag: `v1.0.0` (release workflow verde, run `29694238438`)
 - Release: https://github.com/tears-mysthrala/chatterino-yt-chat/releases/tag/v1.0.0 (publicada 2026-07-19T16:15:37Z)
 - Criterios obligatorios verificados: 20/20
 - Bloqueos activos: 0
-- Contrato interno: `docs/architecture.md` (evento normalizado IR + esquema de estado v2)
+- Contrato interno: `docs/architecture.md` (evento normalizado IR + esquema de estado v4)
 - Validación en app real: Chatterino 2.5.5 oficial headless, e2e con chat real OK (VAL-011/012/014)
+- Validación de usuario: Chatterino 2.5.5 GUI conectado a un directo y recibiendo mensajes sin fallos observados; soak largo todavía pendiente (`docs/validation/user-smoke-2026-08-08.md`).
+
+> Nota de reconciliación: las entradas históricas marcadas `Pendiente` más abajo
+> describen el plan previo a v1.0.0. Cuando entren en conflicto con `Estado
+> global`, las validaciones VAL-009..014 y el cierre de sesión al final del
+> documento, prevalece la evidencia posterior. No deben interpretarse como
+> backlog actual sin revalidación.
 - Entorno verificado: Lua 5.5.0 (`/usr/bin/lua`, también 5.1/5.4/luajit), `gh` autenticado como `tears-mysthrala` (scopes repo+workflow), red a `www.youtube.com` OK (HTTP 200), remoto `origin` = `https://github.com/tears-mysthrala/chatterino-yt-chat.git`
 
 ## En curso

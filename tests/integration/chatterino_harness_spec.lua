@@ -106,6 +106,11 @@ mock.add_channel("splitA")
 mock.add_channel("splitB")
 Plugin.bootstrap()
 T.ok(mock.commands["/yt-chat"] ~= nil, "command registered")
+T.ok(mock.callbacks[mock.c2.EventType.CompletionRequested] ~= nil, "command completion registered")
+local completions = mock.callbacks[mock.c2.EventType.CompletionRequested]({
+  query = "sta", full_text_content = "/yt-chat sta", cursor_position = 12, is_first_word = false
+})
+T.eq(completions.values[1], "status", "status command completion offered")
 
 -- Runtime sync delay setting is validated, persisted and immediately active.
 mock.run_command("/yt-chat", "splitA", "delay", "750")
@@ -144,20 +149,31 @@ payload_queue[1] = chat_payload({
 
 mock.run_command("/yt-chat", "splitA", "https://www.youtube.com/@test/live")
 T.eq(mock.count_requests("get_live_chat"), 1, "polling started immediately")
-T.eq(#mock.channels.splitA.messages, 2, "two messages delivered to splitA")
-T.eq(mock.channels.splitA.messages[1].id, "yt-chat-m1", "message id prefixed")
+T.eq(#mock.channels.splitA.messages, 0, "initial messages wait for presentation delay")
 
 -- Multi-split: same channel added from splitB — no duplicate polling --------
 
 mock.run_command("/yt-chat", "splitB", "https://www.youtube.com/@test/live")
 T.eq(mock.count_requests("get_live_chat"), 1, "no second polling for same video")
+mock.run_command("/yt-chat", "splitA", "status")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("próximo poll", 1, true) ~= nil,
+  "status command reports active stream timing")
+mock.run_command("/yt-chat", "splitA", "list")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Test Channel", 1, true) ~= nil,
+  "list command reports configured channel")
+mock.advance(749)
+T.eq(#mock.channels.splitA.messages, 0, "presentation delay has not elapsed")
+mock.advance(1)
+T.eq(#mock.channels.splitA.messages, 2, "initial batch delivered after exact delay")
+T.eq(#mock.channels.splitB.messages, 2, "new split receives still-queued initial batch")
+T.eq(mock.channels.splitA.messages[1].id, "yt-chat-m1", "message id prefixed")
 
 payload_queue[1] = chat_payload({ text_action("m3", "carol", "after split join") }, 2000)
-mock.advance(2700)
-T.eq(mock.count_requests("get_live_chat"), 1, "extra sync delay postpones next poll")
-mock.advance(100)
+mock.advance(1250)
 T.eq(mock.count_requests("get_live_chat"), 2, "next poll scheduled by YouTube timeout")
-T.eq(#mock.channels.splitB.messages, 1, "new message distributed to splitB")
+T.eq(#mock.channels.splitA.messages, 2, "polling does not bypass presentation delay")
+mock.advance(750)
+T.eq(#mock.channels.splitB.messages, 3, "new message distributed to splitB")
 T.eq(#mock.channels.splitA.messages, 3, "new message also in splitA")
 
 -- Dedupe: re-delivered id is dropped -----------------------------------------
@@ -166,7 +182,7 @@ payload_queue[1] = chat_payload({
   text_action("m3", "carol", "after split join"),
   text_action("m4", "dan", "fresh")
 }, 2000)
-mock.advance(2800)
+mock.advance(2000)
 T.eq(#mock.channels.splitA.messages, 4, "duplicate id not rendered again")
 
 -- Moderation: in-place deletion ----------------------------------------------
@@ -174,7 +190,7 @@ T.eq(#mock.channels.splitA.messages, 4, "duplicate id not rendered again")
 payload_queue[1] = chat_payload({
   { markChatItemAsDeletedAction = { targetItemId = "m1", deletedStateMessage = { runs = { { text = "Message deleted by moderator" } } } } }
 }, 2000)
-mock.advance(2800)
+mock.advance(2000)
 local replaced = mock.channels.splitA.messages[1]
 T.ok(replaced.message_text:find("deleted", 1, true) ~= nil, "original message replaced by deletion marker")
 T.eq(replaced.elements[1].text, "▶️", "moderation replacement keeps YouTube emoji prefix")
@@ -183,14 +199,14 @@ T.eq(#mock.channels.splitA.messages, 4, "deletion does not append a new message"
 -- Unknown action produces a visible system event -----------------------------
 
 payload_queue[1] = chat_payload({ { brandNewAction2042 = { weird = true } } }, 2000)
-mock.advance(2800)
+mock.advance(2000)
 local last_sys = mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]
 T.ok(last_sys:find("brandNewAction2042", 1, true) ~= nil, "unknown action visible in chat")
 
 -- Stream end: no continuationContents -> stop + cleanup -----------------------
 
 payload_queue[1] = json.encode({ responseContext = {} })
-mock.advance(2800)
+mock.advance(2000)
 T.eq(ActiveStreams.active_video_count(), 0, "stream cleaned after end")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("finalizado", 1, true) ~= nil,
   "stream end announced")

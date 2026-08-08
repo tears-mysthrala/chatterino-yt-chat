@@ -7,6 +7,7 @@ function C2Mock.new()
   local mock = {
     channels = {},
     commands = {},
+    callbacks = {},
     timers = {},
     requests = {},
     logs = {},
@@ -63,6 +64,7 @@ function C2Mock.new()
   c2.HTTPMethod = { Get = "GET", Post = "POST" }
   c2.LogLevel = { Debug = "D", Info = "I", Warning = "W", Critical = "C" }
   c2.FontStyle = { ChatMediumBold = "bold", Tiny = "tiny", ChatMediumItalic = "italic" }
+  c2.EventType = { CompletionRequested = "completion" }
 
   function c2.log(level, ...)
     local parts = {}
@@ -74,6 +76,11 @@ function C2Mock.new()
 
   function c2.register_command(name, handler)
     mock.commands[name] = handler
+    return true
+  end
+
+  function c2.register_callback(event_type, handler)
+    mock.callbacks[event_type] = handler
     return true
   end
 

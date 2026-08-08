@@ -3,6 +3,8 @@ local Validation = require("src.support.validation")
 local RateLimit = require("src.support.rate_limit")
 local Backoff = require("src.support.backoff")
 local Logging = require("src.support.logging")
+local DeliveryQueue = require("src.support.delivery_queue")
+local Clock = require("src.support.clock")
 
 -- validation: hosts
 T.ok(Validation.is_safe_https_youtube("https://www.youtube.com/watch?v=abc"), "youtube https ok")
@@ -51,6 +53,36 @@ do
   T.ok(not RateLimit.allow("k1", 1000, 2), "third hit blocked")
   now = now + 1001
   T.ok(RateLimit.allow("k1", 1000, 2), "window reset allows again")
+end
+
+-- delivery queue: exact delay, stable ordering and cancellation
+do
+  DeliveryQueue._reset()
+  local now = 1000
+  Clock._set(function() return now end)
+  local timers = {}
+  local later = function(cb, ms) timers[#timers + 1] = { cb = cb, ms = ms } end
+  local delivered = {}
+  DeliveryQueue.enqueue("v", 500, function() delivered[#delivered + 1] = "a" end, later)
+  DeliveryQueue.enqueue("v", 500, function() delivered[#delivered + 1] = "b" end, later)
+  T.eq(DeliveryQueue.pending("v"), 2, "two delivery batches queued")
+  T.eq(timers[1].ms, 500, "queue schedules exact presentation delay")
+  now = 1500
+  timers[1].cb()
+  T.eq(table.concat(delivered), "ab", "equal-due batches keep insertion order")
+  T.eq(DeliveryQueue.pending("v"), 0, "queue drains fully")
+  DeliveryQueue.enqueue("cancel", 50, function() delivered[#delivered + 1] = "x" end, later)
+  DeliveryQueue.cancel("cancel")
+  T.eq(DeliveryQueue.pending("cancel"), 0, "cancel removes queued delivery")
+  DeliveryQueue.enqueue("cancel", 100, function() delivered[#delivered + 1] = "y" end, later)
+  now = 1550
+  timers[2].cb()
+  T.eq(table.concat(delivered), "ab", "stale cancelled timer cannot run replacement queue")
+  now = 1600
+  timers[3].cb()
+  T.eq(table.concat(delivered), "aby", "replacement queue runs only on its own timer")
+  Clock._reset()
+  DeliveryQueue._reset()
 end
 
 -- rate_limit: bucket eviction cap

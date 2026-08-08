@@ -24,7 +24,7 @@ end
 -- Fresh read yields defaults
 local state = Persistence.read()
 T.ok(type(state) == "table", "state read returns table")
-T.eq(state.schema_version, 3, "schema version is 3")
+T.eq(state.schema_version, 4, "schema version is 4")
 T.eq(Persistence.last_recovery, "default", "fresh read marked as default")
 T.eq(state.settings.debug, false, "debug default false")
 T.eq(state.settings.offline_poll_max, 300, "offline max default")
@@ -86,6 +86,7 @@ T.eq(dirty.settings.offline_poll_max, 120, "numeric string coerced")
 T.eq(dirty.settings.chat_sync_delay_ms, 0, "missing sync delay gets default")
 T.eq(#dirty.channels.UCX.splits, 2, "non-string splits dropped")
 T.eq(dirty.channels.UCX.payload, nil, "channel junk dropped")
+T.eq(dirty.channels.UCX.paused, false, "paused defaults false")
 
 local bounded_delay = Persistence.validate_schema({
   schema_version = 3,
@@ -93,6 +94,19 @@ local bounded_delay = Persistence.validate_schema({
   channels = {}
 })
 T.eq(bounded_delay.settings.chat_sync_delay_ms, 30000, "sync delay is capped when loaded")
+
+do
+  local exported = Persistence.validate_schema({
+    schema_version = 4,
+    settings = { chat_sync_delay_ms = 250 },
+    channels = { UCEXPORT = { channel_id = "UCEXPORT", paused = true, splits = { "s" } } }
+  })
+  T.ok(Persistence.export_snapshot(exported), "configuration export written")
+  local imported, import_err = Persistence.import_snapshot()
+  T.eq(import_err, nil, "valid export imports without error")
+  T.eq(imported.settings.chat_sync_delay_ms, 250, "settings survive export/import")
+  T.ok(imported.channels.UCEXPORT.paused, "paused state survives export/import")
+end
 
 -- Debounced flusher: bursts produce a single write
 do
@@ -143,7 +157,7 @@ do
   wf2:write(require("libs/json").encode(legacy))
   wf2:close()
   local migrated = Persistence.read()
-  T.eq(migrated.schema_version, 3, "legacy migrated to v3")
+  T.eq(migrated.schema_version, 4, "legacy migrated to v4")
   T.ok(migrated.channels.UCLEGACY123 ~= nil, "channel id key kept")
   T.eq(migrated.channels.UCLEGACY123.channel_id, "UCLEGACY123", "channel_id inferred from key")
   T.eq(migrated.channels.UCLEGACY123.splits[2], "splitB", "splits preserved")

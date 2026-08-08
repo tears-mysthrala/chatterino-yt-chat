@@ -111,6 +111,41 @@ function Channels.get_splits(state, key)
   return entry.splits or {}
 end
 
+function Channels.remove(state, key)
+  if not (state.channels and state.channels[key]) then
+    return false
+  end
+  state.channels[key] = nil
+  return true
+end
+
+function Channels.set_paused(state, key, paused)
+  local entry = state.channels and state.channels[key]
+  if not entry then
+    return false
+  end
+  entry.paused = paused == true
+  return true
+end
+
+function Channels.find(state, term)
+  if type(term) ~= "string" then
+    return nil
+  end
+  if state.channels and state.channels[term] then
+    return term
+  end
+  local needle = term:lower():gsub("^@", "")
+  for key, entry in pairs(state.channels or {}) do
+    if tostring(entry.handle or ""):lower():gsub("^@", "") == needle or
+        tostring(entry.display_name or ""):lower() == needle or
+        tostring(entry.channel_id or ""):lower() == needle then
+      return key
+    end
+  end
+  return nil
+end
+
 --- Iterates channels that still have at least one split attached.
 function Channels.iter_active(state)
   local keys = {}

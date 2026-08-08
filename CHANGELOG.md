@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0 - Unreleased
+
+- Adds the visible `▶️ YT` origin marker to rich and degraded messages.
+- Replaces polling slowdown with a true ordered presentation-delay queue.
+- Adds `list`, `status`, `pause`, `resume`, `remove`, `config`, `export`, and
+  `import` operations plus command completion.
+- Adds bounded operational status without exposing tokens or message content.
+- Persists paused channels and configuration schema v4.
+- Detects future image API support while retaining the Chatterino 2.5.5 text
+  fallback; Settings GUI integration remains blocked by the stable upstream API.
+
 ## 1.0.0 - 2026-07-19
 
 First stable release of `chatterino-yt-chat` as an independent project,

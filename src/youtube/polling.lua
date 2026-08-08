@@ -10,6 +10,7 @@ local Builder = require("src.messages.builder")
 local Innertube = require("src.youtube.innertube")
 local Adapter = require("src.c2_adapter")
 local Validation = require("src.support.validation")
+local DeliveryQueue = require("src.support.delivery_queue")
 
 local Polling = {}
 
@@ -47,8 +48,7 @@ local DEDUPED_KINDS = {
 local POLL_UPDATE_WINDOW_MS = 10000
 local sync_delay_ms = 0
 
---- Sets an extra delay on top of YouTube's continuation timeout.
---- The defensive upper bound prevents accidental minute-long desync.
+--- Sets a presentation delay for normalized event batches.
 function Polling.set_sync_delay(value)
   sync_delay_ms = math.floor(Validation.clamp_number(value, 0, 30000, 0))
   return sync_delay_ms
@@ -76,14 +76,39 @@ local function system_to_splits(video_id, text)
   end
 end
 
-local function stop(video_id, reason)
+local function finish_stop(video_id, reason)
   if not streams[video_id] then
     return
   end
   streams[video_id] = nil
-  system_to_splits(video_id, "Directo finalizado o chat cerrado (" .. reason .. "). El canal vuelve a vigilancia offline.")
+  if reason == "paused" then
+    system_to_splits(video_id, "Vigilancia del canal pausada.")
+  elseif reason == "removed" then
+    system_to_splits(video_id, "Canal eliminado de la vigilancia.")
+  elseif reason == "reconfigured" then
+    system_to_splits(video_id, "Chat detenido para aplicar la configuración importada.")
+  else
+    system_to_splits(video_id, "Directo finalizado o chat cerrado (" .. reason ..
+      "). El canal vuelve a vigilancia offline.")
+  end
   ActiveStreams.cleanup_video(video_id)
   Logging.info("chat_stopped", { video = video_id, reason = reason })
+end
+
+local function stop(video_id, reason, drain_queue)
+  local entry = streams[video_id]
+  if not entry or entry.ending then
+    return
+  end
+  if drain_queue and sync_delay_ms > 0 then
+    entry.ending = true
+    DeliveryQueue.enqueue(video_id, sync_delay_ms, function()
+      finish_stop(video_id, reason)
+    end, Adapter.later)
+  else
+    DeliveryQueue.cancel(video_id)
+    finish_stop(video_id, reason)
+  end
 end
 
 local function schedule(video_id, data, delay_ms)
@@ -101,6 +126,7 @@ local function retry(data, reason)
     return
   end
   entry.errors = entry.errors + 1
+  entry.last_error = reason
   local delay = Backoff.chat_error_delay(entry.errors)
   Logging.rate_limited("warning", "chat-retry:" .. video_id, 30000, 2, "chat_retry",
     { video = video_id, reason = reason, attempt = entry.errors, retry_s = math.floor(delay) })
@@ -178,21 +204,35 @@ local function handle_payload(data, payload)
   local lc = payload.continuationContents and payload.continuationContents.liveChatContinuation
   if type(lc) ~= "table" then
     -- No live chat continuation content: stream ended or chat disabled.
-    stop(video_id, "stream_end")
+    stop(video_id, "stream_end", true)
     return
   end
 
   local actions = lc.actions
+  local batch = {}
   if type(actions) == "table" then
     for _, action in ipairs(actions) do
       local ok, events = pcall(Actions.from_action, action)
       if ok and type(events) == "table" then
         for _, event in ipairs(events) do
-          deliver_event(video_id, data.channelName, event)
+          batch[#batch + 1] = event
         end
       elseif not ok then
         Logging.rate_limited("warning", "action-err:" .. video_id, 60000, 1, "action_processing_error", {})
       end
+    end
+  end
+
+  if #batch > 0 then
+    local deliver_batch = function()
+      for _, event in ipairs(batch) do
+        deliver_event(video_id, data.channelName, event)
+      end
+    end
+    if sync_delay_ms == 0 and DeliveryQueue.pending(video_id) == 0 then
+      deliver_batch()
+    else
+      DeliveryQueue.enqueue(video_id, sync_delay_ms, deliver_batch, Adapter.later)
     end
   end
 
@@ -203,18 +243,27 @@ local function handle_payload(data, payload)
 
   local cont, err = Continuations.pick(payload, data.poll_limits)
   if err then
-    stop(video_id, "no_continuation")
+    stop(video_id, "no_continuation", true)
     return
   end
   data.continuation = cont.token
   local jitter = (Backoff._random() * 0.15) * cont.timeout_ms
-  schedule(video_id, data, cont.timeout_ms + jitter + sync_delay_ms)
+  local entry = streams[video_id]
+  if entry then
+    entry.last_success_ms = Clock.now_ms()
+    entry.last_error = nil
+    entry.next_poll_ms = Clock.now_ms() + cont.timeout_ms + jitter
+  end
+  schedule(video_id, data, cont.timeout_ms + jitter)
 end
 
 function Polling._request(data)
   local video_id = data.videoId
   local entry = streams[video_id]
   if not entry then
+    return
+  end
+  if entry.ending then
     return
   end
   if #prune_splits(video_id) == 0 then
@@ -239,7 +288,7 @@ function Polling._request(data)
     end
     local status = result:status() or 0
     if FATAL_STATUS[status] then
-      stop(video_id, "http_" .. status)
+      stop(video_id, "http_" .. status, true)
       return
     end
     if status >= 400 then
@@ -287,6 +336,12 @@ function Polling.start(data)
   end
   streams[video_id] = {
     errors = 0,
+    data = data,
+    started_ms = Clock.now_ms(),
+    last_success_ms = nil,
+    last_error = nil,
+    next_poll_ms = Clock.now_ms(),
+    ending = false,
     reactions = { count = 0, window_start = Clock.now_ms() }
   }
   Logging.info("chat_started", { video = video_id, channel = data.channelName })
@@ -294,8 +349,8 @@ function Polling.start(data)
   return true
 end
 
-function Polling.stop(video_id)
-  stop(video_id, "manual")
+function Polling.stop(video_id, reason)
+  stop(video_id, reason or "manual")
 end
 
 function Polling.is_active(video_id)
@@ -308,6 +363,37 @@ function Polling.active_count()
     n = n + 1
   end
   return n
+end
+
+function Polling.status()
+  local out = {}
+  for video_id, entry in pairs(streams) do
+    out[#out + 1] = {
+      video_id = video_id,
+      channel_id = entry.data and entry.data.channelId or nil,
+      channel_name = entry.data and entry.data.channelName or nil,
+      errors = entry.errors,
+      last_error = entry.last_error,
+      last_success_ms = entry.last_success_ms,
+      next_poll_ms = entry.next_poll_ms,
+      queued_batches = DeliveryQueue.pending(video_id),
+      ending = entry.ending == true,
+      splits = #ActiveStreams.get_splits(video_id)
+    }
+  end
+  table.sort(out, function(a, b) return a.video_id < b.video_id end)
+  return out
+end
+
+function Polling.stop_by_channel(channel_id, reason)
+  local targets = {}
+  for video_id, entry in pairs(streams) do
+    if entry.data and entry.data.channelId == channel_id then
+      targets[#targets + 1] = video_id
+    end
+  end
+  for _, video_id in ipairs(targets) do stop(video_id, reason or "paused") end
+  return #targets
 end
 
 --- Test/introspection helper.
@@ -401,6 +487,23 @@ local function offline_check(state, persist, key, entry, splits)
   request:execute()
 end
 
+function Polling.check_channel_now(state, persist, key)
+  local entry = state.channels and state.channels[key]
+  if not entry or entry.paused == true then
+    return false
+  end
+  local splits = {}
+  for _, split in ipairs(entry.splits or {}) do
+    if Adapter.channel(split) then splits[#splits + 1] = split end
+  end
+  if #splits == 0 then
+    return false
+  end
+  offline.next_due[key] = 0
+  offline_check(state, persist, key, entry, splits)
+  return true
+end
+
 --- One pass over persisted channels; schedules the next pass at the
 --- nearest due time across channels (no busy loop, one timer chain).
 function Polling.poll_offline_once(state, persist)
@@ -412,7 +515,7 @@ function Polling.poll_offline_once(state, persist)
         splits[#splits + 1] = split
       end
     end
-    if #splits > 0 then
+    if #splits > 0 and entry.paused ~= true then
       local due = offline.next_due[key] or 0
       if now >= due then
         offline_check(state, persist, key, entry, splits)
@@ -422,7 +525,8 @@ function Polling.poll_offline_once(state, persist)
   -- Next wake: nearest pending due across active channels.
   local next_wakeup = 300
   for key, entry in pairs(state.channels or {}) do
-    if type(entry) == "table" and type(entry.splits) == "table" and #entry.splits > 0 then
+    if type(entry) == "table" and entry.paused ~= true and
+        type(entry.splits) == "table" and #entry.splits > 0 then
       local due = offline.next_due[key] or now
       local remaining = due - now
       if remaining < next_wakeup then
@@ -450,6 +554,7 @@ end
 function Polling._reset()
   streams = {}
   sync_delay_ms = 0
+  DeliveryQueue._reset()
   offline.next_due = {}
   offline.running = false
 end

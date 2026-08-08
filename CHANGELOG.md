@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.3.0 - Unreleased
+## 1.3.0 - 2026-08-08
 
 - Accepts bare YouTube handles such as `/yt-chat @creator`.
 - Adds the compact `auto` command to persist a handle-to-conversation binding

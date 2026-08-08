@@ -107,6 +107,34 @@ mock.add_channel("splitB")
 Plugin.bootstrap()
 T.ok(mock.commands["/yt-chat"] ~= nil, "command registered")
 
+-- Runtime sync delay setting is validated, persisted and immediately active.
+mock.run_command("/yt-chat", "splitA", "delay", "750")
+T.eq(Plugin._state().settings.chat_sync_delay_ms, 750, "sync delay persisted in state")
+T.eq(require("src.youtube.polling").get_sync_delay(), 750, "sync delay active immediately")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("▶️ YT", 1, true) == 1,
+  "plugin system messages carry YouTube emoji prefix")
+mock.run_command("/yt-chat", "splitA", "delay")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("750 ms", 1, true) ~= nil,
+  "sync delay command reports current value")
+mock.run_command("/yt-chat", "splitA", "delay", "30001")
+T.eq(require("src.youtube.polling").get_sync_delay(), 750, "invalid sync delay leaves current value unchanged")
+
+-- If rich c2.Message construction is unavailable, textual fallback still
+-- identifies the message as originating from YouTube.
+do
+  local message_new = mock.c2.Message.new
+  mock.c2.Message.new = nil
+  local fallback_spec = require("src.messages.builder").to_chatterino_message({
+    kind = "text_message",
+    author = "fallback-user",
+    text = "fallback body"
+  }, false)
+  require("src.c2_adapter").deliver(fallback_spec, { "splitA" })
+  local fallback_text = mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]
+  T.ok(fallback_text:find("▶️ YT ", 1, true) == 1, "degraded delivery keeps YouTube prefix")
+  mock.c2.Message.new = message_new
+end
+
 -- Add a live channel from splitA ---------------------------------------------
 
 payload_queue[1] = chat_payload({
@@ -125,7 +153,9 @@ mock.run_command("/yt-chat", "splitB", "https://www.youtube.com/@test/live")
 T.eq(mock.count_requests("get_live_chat"), 1, "no second polling for same video")
 
 payload_queue[1] = chat_payload({ text_action("m3", "carol", "after split join") }, 2000)
-mock.advance(2100)
+mock.advance(2700)
+T.eq(mock.count_requests("get_live_chat"), 1, "extra sync delay postpones next poll")
+mock.advance(100)
 T.eq(mock.count_requests("get_live_chat"), 2, "next poll scheduled by YouTube timeout")
 T.eq(#mock.channels.splitB.messages, 1, "new message distributed to splitB")
 T.eq(#mock.channels.splitA.messages, 3, "new message also in splitA")
@@ -136,7 +166,7 @@ payload_queue[1] = chat_payload({
   text_action("m3", "carol", "after split join"),
   text_action("m4", "dan", "fresh")
 }, 2000)
-mock.advance(2100)
+mock.advance(2800)
 T.eq(#mock.channels.splitA.messages, 4, "duplicate id not rendered again")
 
 -- Moderation: in-place deletion ----------------------------------------------
@@ -144,22 +174,23 @@ T.eq(#mock.channels.splitA.messages, 4, "duplicate id not rendered again")
 payload_queue[1] = chat_payload({
   { markChatItemAsDeletedAction = { targetItemId = "m1", deletedStateMessage = { runs = { { text = "Message deleted by moderator" } } } } }
 }, 2000)
-mock.advance(2100)
+mock.advance(2800)
 local replaced = mock.channels.splitA.messages[1]
 T.ok(replaced.message_text:find("deleted", 1, true) ~= nil, "original message replaced by deletion marker")
+T.eq(replaced.elements[1].text, "▶️", "moderation replacement keeps YouTube emoji prefix")
 T.eq(#mock.channels.splitA.messages, 4, "deletion does not append a new message")
 
 -- Unknown action produces a visible system event -----------------------------
 
 payload_queue[1] = chat_payload({ { brandNewAction2042 = { weird = true } } }, 2000)
-mock.advance(2100)
+mock.advance(2800)
 local last_sys = mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]
 T.ok(last_sys:find("brandNewAction2042", 1, true) ~= nil, "unknown action visible in chat")
 
 -- Stream end: no continuationContents -> stop + cleanup -----------------------
 
 payload_queue[1] = json.encode({ responseContext = {} })
-mock.advance(2100)
+mock.advance(2800)
 T.eq(ActiveStreams.active_video_count(), 0, "stream cleaned after end")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("finalizado", 1, true) ~= nil,
   "stream end announced")

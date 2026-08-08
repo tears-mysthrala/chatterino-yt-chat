@@ -1,6 +1,6 @@
 local Migrations = {}
 
-Migrations.SCHEMA_VERSION = 2
+Migrations.SCHEMA_VERSION = 3
 
 local DEFAULT_SETTINGS = {
   debug = false,
@@ -8,7 +8,8 @@ local DEFAULT_SETTINGS = {
   offline_poll_max = 300,
   chat_poll_min_ms = 500,
   chat_poll_max_ms = 15000,
-  chat_poll_fallback_ms = 1000
+  chat_poll_fallback_ms = 1000,
+  chat_sync_delay_ms = 0
 }
 
 local function default_settings()
@@ -92,9 +93,19 @@ local function migrate_to_v2(state)
   return state
 end
 
+-- v2 -> v3: optional extra delay added to YouTube's requested poll interval.
+local function migrate_to_v3(state)
+  state.settings = type(state.settings) == "table" and state.settings or {}
+  local delay = tonumber(state.settings.chat_sync_delay_ms) or DEFAULT_SETTINGS.chat_sync_delay_ms
+  state.settings.chat_sync_delay_ms = math.floor(math.max(0, math.min(30000, delay)))
+  state.schema_version = 3
+  return state
+end
+
 local STEPS = {
   [1] = migrate_to_v1,
-  [2] = migrate_to_v2
+  [2] = migrate_to_v2,
+  [3] = migrate_to_v3
 }
 
 --- Applies every pending migration in order. Idempotent and total:

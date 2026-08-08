@@ -26,6 +26,7 @@ local function text_element(text, opts)
 end
 
 local function add_prefix(elements, event, show_channel)
+  elements[#elements + 1] = text_element("▶️", { color = "red", style = "ChatMediumBold" })
   elements[#elements + 1] = text_element("YT", { color = "system", style = "ChatMediumBold" })
   local ts = nil
   if type(event.timestamp_usec) == "number" then
@@ -77,7 +78,7 @@ end
 local function chat_spec(event, elements, message_text, extra)
   local spec = {
     id = event.id and ("yt-chat-" .. event.id) or nil,
-    message_text = message_text,
+    message_text = "▶️ YT " .. (message_text or ""),
     elements = elements,
     system = false,
     display_name = event.author,
@@ -95,7 +96,7 @@ end
 local function system_spec(text)
   return {
     system = true,
-    message_text = "[yt-chat] " .. text,
+    message_text = "▶️ YT " .. text,
     elements = {}
   }
 end

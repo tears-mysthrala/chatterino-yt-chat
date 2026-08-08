@@ -9,6 +9,7 @@ local Continuations = require("src.youtube.continuations")
 local Builder = require("src.messages.builder")
 local Innertube = require("src.youtube.innertube")
 local Adapter = require("src.c2_adapter")
+local Validation = require("src.support.validation")
 
 local Polling = {}
 
@@ -44,6 +45,18 @@ local DEDUPED_KINDS = {
 }
 
 local POLL_UPDATE_WINDOW_MS = 10000
+local sync_delay_ms = 0
+
+--- Sets an extra delay on top of YouTube's continuation timeout.
+--- The defensive upper bound prevents accidental minute-long desync.
+function Polling.set_sync_delay(value)
+  sync_delay_ms = math.floor(Validation.clamp_number(value, 0, 30000, 0))
+  return sync_delay_ms
+end
+
+function Polling.get_sync_delay()
+  return sync_delay_ms
+end
 
 local function prune_splits(video_id)
   local alive = {}
@@ -195,7 +208,7 @@ local function handle_payload(data, payload)
   end
   data.continuation = cont.token
   local jitter = (Backoff._random() * 0.15) * cont.timeout_ms
-  schedule(video_id, data, cont.timeout_ms + jitter)
+  schedule(video_id, data, cont.timeout_ms + jitter + sync_delay_ms)
 end
 
 function Polling._request(data)
@@ -309,7 +322,6 @@ end
 -- ---------------------------------------------------------------------------
 
 local Html = require("src.youtube.html")
-local Validation = require("src.support.validation")
 
 local offline = {
   next_due = {}, -- channel key -> epoch seconds
@@ -437,6 +449,7 @@ end
 --- Test helper: wipe every polling loop and offline-monitor state.
 function Polling._reset()
   streams = {}
+  sync_delay_ms = 0
   offline.next_due = {}
   offline.running = false
 end

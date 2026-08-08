@@ -254,6 +254,8 @@ do
   local text = event_from("fixtures/real/addChatItemAction-liveChatTextMessageRenderer.json")
   local chat_spec = Builder.to_chatterino_message(text, true)
   T.ok(not chat_spec.system, "chat spec not system")
-  T.eq(chat_spec.elements[1].text, "YT", "YT prefix element")
+  T.eq(chat_spec.elements[1].text, "▶️", "YouTube emoji prefix element")
+  T.eq(chat_spec.elements[2].text, "YT", "YT label follows emoji")
+  T.ok(chat_spec.message_text:find("▶️ YT ", 1, true) == 1, "plain message text keeps YouTube prefix")
   T.ok(chat_spec.id:match("^yt%-chat%-") ~= nil, "message id prefixed")
 end

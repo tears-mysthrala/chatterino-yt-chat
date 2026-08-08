@@ -87,6 +87,7 @@ Reglas:
   id = "yt-chat-" .. event.id,
   message_text = "...",          -- texto plano completo
   elements = {                   -- elementos c2 compatibles (solo texto/timestamp)
+    { type="text", text="▶️", color="red", style="ChatMediumBold" },
     { type="text", text="YT", color="system", style="ChatMediumBold" },
     { type="timestamp", time=1234 },
     ...
@@ -131,7 +132,7 @@ representan como eventos informativos inequívocos con id/autor afectado.
 
 ```json
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "settings": { "debug": false, "offline_poll": {"start":30,"max":300} },
   "channels": {
     "<key>": { "channel_id": "UC...", "handle": "nombre",

@@ -78,7 +78,7 @@ end
 local function chat_spec(event, elements, message_text, extra)
   local spec = {
     id = event.id and ("yt-chat-" .. event.id) or nil,
-    message_text = message_text,
+    message_text = "▶️ YT " .. (message_text or ""),
     elements = elements,
     system = false,
     display_name = event.author,

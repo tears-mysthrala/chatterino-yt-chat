@@ -119,6 +119,22 @@ T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]
 mock.run_command("/yt-chat", "splitA", "delay", "30001")
 T.eq(require("src.youtube.polling").get_sync_delay(), 750, "invalid sync delay leaves current value unchanged")
 
+-- If rich c2.Message construction is unavailable, textual fallback still
+-- identifies the message as originating from YouTube.
+do
+  local message_new = mock.c2.Message.new
+  mock.c2.Message.new = nil
+  local fallback_spec = require("src.messages.builder").to_chatterino_message({
+    kind = "text_message",
+    author = "fallback-user",
+    text = "fallback body"
+  }, false)
+  require("src.c2_adapter").deliver(fallback_spec, { "splitA" })
+  local fallback_text = mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]
+  T.ok(fallback_text:find("▶️ YT ", 1, true) == 1, "degraded delivery keeps YouTube prefix")
+  mock.c2.Message.new = message_new
+end
+
 -- Add a live channel from splitA ---------------------------------------------
 
 payload_queue[1] = chat_payload({

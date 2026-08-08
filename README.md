@@ -106,16 +106,15 @@ Operational commands:
 /yt-chat resume <channel>
 /yt-chat remove <channel>
 /yt-chat delay [0-30000]
-/yt-chat language [es|en]
+/yt-chat lang [es|en]
 /yt-chat config
 /yt-chat export
 /yt-chat import
 ```
 
-When `language=es`, every subcommand also has a Spanish alias: `lista`,
-`estado`, `salud`, `pausar`, `reanudar`, `eliminar`, `retardo`, `idioma`,
-`configurar`, `auto`, `exportar`, `importar` and `ayuda`. English forms remain
-available for compatibility.
+Command names are international and stay the same in every interface language.
+Legacy Spanish aliases remain accepted for backward compatibility but are no
+longer shown in help or completion.
 
 Accepted inputs (URLs are normalized automatically and restricted to HTTPS on official hosts):
 
@@ -246,7 +245,7 @@ happen when something actually changed.
   Chatterino 2.5.5 uses a 100 ms monotonic heartbeat, so delivery targets that
   value with up to one heartbeat of scheduler granularity.
 - `language`: operational UI language; accepts only `"es"` or `"en"` and can
-  be changed live with `/yt-chat language <es|en>`.
+  be changed live with `/yt-chat lang <es|en>`.
 
 Chatterino 2.5.5 does not expose a plugin API for adding controls to its
 Settings GUI. `/yt-chat config` therefore reports the effective configuration,

@@ -134,12 +134,12 @@ end
 T.ok(mock.commands["/yt-chat"] ~= nil, "command registered")
 T.ok(mock.callbacks[mock.c2.EventType.CompletionRequested] ~= nil, "command completion registered")
 local completions = mock.callbacks[mock.c2.EventType.CompletionRequested]({
-  query = "est", full_text_content = "/yt-chat est", cursor_position = 12, is_first_word = false
+  query = "sta", full_text_content = "/yt-chat sta", cursor_position = 12, is_first_word = false
 })
-T.eq(completions.values[1], "estado", "localized status command completion offered")
+T.eq(completions.values[1], "status", "international status command completion offered")
 mock.run_command("/yt-chat", "splitA", "ayuda")
-T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("lista", 1, true) ~= nil,
-  "Spanish help uses real Spanish command aliases")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("list", 1, true) ~= nil,
+  "Spanish help uses the international command vocabulary")
 mock.run_command("/yt-chat", "splitA", "configurar", "interfaz", "sí")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("no permite", 1, true) ~= nil,
   "GUI activation attempt explains the upstream limitation")
@@ -217,7 +217,7 @@ T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]
 mock.run_command("/yt-chat", "splitA", "health")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("solicitudes", 1, true) ~= nil,
   "health command reports content-free counters")
-mock.run_command("/yt-chat", "splitA", "language", "en")
+mock.run_command("/yt-chat", "splitA", "lang", "en")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Language", 1, true) ~= nil,
   "language can be changed live")
 mock.run_command("/yt-chat", "splitA", "health", "export")
@@ -226,7 +226,7 @@ T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]
 mock.run_command("/yt-chat", "splitA", "help")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Commands", 1, true) ~= nil,
   "help follows selected language")
-mock.run_command("/yt-chat", "splitA", "language", "es")
+mock.run_command("/yt-chat", "splitA", "lang", "es")
 mock.advance(749)
 T.eq(#mock.channels.splitA.messages, 0, "presentation delay has not elapsed")
 mock.advance(1)

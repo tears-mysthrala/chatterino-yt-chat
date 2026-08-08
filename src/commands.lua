@@ -18,7 +18,7 @@ local operation_generation = 0
 local COMMAND_ALIASES = {
   ayuda = "help", lista = "list", estado = "status", salud = "health",
   pausar = "pause", reanudar = "resume", eliminar = "remove", retardo = "delay",
-  idioma = "language", configurar = "config", exportar = "export", importar = "import"
+  idioma = "language", lang = "language", configurar = "config", exportar = "export", importar = "import"
 }
 
 local function canonical_command(value)
@@ -284,14 +284,8 @@ function Commands.register(state, persist)
       if not event.full_text_content:match("^/yt%-chat") then
         return { hide_others = false, values = {} }
       end
-      local values
-      if I18n.get() == "es" then
-        values = { "ayuda", "lista", "estado", "salud", "pausar", "reanudar", "eliminar", "retardo",
-          "idioma", "configurar", "auto", "exportar", "importar" }
-      else
-        values = { "help", "list", "status", "health", "pause", "resume", "remove", "delay", "language",
-          "config", "auto", "export", "import" }
-      end
+      local values = { "help", "list", "status", "health", "pause", "resume", "remove", "auto", "delay",
+        "lang", "config", "export", "import" }
       for _, key in ipairs(Channels.iter_active(state)) do values[#values + 1] = key end
       local matches = {}
       local query = tostring(event.query or ""):lower()

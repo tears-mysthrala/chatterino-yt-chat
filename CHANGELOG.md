@@ -3,7 +3,7 @@
 ## 1.3.0 - Unreleased
 
 - Accepts bare YouTube handles such as `/yt-chat @creator`.
-- Adds `autoconnect`/`autoconectar` to persist a handle-to-conversation binding
+- Adds the compact `auto` command to persist a handle-to-conversation binding
   and reconnect automatically whenever that channel goes live.
 
 ## 1.2.1 - 2026-08-08

@@ -101,7 +101,7 @@ Operational commands:
 /yt-chat status
 /yt-chat health [export]
 /yt-chat @handle
-/yt-chat autoconnect @handle
+/yt-chat auto @handle
 /yt-chat pause <channel>
 /yt-chat resume <channel>
 /yt-chat remove <channel>
@@ -114,7 +114,7 @@ Operational commands:
 
 When `language=es`, every subcommand also has a Spanish alias: `lista`,
 `estado`, `salud`, `pausar`, `reanudar`, `eliminar`, `retardo`, `idioma`,
-`configurar`, `autoconectar`, `exportar`, `importar` and `ayuda`. English forms remain
+`configurar`, `auto`, `exportar`, `importar` and `ayuda`. English forms remain
 available for compatibility.
 
 Accepted inputs (URLs are normalized automatically and restricted to HTTPS on official hosts):
@@ -134,8 +134,7 @@ Behavior:
 - **Offline channel**: the channel is stored and checked periodically
   (30 s → 60 s → 120 s → 300 s backoff); when a stream starts, the chat
   connects automatically.
-- **Persistent autoconnect**: `/yt-chat autoconnect @handle` (or
-  `/yt-chat autoconectar @handle`) stores the current conversation binding;
+- **Persistent automatic connection**: `/yt-chat auto @handle` stores the current conversation binding;
   after restarting Chatterino it resumes monitoring and connects when live.
 - **Multiple splits**: run `/yt-chat` with the same channel in several
   splits — the plugin polls once per stream and distributes messages to

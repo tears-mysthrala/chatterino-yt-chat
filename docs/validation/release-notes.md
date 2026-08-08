@@ -4,8 +4,7 @@ Quality and diagnostics update for the read-only YouTube Live Chat viewer plugin
 
 ### Highlights
 
-- Bare handles (`/yt-chat @creator`) and explicit
-  `autoconnect`/`autoconectar` commands persist the current conversation
+- Bare handles (`/yt-chat @creator`) and the compact `auto` command persist the current conversation
   binding and resume live detection after restart.
 - `▶️ YT` visibly identifies rich messages, system notices and text fallbacks.
 - Synchronization delay now delays presentation through an ordered queue while

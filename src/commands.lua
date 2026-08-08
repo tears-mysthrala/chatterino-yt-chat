@@ -18,8 +18,7 @@ local operation_generation = 0
 local COMMAND_ALIASES = {
   ayuda = "help", lista = "list", estado = "status", salud = "health",
   pausar = "pause", reanudar = "resume", eliminar = "remove", retardo = "delay",
-  idioma = "language", configurar = "config", exportar = "export", importar = "import",
-  autoconectar = "autoconnect"
+  idioma = "language", configurar = "config", exportar = "export", importar = "import"
 }
 
 local function canonical_command(value)
@@ -263,10 +262,10 @@ function Commands.register(state, persist)
       return
     end
     local target = ctx.words[2]
-    if command == "autoconnect" then
+    if command == "auto" then
       target = ctx.words[3]
       if type(target) ~= "string" or target == "" then
-        sys(ctx, I18n.t("usage_autoconnect"))
+        sys(ctx, I18n.t("usage_auto"))
         return
       end
     end
@@ -287,10 +286,10 @@ function Commands.register(state, persist)
       local values
       if I18n.get() == "es" then
         values = { "ayuda", "lista", "estado", "salud", "pausar", "reanudar", "eliminar", "retardo",
-          "idioma", "configurar", "autoconectar", "exportar", "importar" }
+          "idioma", "configurar", "auto", "exportar", "importar" }
       else
         values = { "help", "list", "status", "health", "pause", "resume", "remove", "delay", "language",
-          "config", "autoconnect", "export", "import" }
+          "config", "auto", "export", "import" }
       end
       for _, key in ipairs(Channels.iter_active(state)) do values[#values + 1] = key end
       local matches = {}

@@ -4,7 +4,7 @@ local language = "es"
 local TEXT = {
   es = {
     help = "Comandos: <url> | lista | estado | salud | pausar <canal> | reanudar <canal> | " ..
-        "eliminar <canal> | autoconectar <@usuario> | retardo [ms] | idioma [es|en] | configurar | " ..
+        "eliminar <canal> | auto <@usuario> | retardo [ms] | idioma [es|en] | configurar | " ..
         "exportar | importar",
     no_channels = "No hay canales configurados.", channel_missing = "Canal no encontrado. Usa /yt-chat lista.",
     exported = "Configuración exportada a data/YT_CHAT.export.json.", export_failed = "No se pudo exportar la configuración.",
@@ -12,7 +12,7 @@ local TEXT = {
     paused = "Canal pausado: {channel}.", resumed = "Canal reanudado: {channel}.", removed = "Canal eliminado: {channel}.",
     language = "Idioma: {language}.", invalid_language = "Idioma no válido. Usa es o en.",
     usage_channel = "Uso: /yt-chat {command} <canal>", paused_url = "El canal está pausado. Usa /yt-chat reanudar {channel}.",
-    usage_autoconnect = "Uso: /yt-chat autoconectar @usuario",
+    usage_auto = "Uso: /yt-chat auto @usuario",
     gui_unavailable = "no (API 2.5.5)", images_label = "imágenes",
     gui_not_supported = "Chatterino 2.5.5 no permite que los plugins añadan controles a Ajustes. " ..
         "No se puede activar una GUI desde este plugin.",
@@ -42,14 +42,14 @@ local TEXT = {
   },
   en = {
     help = "Commands: <url> | list | status | health | pause <channel> | resume <channel> | " ..
-        "remove <channel> | autoconnect <@handle> | delay [ms] | language [es|en] | config | export | import",
+        "remove <channel> | auto <@handle> | delay [ms] | language [es|en] | config | export | import",
     no_channels = "No channels configured.", channel_missing = "Channel not found. Use /yt-chat list.",
     exported = "Configuration exported to data/YT_CHAT.export.json.", export_failed = "Could not export configuration.",
     imported = "Configuration imported and validated.", import_failed = "Could not import: {error}.",
     paused = "Channel paused: {channel}.", resumed = "Channel resumed: {channel}.", removed = "Channel removed: {channel}.",
     language = "Language: {language}.", invalid_language = "Invalid language. Use es or en.",
     usage_channel = "Usage: /yt-chat {command} <channel>", paused_url = "The channel is paused. Use /yt-chat resume {channel}.",
-    usage_autoconnect = "Usage: /yt-chat autoconnect @handle",
+    usage_auto = "Usage: /yt-chat auto @handle",
     gui_unavailable = "no (API 2.5.5)", images_label = "images",
     gui_not_supported = "Chatterino 2.5.5 does not let plugins add controls to Settings. " ..
         "This plugin cannot enable a GUI.",

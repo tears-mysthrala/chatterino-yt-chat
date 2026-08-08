@@ -1,9 +1,9 @@
 ## Estado global
 
 - Objetivo: `chatterino-yt-chat v1.2.1`
-- Estado actual: **v1.2.1 EN DESARROLLO; v1.2.0 EN BORRADOR NO PUBLICADO**
+- Estado actual: **v1.2.1 LISTA PARA RELEASE; v1.2.0 EN BORRADOR NO PUBLICADO**
 - Última actualización: 2026-08-08
-- Rama actual: `fix/v1.2.1-localized-commands`
+- Rama actual: `main`
 - Último commit publicado: `bd7211a`
 - Tag: `v1.0.0` (release workflow verde, run `29694238438`)
 - Release: https://github.com/tears-mysthrala/chatterino-yt-chat/releases/tag/v1.0.0 (publicada 2026-07-19T16:15:37Z)

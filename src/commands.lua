@@ -5,12 +5,108 @@ local Polling = require("src.youtube.polling")
 local Channels = require("src.state.channels")
 local ActiveStreams = require("src.state.active_streams")
 local Adapter = require("src.c2_adapter")
+local Persistence = require("src.state.persistence")
+local Clock = require("src.support.clock")
+local Capabilities = require("src.capabilities")
 
 local Commands = {}
 local MAX_SYNC_DELAY_MS = 30000
 
 local function sys(ctx, msg)
   Adapter.system(ctx.channel:get_name(), msg)
+end
+
+local function channel_label(key, entry)
+  return tostring(entry.display_name or entry.handle or entry.channel_id or key)
+end
+
+local function show_help(ctx)
+  sys(ctx, "Comandos: <url> | list | status | pause <canal> | resume <canal> | remove <canal> | " ..
+    "delay [ms] | config | export | import")
+end
+
+local function replace_state(state, imported)
+  state.schema_version = imported.schema_version
+  state.settings = imported.settings
+  state.channels = imported.channels
+end
+
+local function handle_control(state, persist, ctx, command)
+  if command == "help" then
+    show_help(ctx)
+    return true
+  end
+  if command == "list" then
+    local keys = Channels.iter_active(state)
+    if #keys == 0 then
+      sys(ctx, "No hay canales configurados.")
+    end
+    for _, key in ipairs(keys) do
+      local entry = state.channels[key]
+      sys(ctx, key .. " · " .. channel_label(key, entry) .. " · " ..
+        (entry.paused and "pausado" or "activo") .. " · " .. tostring(#entry.splits) .. " split(s)")
+    end
+    return true
+  end
+  if command == "status" then
+    local statuses = Polling.status()
+    sys(ctx, tostring(#statuses) .. " stream(s) · delay " .. tostring(Polling.get_sync_delay()) .. " ms")
+    for _, item in ipairs(statuses) do
+      local next_ms = math.max(0, math.floor(((item.next_poll_ms or Clock.now_ms()) - Clock.now_ms()) / 1000))
+      sys(ctx, tostring(item.channel_name or item.video_id) .. " · " .. tostring(item.splits) ..
+        " split(s) · cola " .. tostring(item.queued_batches) .. " · próximo poll " .. tostring(next_ms) ..
+        " s" .. (item.last_error and (" · error " .. item.last_error) or ""))
+    end
+    return true
+  end
+  if command == "config" then
+    local caps = Capabilities.detect()
+    sys(ctx, "delay=" .. tostring(Polling.get_sync_delay()) .. " ms" ..
+      " · GUI=" .. (caps.settings_gui and "sí" or "no (API 2.5.5)") ..
+      " · imágenes=" .. (caps.images and "disponibles" or "fallback textual"))
+    return true
+  end
+  if command == "export" then
+    local ok = Persistence.export_snapshot(state)
+    sys(ctx, ok and "Configuración exportada a data/YT_CHAT.export.json." or "No se pudo exportar la configuración.")
+    return true
+  end
+  if command == "import" then
+    local imported, err = Persistence.import_snapshot()
+    if not imported then
+      sys(ctx, "No se pudo importar: " .. tostring(err) .. ".")
+      return true
+    end
+    for _, item in ipairs(Polling.status()) do Polling.stop(item.video_id, "reconfigured") end
+    replace_state(state, imported)
+    Polling.set_sync_delay(state.settings.chat_sync_delay_ms)
+    persist(state)
+    sys(ctx, "Configuración importada y validada.")
+    return true
+  end
+  if command == "pause" or command == "resume" or command == "remove" then
+    local key = Channels.find(state, ctx.words[3])
+    if not key then
+      sys(ctx, "Canal no encontrado. Usa /yt-chat list.")
+      return true
+    end
+    local entry = state.channels[key]
+    if command == "remove" then
+      if entry.channel_id then Polling.stop_by_channel(entry.channel_id, "removed") end
+      Channels.remove(state, key)
+      persist(state)
+      sys(ctx, "Canal eliminado: " .. key .. ".")
+    else
+      local paused = command == "pause"
+      Channels.set_paused(state, key, paused)
+      if paused and entry.channel_id then Polling.stop_by_channel(entry.channel_id, "paused") end
+      if not paused then Polling.check_channel_now(state, persist, key) end
+      persist(state)
+      sys(ctx, paused and ("Canal pausado: " .. key .. ".") or ("Canal reanudado: " .. key .. "."))
+    end
+    return true
+  end
+  return false
 end
 
 local function start_chat(state, parsed, split)
@@ -79,7 +175,10 @@ function Commands.register(state, persist)
   local c2 = rawget(_G, "c2")
   c2.register_command("/yt-chat", function(ctx)
     if #ctx.words < 2 then
-      sys(ctx, "Uso: /yt-chat <url de YouTube> | /yt-chat delay [0-30000 ms]")
+      show_help(ctx)
+      return
+    end
+    if handle_control(state, persist, ctx, ctx.words[2]) then
       return
     end
     if ctx.words[2] == "delay" then
@@ -106,6 +205,24 @@ function Commands.register(state, persist)
     end
     handle_url(state, persist, ctx, normalized)
   end)
+
+  local caps = Capabilities.detect()
+  if caps.completions then
+    c2.register_callback(c2.EventType.CompletionRequested, function(event)
+      if not event.full_text_content:match("^/yt%-chat") then
+        return { hide_others = false, values = {} }
+      end
+      local values = { "help", "list", "status", "pause", "resume", "remove", "delay", "config",
+        "export", "import" }
+      for _, key in ipairs(Channels.iter_active(state)) do values[#values + 1] = key end
+      local matches = {}
+      local query = tostring(event.query or ""):lower()
+      for _, value in ipairs(values) do
+        if tostring(value):lower():find(query, 1, true) == 1 then matches[#matches + 1] = value end
+      end
+      return { hide_others = false, values = matches }
+    end)
+  end
 end
 
 return Commands

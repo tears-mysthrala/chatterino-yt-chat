@@ -50,6 +50,7 @@ permissions):
 - `YT_CHAT.json` — state
 - `YT_CHAT.json.bak` — last-known-good backup
 - `YT_CHAT.json.tmp` — staging file during writes
+- `YT_CHAT.export.json` — explicit user-requested configuration export
 
 Write protocol: temp file → flush → verify → backup current → write →
 verify → restore-from-backup on failure. The Chatterino Lua sandbox has

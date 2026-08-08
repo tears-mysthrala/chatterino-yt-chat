@@ -12,10 +12,18 @@ HTTP get_live_chat
   -> youtube/continuations.lua   (token + intervalo)
   -> youtube/actions.lua         (action normalizada)
   -> youtube/renderers.lua       (renderer -> evento)
+  -> support/delivery_queue.lua  (delay de presentación ordenado, si > 0)
   -> messages/*.lua              (construcción semántica del evento)
   -> messages/builder.lua        (evento -> spec de mensaje Chatterino)
   -> c2_adapter.lua              (spec -> c2.Message + entrega a splits)
 ```
+
+El delay de sincronización no modifica el intervalo de polling indicado por
+YouTube. Cada respuesta se normaliza inmediatamente y sus eventos se encolan
+por `video_id` con orden estable. La cola mantiene un único timer activo por
+stream, aísla fallos de callbacks y se cancela cuando el stream se detiene sin
+drain. Al finalizar naturalmente, el marcador de fin se encola detrás de los
+eventos pendientes para no perder el último lote.
 
 ## Evento normalizado (IR)
 
@@ -132,7 +140,7 @@ representan como eventos informativos inequívocos con id/autor afectado.
 
 ```json
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "settings": { "debug": false, "offline_poll": {"start":30,"max":300} },
   "channels": {
     "<key>": { "channel_id": "UC...", "handle": "nombre",

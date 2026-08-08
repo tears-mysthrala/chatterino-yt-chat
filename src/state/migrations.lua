@@ -1,6 +1,6 @@
 local Migrations = {}
 
-Migrations.SCHEMA_VERSION = 3
+Migrations.SCHEMA_VERSION = 4
 
 local DEFAULT_SETTINGS = {
   debug = false,
@@ -102,10 +102,22 @@ local function migrate_to_v3(state)
   return state
 end
 
+local function migrate_to_v4(state)
+  state.settings = type(state.settings) == "table" and state.settings or {}
+  for _, entry in pairs(state.channels or {}) do
+    if type(entry) == "table" then
+      entry.paused = entry.paused == true
+    end
+  end
+  state.schema_version = 4
+  return state
+end
+
 local STEPS = {
   [1] = migrate_to_v1,
   [2] = migrate_to_v2,
-  [3] = migrate_to_v3
+  [3] = migrate_to_v3,
+  [4] = migrate_to_v4
 }
 
 --- Applies every pending migration in order. Idempotent and total:

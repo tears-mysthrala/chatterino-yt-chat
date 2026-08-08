@@ -35,6 +35,11 @@ do
   T.ok(Channels.remove_split(state, "UC1", "a"), "split removed")
   T.eq(#Channels.iter_active(state), 1, "channel without splits inactive")
   T.ok(not Channels.remove_split(state, "UC1", "zzz"), "missing split returns false")
+  T.ok(Channels.set_paused(state, "UC2", true), "channel can be paused")
+  T.ok(state.channels.UC2.paused, "paused state stored")
+  T.eq(Channels.find(state, "UC2"), "UC2", "channel found by key")
+  T.ok(Channels.remove(state, "UC2"), "channel removed")
+  T.eq(state.channels.UC2, nil, "removed channel absent")
 end
 
 -- active_streams: splits lifecycle

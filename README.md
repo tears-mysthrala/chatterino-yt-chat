@@ -57,8 +57,8 @@ never written to disk or logs (see [Persisted data](#persisted-data)).
 
 ## Installation
 
-1. Download `chatterino-yt-chat-1.0.0.zip` from the
-   [latest release](https://github.com/tears-mysthrala/chatterino-yt-chat/releases)
+1. Download the versioned ZIP (for example, `chatterino-yt-chat-1.1.0.zip`) from
+   [the corresponding published release](https://github.com/tears-mysthrala/chatterino-yt-chat/releases)
    and verify it against the published `.sha256`.
 2. Open Chatterino's plugin directory:
    - **Windows**: `%APPDATA%\Chatterino2\Plugins\`
@@ -81,7 +81,8 @@ never written to disk or logs (see [Persisted data](#persisted-data)).
 
 - Remove the plugin directory `Plugins/chatterino-yt-chat/`.
 - To also delete its state, remove `data/YT_CHAT.json`,
-  `data/YT_CHAT.json.bak` and `data/YT_CHAT.json.tmp` inside that directory.
+  `data/YT_CHAT.json.bak`, `data/YT_CHAT.json.tmp` and any explicitly created
+  `data/YT_CHAT.export.json` inside that directory.
 - The plugin never writes outside its own data directory.
 
 ## Usage
@@ -90,6 +91,20 @@ In any Chatterino split (it must be a named channel split):
 
 ```text
 /yt-chat <YouTube URL>
+```
+
+Operational commands:
+
+```text
+/yt-chat list
+/yt-chat status
+/yt-chat pause <channel>
+/yt-chat resume <channel>
+/yt-chat remove <channel>
+/yt-chat delay [0-30000]
+/yt-chat config
+/yt-chat export
+/yt-chat import
 ```
 
 Accepted URL forms (normalized automatically, HTTPS only):
@@ -178,6 +193,10 @@ Stored only in the plugin data directory (`data/YT_CHAT.json`):
 **Never** persisted: Innertube API keys, continuation tokens, cookies,
 chat payloads, message contents, chat history.
 
+`/yt-chat export` creates `data/YT_CHAT.export.json` with the same validated,
+non-sensitive configuration schema. `/yt-chat import` only reads that fixed
+path and revalidates the complete snapshot before applying it.
+
 Writes are atomic within what the Chatterino Lua sandbox allows
 (temp file + verify + write + `.bak` recovery copy), debounced, and only
 happen when something actually changed.
@@ -203,9 +222,15 @@ happen when something actually changed.
 - `offline_poll_schedule` / `offline_poll_max`: offline check backoff
   (seconds). Keep values within 15–900 s.
 - `chat_poll_*`: clamps applied to YouTube-provided polling intervals.
-- `chat_sync_delay_ms`: extra delay added to YouTube's requested interval
-  (`0`–`30000` ms). Change it live with `/yt-chat delay <ms>`; run
-  `/yt-chat delay` to inspect the current value.
+- `chat_sync_delay_ms`: presentation delay applied to normalized event batches
+  without slowing YouTube polling (`0`–`30000` ms). Change it live with
+  `/yt-chat delay <ms>`; run `/yt-chat delay` to inspect the current value.
+
+Chatterino 2.5.5 does not expose a plugin API for adding controls to its
+Settings GUI. `/yt-chat config` therefore reports the effective configuration,
+while the settings model remains isolated so a future stable GUI API can be
+wired in without changing persisted data. Command completion is registered
+when supported by Chatterino.
 
 ## Troubleshooting
 
@@ -233,7 +258,7 @@ strict input validation of every field coming from YouTube.
 
 - Tests: `scripts/test.sh` (unit + integration harness + fuzz + load;
   plain Lua, no Chatterino needed).
-- Build: `scripts/build_release.sh 1.0.0` → reproducible ZIP +
+- Build: `scripts/build_release.sh 1.1.0` → reproducible ZIP +
   `scripts/sha256.sh` for the checksum.
 - Architecture and internal contracts: `docs/architecture.md`.
 - Research notes: `docs/research/`.

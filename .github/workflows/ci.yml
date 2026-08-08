@@ -73,7 +73,7 @@ jobs:
           echo "reproducible: $HASH1"
       - name: Generate sha256
         run: scripts/sha256.sh dist/chatterino-yt-chat-1.2.0.zip
-      - uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1, Node 24
         with:
           name: release-artifacts
           path: |

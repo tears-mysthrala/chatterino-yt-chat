@@ -212,6 +212,8 @@ T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]
 mock.run_command("/yt-chat", "splitA", "list")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("Test Channel", 1, true) ~= nil,
   "list command reports configured channel")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("panel(es)", 1, true) ~= nil,
+  "Spanish channel list avoids untranslated split labels")
 mock.run_command("/yt-chat", "splitA", "health")
 T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("solicitudes", 1, true) ~= nil,
   "health command reports content-free counters")

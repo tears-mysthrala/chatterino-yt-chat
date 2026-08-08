@@ -57,7 +57,8 @@ local function handle_control(state, persist, ctx, command)
     for _, key in ipairs(keys) do
       local entry = state.channels[key]
       sys(ctx, key .. " · " .. channel_label(key, entry) .. " · " ..
-        I18n.t(entry.paused and "state_paused" or "state_active") .. " · " .. tostring(#entry.splits) .. " split(s)")
+        I18n.t(entry.paused and "state_paused" or "state_active") .. " · " ..
+        I18n.t("split_count", { count = #entry.splits }))
     end
     return true
   end

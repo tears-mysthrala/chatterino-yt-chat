@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.2.0 - Unreleased
+## 1.2.0 - 2026-08-08
 
 - Adds persistent Spanish/English operational UI with live language switching.
 - Adds local health counters and a content-free diagnostic export for support.
@@ -10,7 +10,7 @@
   its new image API, while preserving the 2.5.5 textual fallback.
 - Adds schema v5 for the language preference and expands compatibility tests.
 
-## 1.1.0 - Unreleased
+## 1.1.0 - Included in 1.2.0 (not separately tagged)
 
 - Adds the visible `▶️ YT` origin marker to rich and degraded messages.
 - Replaces polling slowdown with a true ordered presentation-delay queue.

@@ -1,14 +1,14 @@
 ## Estado global
 
 - Objetivo: `chatterino-yt-chat v1.2.0` (apilado sobre la PR de v1.1.0)
-- Estado actual: **v1.2.0 EN DESARROLLO; v1.0.0 PUBLICADO Y ESTABLE PROVISIONALMENTE**
+- Estado actual: **v1.2.0 RELEASE CANDIDATE; v1.0.0 PUBLICADO Y ESTABLE**
 - Última actualización: 2026-08-08
-- Rama actual: `agent/v1-2-quality-leap`
+- Rama actual: `release/v1.2.0`
 - Último commit publicado: `bd7211a`
 - Tag: `v1.0.0` (release workflow verde, run `29694238438`)
 - Release: https://github.com/tears-mysthrala/chatterino-yt-chat/releases/tag/v1.0.0 (publicada 2026-07-19T16:15:37Z)
 - Criterios obligatorios verificados: 20/20
-- Bloqueos activos: 0
+- Bloqueos activos: 0; soak largo recomendado pero no bloqueante
 - Contrato interno: `docs/architecture.md` (evento normalizado IR + esquema de estado v5)
 - Validación en app real: Chatterino 2.5.5 oficial headless, e2e con chat real OK (VAL-011/012/014)
 - Validación de usuario: Chatterino 2.5.5 GUI conectado a un directo y recibiendo mensajes sin fallos observados; soak largo todavía pendiente (`docs/validation/user-smoke-2026-08-08.md`).

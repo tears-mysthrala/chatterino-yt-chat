@@ -20,7 +20,7 @@ plugin's `data/` directory while updating, and restart Chatterino.
 
 ## Validation
 
-- Automated suite: 1,393 assertions, 0 failures.
+- Automated suite: 1,394 assertions, 0 failures.
 - Fixtures: 40 checked, 0 failures.
 - The load scenario verifies a 120-event initial response renders zero history
   while the next 120 genuinely new events are delivered in full.

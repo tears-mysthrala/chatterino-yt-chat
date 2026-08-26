@@ -289,11 +289,11 @@ local function handle_payload(data, payload)
   end
   data.continuation = cont.token
   local jitter = (Backoff._random() * 0.15) * cont.timeout_ms
-  local entry = streams[video_id]
-  if entry then
-    entry.last_success_ms = Clock.now_ms()
-    entry.last_error = nil
-    entry.next_poll_ms = Clock.now_ms() + cont.timeout_ms + jitter
+  local current_entry = streams[video_id]
+  if current_entry then
+    current_entry.last_success_ms = Clock.now_ms()
+    current_entry.last_error = nil
+    current_entry.next_poll_ms = Clock.now_ms() + cont.timeout_ms + jitter
   end
   schedule(video_id, data, cont.timeout_ms + jitter)
 end

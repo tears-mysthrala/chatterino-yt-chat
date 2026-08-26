@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.0 - 2026-08-26
+
+- Publishes the active YouTube stream and stable channel identities to the
+  multichat overlay so viewing streaks follow broadcast sessions rather than
+  the viewer's local arrival date.
+
 ## 1.4.1 - 2026-08-26
 
 - Skips the initial YouTube history response and seeds deduplication without

@@ -169,7 +169,10 @@ local function deliver_event(video_id, channel_name, event)
       return
     end
   end
+  local entry = streams[video_id]
   event.channel_name = channel_name
+  event.channel_id = entry and entry.data and entry.data.channelId or channel_name
+  event.stream_id = video_id
   local splits = ActiveStreams.get_splits(video_id)
   for _, split in ipairs(splits) do OverlayPublisher.publish(split, event) end
 
@@ -369,6 +372,9 @@ function Polling.start(data)
     reactions = { count = 0, window_start = Clock.now_ms() },
     initial_payload = true
   }
+  for _, split in ipairs(ActiveStreams.get_splits(video_id)) do
+    OverlayPublisher.session(split, video_id, data.channelId or data.channelName)
+  end
   Logging.info("chat_started", { video = video_id, channel = data.channelName })
   Polling._request(data)
   return true

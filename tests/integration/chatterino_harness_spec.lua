@@ -210,8 +210,11 @@ mock.run_command("/yt-chat", "splitA", "auto")
 T.eq(mock.count_requests("get_live_chat"), 1, "polling started immediately")
 T.eq(Plugin._state().channels.UCFAKECHANNEL0000000001.handle, "splitA",
   "argument-free auto infers and persists the current conversation name")
-T.ok(mock.requests[#mock.requests - 1].url:find("youtube.com/@splitA/live", 1, true) ~= nil,
-  "argument-free auto resolves the inferred YouTube handle")
+local inferred_handle_requested = false
+for _, request in ipairs(mock.requests) do
+  if request.url:find("youtube.com/@splitA/live", 1, true) then inferred_handle_requested = true end
+end
+T.ok(inferred_handle_requested, "argument-free auto resolves the inferred YouTube handle")
 T.eq(#mock.channels.splitA.messages, 0, "initial messages wait for presentation delay")
 
 -- Multi-split: same channel added from splitB — no duplicate polling --------

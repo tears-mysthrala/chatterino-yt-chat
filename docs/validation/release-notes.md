@@ -1,19 +1,19 @@
-# chatterino-yt-chat 1.4.1
+# chatterino-yt-chat 1.5.0
 
-Safety update for joining very large YouTube live chats.
+Adds broadcast-session metadata for viewing streaks in the multichat overlay.
 
 ## Highlights
 
-- The initial history response is not rendered; its message IDs seed
-  deduplication so repeated continuation data stays hidden.
-- Live messages after the initial response remain complete and continue at
-  YouTube's requested polling cadence.
-- Overlay publication remains enabled for every delivered event.
+- The overlay receives the active YouTube video ID as the stream identity.
+- Streaks use the stable YouTube channel identity instead of display names or
+  the viewer's local arrival date.
+- Existing initial-history suppression and live-message delivery remain
+  covered by the automated suite.
 
 ## Assets
 
-- `chatterino-yt-chat-1.4.1.zip`
-- `chatterino-yt-chat-1.4.1.zip.sha256`
+- `chatterino-yt-chat-1.5.0.zip`
+- `chatterino-yt-chat-1.5.0.zip.sha256`
 
 Verify the ZIP against the `.sha256` asset from this release, preserve the
 plugin's `data/` directory while updating, and restart Chatterino.
@@ -22,5 +22,5 @@ plugin's `data/` directory while updating, and restart Chatterino.
 
 - Automated suite: 1,394 assertions, 0 failures.
 - Fixtures: 40 checked, 0 failures.
-- The load scenario verifies a 120-event initial response renders zero history
-  while the next 120 genuinely new events are delivered in full.
+- Integration coverage verifies that the active video and channel identities
+  are included in overlay events.

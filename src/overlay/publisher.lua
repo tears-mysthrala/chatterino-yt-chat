@@ -17,8 +17,13 @@ function Publisher.payload(panel, event)
   return {
     panel = panel:lower(), platform = "youtube", kind = tostring(event.kind or "event"),
     id = event.id and tostring(event.id) or nil, author = event.author and tostring(event.author) or nil,
-    text = event_text(event), badges = badges
+    text = event_text(event), badges = badges, channel = event.channel_id or event.channel_name,
+    user_id = event.author_channel_id, stream_id = event.stream_id
   }
+end
+
+function Publisher.session(panel, stream_id, channel)
+  return Publisher.publish(panel, { kind = "stream_session", stream_id = stream_id, channel_id = channel })
 end
 
 function Publisher.publish(panel, event)

@@ -28,6 +28,10 @@ everything that happens, across as many splits as they want.
   fixed-rate loops.
 - **Persistent**: channels you add survive restarts; offline channels are
   watched until a stream starts (backoff 30/60/120/300 s).
+- **OBS-ready**: when
+  [chatterino-multichat-overlay](https://github.com/tears-mysthrala/chatterino-multichat-overlay)
+  is running, events are copied to its loopback-only browser source. Overlay
+  failures never interrupt normal Chatterino delivery.
 
 ## Requirements
 

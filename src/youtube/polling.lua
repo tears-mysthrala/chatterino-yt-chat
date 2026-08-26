@@ -13,6 +13,7 @@ local Validation = require("src.support.validation")
 local DeliveryQueue = require("src.support.delivery_queue")
 local Health = require("src.support.health")
 local I18n = require("src.i18n")
+local OverlayPublisher = require("src.overlay.publisher")
 
 local Polling = {}
 
@@ -170,6 +171,7 @@ local function deliver_event(video_id, channel_name, event)
   end
   event.channel_name = channel_name
   local splits = ActiveStreams.get_splits(video_id)
+  for _, split in ipairs(splits) do OverlayPublisher.publish(split, event) end
 
   -- Mutations: try in-place update of the original message first; fall
   -- back to an unequivocal system marker (GOAL.md §5).

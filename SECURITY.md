@@ -105,3 +105,6 @@ in reports. We aim to acknowledge within 7 days.
 - Security fixes ship as patch releases with a changelog entry.
 - There is intentionally **no** auto-update: updates are always a manual,
   verifiable action by the user.
+- A future shared notifier may query stable release metadata at most once every
+  24 hours. It must be disableable, send no channel/account/chat data and never
+  download or install an update automatically.

@@ -49,6 +49,9 @@ local DEDUPED_KINDS = {
 }
 
 local POLL_UPDATE_WINDOW_MS = 10000
+local INITIAL_BACKFILL_LIMIT = 50
+local DELIVERY_CHUNK_SIZE = 10
+local DELIVERY_CHUNK_DELAY_MS = 25
 local sync_delay_ms = 0
 
 --- Sets a presentation delay for normalized event batches.
@@ -228,12 +231,44 @@ local function handle_payload(data, payload)
     end
   end
 
+  local entry = streams[video_id]
+  local initial = entry and entry.initial_payload == true
+  if initial then
+    entry.initial_payload = false
+    if #batch > INITIAL_BACKFILL_LIMIT then
+      local trimmed = {}
+      for index = #batch - INITIAL_BACKFILL_LIMIT + 1, #batch do
+        trimmed[#trimmed + 1] = batch[index]
+      end
+      Health.increment("initial_backfill_trimmed", #batch - #trimmed)
+      batch = trimmed
+    end
+  end
+
   if #batch > 0 then
     local deliver_batch = function()
-      for _, event in ipairs(batch) do
-        deliver_event(video_id, data.channelName, event)
+      if not initial then
+        for _, event in ipairs(batch) do
+          deliver_event(video_id, data.channelName, event)
+        end
+        Health.increment("delivered_batches")
+        return
       end
-      Health.increment("delivered_batches")
+      local index = 1
+      local function deliver_chunk()
+        if not streams[video_id] then return end
+        local last = math.min(index + DELIVERY_CHUNK_SIZE - 1, #batch)
+        for current = index, last do
+          deliver_event(video_id, data.channelName, batch[current])
+        end
+        index = last + 1
+        if index <= #batch then
+          Adapter.later(deliver_chunk, DELIVERY_CHUNK_DELAY_MS)
+        else
+          Health.increment("delivered_batches")
+        end
+      end
+      deliver_chunk()
     end
     if sync_delay_ms == 0 and DeliveryQueue.pending(video_id) == 0 then
       deliver_batch()
@@ -353,7 +388,8 @@ function Polling.start(data)
     last_error = nil,
     next_poll_ms = Clock.now_ms(),
     ending = false,
-    reactions = { count = 0, window_start = Clock.now_ms() }
+    reactions = { count = 0, window_start = Clock.now_ms() },
+    initial_payload = true
   }
   Logging.info("chat_started", { video = video_id, channel = data.channelName })
   Polling._request(data)

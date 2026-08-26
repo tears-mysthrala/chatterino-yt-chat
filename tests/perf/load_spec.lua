@@ -93,10 +93,12 @@ end
 
 T.eq(Polling.active_count(), 5, "five active polls")
 T.eq(mock.count_requests("get_live_chat"), 5, "one request per video")
-T.eq(#mock.channels.split4.messages, 120, "single-video split gets its 120 messages")
+T.eq(#mock.channels.split4.messages, 10, "initial backfill starts in a bounded chunk")
+mock.advance(200, 100)
+T.eq(#mock.channels.split4.messages, 50, "initial backfill is capped at 50 messages")
 -- split2 sees video1 (3 splits) + video2 (1 split): proves distribution to
 -- multiple splits happens without any extra HTTP request.
-T.eq(#mock.channels.split2.messages, 240, "multi-split distribution without extra requests")
+T.eq(#mock.channels.split2.messages, 100, "bounded backfill reaches every split without extra requests")
 
 -- High activity: 120 s of 1 s polls per stream ------------------------------
 mock.advance(120000, 2000)

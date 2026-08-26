@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.4.1 - 2026-08-26
+
+- Caps the initial YouTube history load at the newest 50 normalized events.
+- Delivers that initial history in chunks of 10 to keep Chatterino responsive
+  when joining very large live chats.
+- Leaves subsequent live polling complete and unthrottled by the backfill cap.
+
+## 1.4.0 - 2026-08-26
+
+- Publishes normalized YouTube chat events to the local multichat OBS overlay.
+
 ## 1.3.0 - 2026-08-08
 
 - Accepts bare YouTube handles such as `/yt-chat @creator`.

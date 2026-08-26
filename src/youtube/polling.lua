@@ -169,6 +169,7 @@ local function deliver_event(video_id, channel_name, event)
       return
     end
   end
+  local entry = streams[video_id]
   event.channel_name = channel_name
   event.channel_id = entry and entry.data and entry.data.channelId or channel_name
   event.stream_id = video_id

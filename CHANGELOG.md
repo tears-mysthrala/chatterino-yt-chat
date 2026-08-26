@@ -2,10 +2,10 @@
 
 ## 1.4.1 - 2026-08-26
 
-- Caps the initial YouTube history load at the newest 50 normalized events.
-- Delivers that initial history in chunks of 10 to keep Chatterino responsive
-  when joining very large live chats.
-- Leaves subsequent live polling complete and unthrottled by the backfill cap.
+- Skips the initial YouTube history response and seeds deduplication without
+  rendering it, so opening a channel shows only newly arriving messages.
+- Leaves subsequent live polling complete while preventing a large historical
+  backlog from blocking Chatterino's UI thread.
 
 ## 1.4.0 - 2026-08-26
 

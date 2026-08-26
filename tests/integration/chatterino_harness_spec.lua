@@ -244,20 +244,20 @@ mock.run_command("/yt-chat", "splitA", "lang", "es")
 mock.advance(749)
 T.eq(#mock.channels.splitA.messages, 0, "presentation delay has not elapsed")
 mock.advance(1)
-T.eq(#mock.channels.splitA.messages, 2, "initial batch delivered after exact delay")
-T.eq(#mock.channels.splitB.messages, 2, "new split receives still-queued initial batch")
-T.eq(mock.channels.splitA.messages[1].id, "yt-chat-m1", "message id prefixed")
+T.eq(#mock.channels.splitA.messages, 0, "initial history remains hidden after presentation delay")
+T.eq(#mock.channels.splitB.messages, 0, "new split does not receive initial history")
 mock.run_command("/yt-chat", "splitA", "health")
-T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("lotes 1", 1, true) ~= nil,
-  "health counts actual chat batches instead of queue callbacks")
+T.ok(mock.channels.splitA.system_messages[#mock.channels.splitA.system_messages]:find("lotes 0", 1, true) ~= nil,
+  "skipped initial history is not counted as a delivered batch")
 
 payload_queue[1] = chat_payload({ text_action("m3", "carol", "after split join") }, 2000)
 mock.advance(1250)
 T.eq(mock.count_requests("get_live_chat"), 2, "next poll scheduled by YouTube timeout")
-T.eq(#mock.channels.splitA.messages, 2, "polling does not bypass presentation delay")
+T.eq(#mock.channels.splitA.messages, 0, "polling does not bypass presentation delay")
 mock.advance(750)
-T.eq(#mock.channels.splitB.messages, 3, "new message distributed to splitB")
-T.eq(#mock.channels.splitA.messages, 3, "new message also in splitA")
+T.eq(#mock.channels.splitB.messages, 1, "new message distributed to splitB")
+T.eq(#mock.channels.splitA.messages, 1, "new message also in splitA")
+T.eq(mock.channels.splitA.messages[1].id, "yt-chat-m3", "live message id prefixed")
 
 -- Dedupe: re-delivered id is dropped -----------------------------------------
 
@@ -266,18 +266,18 @@ payload_queue[1] = chat_payload({
   text_action("m4", "dan", "fresh")
 }, 2000)
 mock.advance(2000)
-T.eq(#mock.channels.splitA.messages, 4, "duplicate id not rendered again")
+T.eq(#mock.channels.splitA.messages, 2, "duplicate id not rendered again")
 
 -- Moderation: in-place deletion ----------------------------------------------
 
 payload_queue[1] = chat_payload({
-  { markChatItemAsDeletedAction = { targetItemId = "m1", deletedStateMessage = { runs = { { text = "Message deleted by moderator" } } } } }
+  { markChatItemAsDeletedAction = { targetItemId = "m3", deletedStateMessage = { runs = { { text = "Message deleted by moderator" } } } } }
 }, 2000)
 mock.advance(2000)
 local replaced = mock.channels.splitA.messages[1]
 T.ok(replaced.message_text:find("deleted", 1, true) ~= nil, "original message replaced by deletion marker")
 T.eq(replaced.elements[1].text, "▶️", "moderation replacement keeps YouTube emoji prefix")
-T.eq(#mock.channels.splitA.messages, 4, "deletion does not append a new message")
+T.eq(#mock.channels.splitA.messages, 2, "deletion does not append a new message")
 
 -- Unknown action produces a visible system event -----------------------------
 
@@ -301,11 +301,19 @@ T.eq(mock.count_requests("get_live_chat"), polls_after_end, "no polling after st
 
 live = true
 local fail_next = 1
+local reconnect_successes = 0
 local base_responder = mock.http_responder
 mock.http_responder = function(method, url, payload)
   if fail_next > 0 and url:find("get_live_chat", 1, true) then
     fail_next = fail_next - 1
     return { status = 500, data = "" }
+  end
+  if url:find("get_live_chat", 1, true) then
+    reconnect_successes = reconnect_successes + 1
+    local event = reconnect_successes == 1 and
+        text_action("m8", "zoe", "historical reconnect message") or
+        text_action("m10", "zoe", "after reconnect")
+    return { status = 200, data = chat_payload({ event }, 2000) }
   end
   return base_responder(method, url, payload)
 end
@@ -338,6 +346,9 @@ mock.advance(1000) -- scheduled first check at exactly 30 s
 T.eq(mock.count_requests(offline_watch_url), offline_checks + 1,
   "new offline binding is checked after 30 seconds even if the global monitor was sleeping")
 T.ok(mock.count_requests("get_live_chat") > polls_after_end, "offline monitor detected live stream")
-T.ok(#mock.channels.splitA.messages >= 5, "live chat resumed after detection")
+payload_queue[1] = chat_payload({ text_action("m11", "erin", "new after detection") }, 2000)
+mock.advance(2750)
+T.ok(mock.channels.splitA.messages[#mock.channels.splitA.messages].message_text:find(
+  "new after detection", 1, true) ~= nil, "live chat resumed without rendering initial history")
 
 os.execute("rm -rf " .. test_dir)

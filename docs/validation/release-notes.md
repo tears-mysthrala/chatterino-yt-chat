@@ -4,9 +4,8 @@ Safety update for joining very large YouTube live chats.
 
 ## Highlights
 
-- The initial history load keeps only the newest 50 normalized events.
-- Initial delivery is split into chunks of 10 so Chatterino's UI thread is not
-  flooded by a single large response.
+- The initial history response is not rendered; its message IDs seed
+  deduplication so repeated continuation data stays hidden.
 - Live messages after the initial response remain complete and continue at
   YouTube's requested polling cadence.
 - Overlay publication remains enabled for every delivered event.
@@ -23,5 +22,5 @@ plugin's `data/` directory while updating, and restart Chatterino.
 
 - Automated suite: 1,393 assertions, 0 failures.
 - Fixtures: 40 checked, 0 failures.
-- The load scenario verifies a 120-event initial response is reduced to 50 and
-  begins with a 10-event delivery chunk.
+- The load scenario verifies a 120-event initial response renders zero history
+  while the next 120 genuinely new events are delivered in full.

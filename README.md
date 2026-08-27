@@ -61,25 +61,65 @@ never written to disk or logs (see [Persisted data](#persisted-data)).
 
 ## Installation
 
-1. Download the versioned ZIP from
-   [the corresponding published release](https://github.com/tears-mysthrala/chatterino-yt-chat/releases)
-   and verify it against the published `.sha256`.
-2. Open Chatterino's plugin directory:
-   - **Windows**: `%APPDATA%\Chatterino2\Plugins\`
-   - **macOS**: `~/Library/Application Support/chatterino/Plugins/`
-   - **Linux**: `~/.local/share/chatterino/Plugins/`
-3. Extract the ZIP so you get `Plugins/chatterino-yt-chat/` containing
-   `init.lua`, `info.json`, `src/`, `libs/` (and the docs).
-4. Restart Chatterino and enable the plugin if prompted
-   (Settings → Plugins).
+### Windows (no terminal required)
+
+1. Open the [Releases page](https://github.com/tears-mysthrala/chatterino-yt-chat/releases)
+   and select the latest release that is not marked **Pre-release**.
+2. Under **Assets**, download the file whose name starts with
+   `chatterino-yt-chat-` and ends in `.zip`. Do not download the files named
+   **Source code**.
+3. Press `Windows key + R`, paste `%APPDATA%\Chatterino2\Plugins`, and select
+   **OK**. If Windows says the folder does not exist, create the `Plugins`
+   folder inside `%APPDATA%\Chatterino2`.
+4. Inside `Plugins`, create a folder named exactly `chatterino-yt-chat`.
+5. Open the downloaded ZIP, select everything inside it, and copy those files
+   into the new `chatterino-yt-chat` folder.
+6. Check the result: `init.lua` and `info.json` must be directly inside
+   `chatterino-yt-chat`, not inside another nested folder.
+7. Restart Chatterino. Open **Settings → Plugins**, turn on **Enable plugins**,
+   and enable `chatterino-yt-chat`.
+8. In the input box of a named channel panel, enter `/yt-chat` to confirm that
+   the plugin responds with its help.
+
+No YouTube login, API key, administrator access, PowerShell, or other software
+is required.
+
+### macOS and Linux
+
+Extract the contents of the release ZIP into a folder named
+`chatterino-yt-chat` inside Chatterino's `Plugins` directory:
+
+- **macOS**: `~/Library/Application Support/chatterino/Plugins/`
+- **Linux**: `~/.local/share/chatterino/Plugins/`
+- **Linux (Flatpak)**: `~/.var/app/com.chatterino.chatterino/data/chatterino/Plugins/`
+
+After extraction, `init.lua` and `info.json` must be directly inside that
+folder. Restart Chatterino, open **Settings → Plugins**, turn on
+**Enable plugins**, and enable `chatterino-yt-chat`.
+
+### Optional download verification
+
+The release also provides a `.sha256` file. It contains the expected SHA-256
+fingerprint of the ZIP. On Windows, open PowerShell, type `Get-FileHash `
+(including the final space), drag the downloaded ZIP into the PowerShell
+window, type ` -Algorithm SHA256`, and press Enter. The displayed **Hash** must
+match the sequence in the `.sha256` file; uppercase and lowercase do not
+matter. This command only reads the file.
 
 ## Updating
 
-1. Close Chatterino (or disable the plugin).
-2. Replace the plugin directory contents with the new ZIP.
-3. Your configuration in `data/YT_CHAT.json` is preserved and migrated
-   automatically (schema migrations are versioned; a `.bak` copy is kept).
-4. Restart and check `/yt-chat` still works.
+1. Close Chatterino.
+2. Open the existing `chatterino-yt-chat` folder and copy its `data` folder to
+   a safe place, such as the Desktop. This is your backup.
+3. Open the new release ZIP and copy everything into the existing
+   `chatterino-yt-chat` folder. Choose **Replace the files in the destination**
+   if Windows asks. Do not delete the existing `data` folder.
+4. Restart Chatterino and enter `/yt-chat status` in a named channel panel.
+5. Once your saved channels appear correctly, you may delete the backup.
+
+Configuration in `data/YT_CHAT.json` is migrated automatically. The plugin
+also maintains a `.bak` recovery copy, but the manual backup protects against
+accidentally deleting the whole plugin folder during the update.
 
 ## Uninstalling / deleting state
 

@@ -8,8 +8,7 @@
    - `scripts/test.sh`
    - `scripts/validate_fixtures.sh`
    - `& "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File scripts/install_test.ps1`
-   - `scripts/build_release.sh "$(jq -r .version info.json)"` twice and compare
-     the resulting ZIP hashes.
+   - Verify reproducible packaging with the commands below.
 4. Update `COMPATIBILITY.md` when support changes.
 5. Update `CHANGELOG.md` and `docs/validation/release-notes.md` for
    release-impacting changes.
@@ -17,6 +16,15 @@
 Release tags must match the version in `info.json` exactly. The release ZIP must
 contain `install-or-update.cmd`, `scripts/install.ps1`, the plugin and vendored
 library files, `LICENSE` and `NOTICE.md`.
+
+```bash
+VERSION="$(jq -r .version info.json)"
+scripts/build_release.sh "$VERSION"
+HASH1="$(sha256sum "dist/chatterino-yt-chat-$VERSION.zip" | cut -d' ' -f1)"
+scripts/build_release.sh "$VERSION"
+HASH2="$(sha256sum "dist/chatterino-yt-chat-$VERSION.zip" | cut -d' ' -f1)"
+test "$HASH1" = "$HASH2"
+```
 
 ## Rules
 

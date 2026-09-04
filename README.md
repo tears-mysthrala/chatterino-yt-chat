@@ -77,8 +77,9 @@ never written to disk or logs (see [Persisted data](#persisted-data)).
 7. In the input box of a named channel panel, enter `/yt-chat` to confirm that
    the plugin responds with its help.
 
-The installer closes Chatterino normally if needed, backs up the previous
-plugin and its settings under `%APPDATA%\Chatterino2\PluginBackups`, preserves
+The installer requests a normal Chatterino shutdown if needed, waits 15
+seconds, and stops only background processes left without a window. It backs
+up the previous plugin and its settings under `%APPDATA%\Chatterino2\PluginBackups`, preserves
 `data/`, removes obsolete program files, and enables the plugin automatically.
 It uses the Windows PowerShell already installed with Windows, without changing
 the system-wide execution policy. No YouTube login, API key, administrator

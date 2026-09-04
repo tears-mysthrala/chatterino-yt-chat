@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.2 - 2026-09-04
+
+- Makes the Windows installer independent of the `Get-FileHash` cmdlet during
+  plugin-data verification.
+- Stops background-only Chatterino processes after allowing 15 seconds for a
+  normal window shutdown.
+
 ## 1.5.1 - 2026-09-04
 
 - Adds a safe one-click Windows installer and updater that closes Chatterino,

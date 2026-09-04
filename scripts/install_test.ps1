@@ -21,6 +21,9 @@ try {
   Copy-Item -LiteralPath (Join-Path $repoRoot "init.lua"), (Join-Path $repoRoot "info.json"), (Join-Path $repoRoot "LICENSE"), (Join-Path $repoRoot "NOTICE.md") -Destination $packageRoot
   New-TestDirectory -Path @((Join-Path $pluginTarget "data"), (Split-Path -Parent $settingsPath))
   [IO.File]::WriteAllText((Join-Path $pluginTarget "data\YT_CHAT.json"), '{"saved":true}')
+  $hiddenCanonicalFile = Join-Path $pluginTarget "data\hidden-state.json"
+  [IO.File]::WriteAllText($hiddenCanonicalFile, '{"hidden":true}')
+  (Get-Item -LiteralPath $hiddenCanonicalFile -Force).Attributes = (Get-Item -LiteralPath $hiddenCanonicalFile -Force).Attributes -bor [IO.FileAttributes]::Hidden
   [IO.File]::WriteAllText((Join-Path $pluginTarget "obsolete.lua"), 'old')
   [IO.File]::WriteAllText($settingsPath, '{"plugins":{"supportEnabled":false,"enabledPlugins":["other-plugin","chatterino-yt-chat-1.0.0","Chatterino-Yt-Chat"]},"unrelated":{"keep":42,"label":"Canal espa\u00f1ol \u65e5\u672c\u8a9e \ud83d\udd25"}}')
 
@@ -29,6 +32,7 @@ try {
   if (-not (Test-Path -LiteralPath (Join-Path $pluginTarget "libs"))) { throw "libs was not installed" }
   if (Test-Path -LiteralPath (Join-Path $pluginTarget "obsolete.lua")) { throw "obsolete payload was not removed" }
   if ((Get-Content -LiteralPath (Join-Path $pluginTarget "data\YT_CHAT.json") -Raw) -ne '{"saved":true}') { throw "saved data changed" }
+  if ((Get-Content -LiteralPath (Join-Path $pluginTarget "data\hidden-state.json") -Raw) -ne '{"hidden":true}') { throw "hidden saved data changed" }
 
   $settings = [IO.File]::ReadAllText($settingsPath, [Text.Encoding]::UTF8) | ConvertFrom-Json
   $expectedLabel = '"Canal espa\u00f1ol \u65e5\u672c\u8a9e \ud83d\udd25"' | ConvertFrom-Json
@@ -46,6 +50,16 @@ try {
   $nullPluginsSettings = [IO.File]::ReadAllText($nullPluginsSettingsPath, [Text.Encoding]::UTF8) | ConvertFrom-Json
   if (-not $nullPluginsSettings.plugins.supportEnabled -or @($nullPluginsSettings.plugins.enabledPlugins) -cnotcontains "chatterino-yt-chat" -or $nullPluginsSettings.unrelated.keep -ne 7) {
     throw "null plugins settings were not initialized safely"
+  }
+
+  $scalarPluginsRoot = Join-Path $sandbox "ScalarPluginsCase"
+  $scalarPluginsSettingsPath = Join-Path $scalarPluginsRoot "Settings\settings.json"
+  New-TestDirectory -Path (Split-Path -Parent $scalarPluginsSettingsPath)
+  [IO.File]::WriteAllText($scalarPluginsSettingsPath, '{"plugins":"invalid","unrelated":{"keep":8}}')
+  & $installer -ChatterinoRoot $scalarPluginsRoot -SkipProcessCheck
+  $scalarPluginsSettings = [IO.File]::ReadAllText($scalarPluginsSettingsPath, [Text.Encoding]::UTF8) | ConvertFrom-Json
+  if (-not $scalarPluginsSettings.plugins.supportEnabled -or @($scalarPluginsSettings.plugins.enabledPlugins) -cnotcontains "chatterino-yt-chat" -or $scalarPluginsSettings.unrelated.keep -ne 8) {
+    throw "non-object plugins settings were not initialized safely"
   }
 
   $migrationRoot = Join-Path $sandbox "MigrationCase"
@@ -80,9 +94,15 @@ try {
   [IO.File]::WriteAllText((Join-Path $conflictLegacyData "YT_CHAT.json"), '{"legacy":true}')
   [IO.File]::WriteAllText($conflictSettingsPath, '{"plugins":{"supportEnabled":true,"enabledPlugins":["chatterino-yt-chat-1.0.0"]}}')
   $conflictRejected = $false
-  try { & $installer -ChatterinoRoot $conflictRoot -SkipProcessCheck } catch { $conflictRejected = $true }
+  try { & $installer -ChatterinoRoot $conflictRoot -SkipProcessCheck } catch {
+    if ($_.Exception.Message -notmatch "contain different saved data") {
+      throw "the conflict case failed for an unrelated reason: $($_.Exception.Message)"
+    }
+    $conflictRejected = $true
+  }
   if (-not $conflictRejected) { throw "conflicting saved data was not rejected" }
   if ((Get-Content -LiteralPath (Join-Path $conflictCanonicalData "YT_CHAT.json") -Raw) -ne '{"canonical":true}') { throw "conflict rollback did not restore canonical data" }
+  if ((Get-Content -LiteralPath (Join-Path $conflictLegacyData "YT_CHAT.json") -Raw) -ne '{"legacy":true}') { throw "conflict rollback did not preserve legacy data" }
   $conflictSettings = Get-Content -LiteralPath $conflictSettingsPath -Raw | ConvertFrom-Json
   if (@($conflictSettings.plugins.enabledPlugins) -notcontains "chatterino-yt-chat-1.0.0" -or @($conflictSettings.plugins.enabledPlugins) -contains "chatterino-yt-chat") {
     throw "conflict rollback changed plugin activation"

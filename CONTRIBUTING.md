@@ -7,13 +7,14 @@
 3. Run local checks:
    - `scripts/test.sh`
    - `scripts/validate_fixtures.sh`
-   - `& "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File scripts/install_test.ps1`
+   - On Windows only: `& "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File scripts/install_test.ps1`
    - Verify reproducible packaging with the commands below.
 4. Update `COMPATIBILITY.md` when support changes.
 5. Update `CHANGELOG.md` and `docs/validation/release-notes.md` for
    release-impacting changes.
 
-Release tags must match the version in `info.json` exactly. The release ZIP must
+The metadata stores a bare version such as `1.5.1`; release tags add a leading
+`v`, and CI strips that prefix before requiring an exact match. The release ZIP must
 contain `install-or-update.cmd`, `scripts/install.ps1`, the plugin and vendored
 library files, `LICENSE` and `NOTICE.md`.
 

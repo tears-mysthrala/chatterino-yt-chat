@@ -5,12 +5,16 @@ is unchanged.
 
 ## Install or update on Windows
 
-1. Download `chatterino-yt-chat-1.5.1.zip` and its `.sha256` file from this
-   release, then verify the ZIP.
-2. Select **Extract all** in File Explorer.
-3. Double-click `install-or-update.cmd` in the extracted folder. Do not run it
+1. Download `chatterino-yt-chat-1.5.1.zip` and its matching `.sha256` file
+   from this release.
+2. Before extraction, open PowerShell in the download folder and run
+   `(Get-FileHash .\chatterino-yt-chat-1.5.1.zip -Algorithm SHA256).Hash`.
+3. Compare the result with the hash in the `.sha256` file. Continue only when
+   they match.
+4. Select **Extract all** in File Explorer.
+5. Double-click `install-or-update.cmd` in the extracted folder. Do not run it
    as administrator.
-4. Reopen Chatterino and run `/yt-chat status`.
+6. Reopen Chatterino and run `/yt-chat status`.
 
 The launcher uses the Windows PowerShell already included with Windows. Its
 execution-policy bypass applies only to the installer process. The installer

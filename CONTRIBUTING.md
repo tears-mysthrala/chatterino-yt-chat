@@ -7,7 +7,7 @@
 3. Run local checks:
    - `scripts/test.sh`
    - `scripts/validate_fixtures.sh`
-   - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/install_test.ps1`
+   - `& "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File scripts/install_test.ps1`
    - `scripts/build_release.sh "$(jq -r .version info.json)"` twice and compare
      the resulting ZIP hashes.
 4. Update `COMPATIBILITY.md` when support changes.

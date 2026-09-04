@@ -1,6 +1,11 @@
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version 2.0
 
+function New-TestDirectory {
+  param([string[]]$Path)
+  foreach ($entry in $Path) { [IO.Directory]::CreateDirectory($entry) | Out-Null }
+}
+
 $repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")).Path
 $sourceInstaller = Join-Path $PSScriptRoot "install.ps1"
 $sandbox = Join-Path ([IO.Path]::GetTempPath()) ("yt-installer-test-" + [Guid]::NewGuid().ToString("N"))
@@ -10,11 +15,11 @@ $pluginTarget = Join-Path $sandbox "Plugins\chatterino-yt-chat"
 $settingsPath = Join-Path $sandbox "Settings\settings.json"
 
 try {
-  New-Item -ItemType Directory -Force -Path (Split-Path -Parent $installer) | Out-Null
+  New-TestDirectory -Path (Split-Path -Parent $installer)
   Copy-Item -LiteralPath $sourceInstaller -Destination $installer
   Copy-Item -LiteralPath (Join-Path $repoRoot "src"), (Join-Path $repoRoot "libs") -Destination $packageRoot -Recurse
   Copy-Item -LiteralPath (Join-Path $repoRoot "init.lua"), (Join-Path $repoRoot "info.json"), (Join-Path $repoRoot "LICENSE"), (Join-Path $repoRoot "NOTICE.md") -Destination $packageRoot
-  New-Item -ItemType Directory -Force -Path (Join-Path $pluginTarget "data"), (Split-Path -Parent $settingsPath) | Out-Null
+  New-TestDirectory -Path @((Join-Path $pluginTarget "data"), (Split-Path -Parent $settingsPath))
   [IO.File]::WriteAllText((Join-Path $pluginTarget "data\YT_CHAT.json"), '{"saved":true}')
   [IO.File]::WriteAllText((Join-Path $pluginTarget "obsolete.lua"), 'old')
   [IO.File]::WriteAllText($settingsPath, '{"plugins":{"supportEnabled":false,"enabledPlugins":["other-plugin","chatterino-yt-chat-1.0.0","Chatterino-Yt-Chat"]},"unrelated":{"keep":42,"label":"Canal espa\u00f1ol \u65e5\u672c\u8a9e \ud83d\udd25"}}')
@@ -33,10 +38,20 @@ try {
   if (@($settings.plugins.enabledPlugins) -contains "chatterino-yt-chat-1.0.0") { throw "legacy plugin id remains enabled" }
   if (@($settings.plugins.enabledPlugins) -notcontains "other-plugin" -or $settings.unrelated.keep -ne 42 -or $settings.unrelated.label -ne $expectedLabel) { throw "unrelated settings changed" }
 
+  $nullPluginsRoot = Join-Path $sandbox "NullPluginsCase"
+  $nullPluginsSettingsPath = Join-Path $nullPluginsRoot "Settings\settings.json"
+  New-TestDirectory -Path (Split-Path -Parent $nullPluginsSettingsPath)
+  [IO.File]::WriteAllText($nullPluginsSettingsPath, '{"plugins":null,"unrelated":{"keep":7}}')
+  & $installer -ChatterinoRoot $nullPluginsRoot -SkipProcessCheck
+  $nullPluginsSettings = [IO.File]::ReadAllText($nullPluginsSettingsPath, [Text.Encoding]::UTF8) | ConvertFrom-Json
+  if (-not $nullPluginsSettings.plugins.supportEnabled -or @($nullPluginsSettings.plugins.enabledPlugins) -cnotcontains "chatterino-yt-chat" -or $nullPluginsSettings.unrelated.keep -ne 7) {
+    throw "null plugins settings were not initialized safely"
+  }
+
   $migrationRoot = Join-Path $sandbox "MigrationCase"
   $legacyData = Join-Path $migrationRoot "Plugins\chatterino-yt-chat-1.0.0\data"
   $migrationSettingsPath = Join-Path $migrationRoot "Settings\settings.json"
-  New-Item -ItemType Directory -Force -Path $legacyData, (Split-Path -Parent $migrationSettingsPath) | Out-Null
+  New-TestDirectory -Path @($legacyData, (Split-Path -Parent $migrationSettingsPath))
   $hiddenLegacyFile = Join-Path $legacyData "YT_CHAT.json"
   [IO.File]::WriteAllText($hiddenLegacyFile, '{"legacy":true}')
   (Get-Item -LiteralPath $hiddenLegacyFile -Force).Attributes = (Get-Item -LiteralPath $hiddenLegacyFile -Force).Attributes -bor [IO.FileAttributes]::Hidden
@@ -60,7 +75,7 @@ try {
   $conflictCanonicalData = Join-Path $conflictRoot "Plugins\chatterino-yt-chat\data"
   $conflictLegacyData = Join-Path $conflictRoot "Plugins\chatterino-yt-chat-1.0.0\data"
   $conflictSettingsPath = Join-Path $conflictRoot "Settings\settings.json"
-  New-Item -ItemType Directory -Force -Path $conflictCanonicalData, $conflictLegacyData, (Split-Path -Parent $conflictSettingsPath) | Out-Null
+  New-TestDirectory -Path @($conflictCanonicalData, $conflictLegacyData, (Split-Path -Parent $conflictSettingsPath))
   [IO.File]::WriteAllText((Join-Path $conflictCanonicalData "YT_CHAT.json"), '{"canonical":true}')
   [IO.File]::WriteAllText((Join-Path $conflictLegacyData "YT_CHAT.json"), '{"legacy":true}')
   [IO.File]::WriteAllText($conflictSettingsPath, '{"plugins":{"supportEnabled":true,"enabledPlugins":["chatterino-yt-chat-1.0.0"]}}')

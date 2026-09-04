@@ -10,6 +10,8 @@ Windows PowerShell script execution. Chat behavior is unchanged.
    from this release.
 2. Before extraction, open PowerShell in the download folder and run
    `(Get-FileHash .\chatterino-yt-chat-1.5.2.zip -Algorithm SHA256).Hash`.
+   If that command is unavailable, run
+   `certutil -hashfile .\chatterino-yt-chat-1.5.2.zip SHA256`.
 3. Compare the result with the hash in the `.sha256` file. Continue only when
    they match.
 4. Select **Extract all** in File Explorer.

@@ -6,8 +6,17 @@
 2. Add/update fixtures and tests for any renderer/action change.
 3. Run local checks:
    - `scripts/test.sh`
+   - `scripts/validate_fixtures.sh`
+   - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/install_test.ps1`
+   - `scripts/build_release.sh "$(jq -r .version info.json)"` twice and compare
+     the resulting ZIP hashes.
 4. Update `COMPATIBILITY.md` when support changes.
-5. Update `CHANGELOG.md` for release-impacting changes.
+5. Update `CHANGELOG.md` and `docs/validation/release-notes.md` for
+   release-impacting changes.
+
+Release tags must match the version in `info.json` exactly. The release ZIP must
+contain `install-or-update.cmd`, `scripts/install.ps1`, the plugin and vendored
+library files, `LICENSE` and `NOTICE.md`.
 
 ## Rules
 
@@ -31,3 +40,6 @@ Expose SemVer and the canonical repository through `info.json`. A shared notifie
 may check stable GitHub releases at most once every 24 hours and show a
 Chatterino system message. It must be disableable and must never download,
 replace or execute plugin files automatically.
+
+Release pull requests must explain how installation and later updates work
+after merge.

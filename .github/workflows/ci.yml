@@ -80,3 +80,9 @@ jobs:
           path: |
             dist/chatterino-yt-chat-${{ env.VERSION }}.zip
             dist/chatterino-yt-chat-${{ env.VERSION }}.zip.sha256
+  windows-installer:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1, Node 24
+      - shell: powershell
+        run: .\scripts\install_test.ps1

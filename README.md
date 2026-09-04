@@ -61,28 +61,33 @@ never written to disk or logs (see [Persisted data](#persisted-data)).
 
 ## Installation
 
-### Windows (no terminal required)
+### Windows (double-click installer)
 
 1. Open the [Releases page](https://github.com/tears-mysthrala/chatterino-yt-chat/releases)
    and select the latest release that is not marked **Pre-release**.
 2. Under **Assets**, download the file whose name starts with
    `chatterino-yt-chat-` and ends in `.zip`. Do not download the files named
    **Source code**.
-3. Press `Windows key + R`, paste `%APPDATA%\Chatterino2\Plugins`, and select
-   **OK**. If Windows says the folder does not exist, create the `Plugins`
-   folder inside `%APPDATA%\Chatterino2`.
-4. Inside `Plugins`, create a folder named exactly `chatterino-yt-chat`.
-5. Open the downloaded ZIP, select everything inside it, and copy those files
-   into the new `chatterino-yt-chat` folder.
-6. Check the result: `init.lua` and `info.json` must be directly inside
-   `chatterino-yt-chat`, not inside another nested folder.
-7. Restart Chatterino. Open **Settings → Plugins**, turn on **Enable plugins**,
-   and enable `chatterino-yt-chat`.
-8. In the input box of a named channel panel, enter `/yt-chat` to confirm that
+3. Right-click the ZIP, select **Extract all**, and open the extracted folder.
+   Do not run the installer from inside the ZIP preview.
+4. Double-click `install-or-update.cmd`. Do not run it as administrator.
+5. Wait for `Done`, press any key to close the installer, and open Chatterino.
+6. In the input box of a named channel panel, enter `/yt-chat` to confirm that
    the plugin responds with its help.
 
-No YouTube login, API key, administrator access, PowerShell, or other software
-is required.
+The installer closes Chatterino normally if needed, backs up the previous
+plugin and its settings under `%APPDATA%\Chatterino2\PluginBackups`, preserves
+`data/`, removes obsolete program files, and enables the plugin automatically.
+It uses the Windows PowerShell already installed with Windows, without changing
+the system-wide execution policy. No YouTube login, API key, administrator
+access, or extra software is required.
+
+If the launcher does not open, right-click an empty area in the extracted
+folder, select **Open in Terminal**, and run:
+
+```powershell
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\scripts\install.ps1 -CloseChatterino
+```
 
 ### macOS and Linux
 
@@ -108,18 +113,15 @@ matter. This command only reads the file.
 
 ## Updating
 
-1. Close Chatterino.
-2. Open the existing `chatterino-yt-chat` folder and copy its `data` folder to
-   a safe place, such as the Desktop. This is your backup.
-3. Open the new release ZIP and copy everything into the existing
-   `chatterino-yt-chat` folder. Choose **Replace the files in the destination**
-   if Windows asks. Do not delete the existing `data` folder.
-4. Restart Chatterino and enter `/yt-chat status` in a named channel panel.
-5. Once your saved channels appear correctly, you may delete the backup.
+Download and extract the new release, then double-click
+`install-or-update.cmd` again. The same installer handles clean installs and
+updates. It preserves and verifies `data/`, creates a recoverable backup, and
+updates the existing plugin without manual file copying. Open Chatterino and
+enter `/yt-chat status` in a named channel panel.
 
 Configuration in `data/YT_CHAT.json` is migrated automatically. The plugin
-also maintains a `.bak` recovery copy, but the manual backup protects against
-accidentally deleting the whole plugin folder during the update.
+also maintains a `.bak` recovery copy; the installer backup protects the whole
+previous plugin directory and Chatterino settings.
 
 ## Uninstalling / deleting state
 

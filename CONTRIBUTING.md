@@ -6,8 +6,26 @@
 2. Add/update fixtures and tests for any renderer/action change.
 3. Run local checks:
    - `scripts/test.sh`
+   - `scripts/validate_fixtures.sh`
+   - On Windows only: `& "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File scripts/install_test.ps1`
+   - Verify reproducible packaging with the commands below.
 4. Update `COMPATIBILITY.md` when support changes.
-5. Update `CHANGELOG.md` for release-impacting changes.
+5. Update `CHANGELOG.md` and `docs/validation/release-notes.md` for
+   release-impacting changes.
+
+The metadata stores a bare version such as `1.5.1`; release tags add a leading
+`v`, and CI strips that prefix before requiring an exact match. The release ZIP must
+contain `install-or-update.cmd`, `scripts/install.ps1`, the plugin and vendored
+library files, `LICENSE` and `NOTICE.md`.
+
+```bash
+VERSION="$(jq -r .version info.json)"
+scripts/build_release.sh "$VERSION"
+HASH1="$(sha256sum "dist/chatterino-yt-chat-$VERSION.zip" | cut -d' ' -f1)"
+scripts/build_release.sh "$VERSION"
+HASH2="$(sha256sum "dist/chatterino-yt-chat-$VERSION.zip" | cut -d' ' -f1)"
+test "$HASH1" = "$HASH2"
+```
 
 ## Rules
 
@@ -31,3 +49,6 @@ Expose SemVer and the canonical repository through `info.json`. A shared notifie
 may check stable GitHub releases at most once every 24 hours and show a
 Chatterino system message. It must be disableable and must never download,
 replace or execute plugin files automatically.
+
+Release pull requests must explain how installation and later updates work
+after merge.

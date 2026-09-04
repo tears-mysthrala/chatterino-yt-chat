@@ -108,3 +108,11 @@ in reports. We aim to acknowledge within 7 days.
 - A future shared notifier may query stable release metadata at most once every
   24 hours. It must be disableable, send no channel/account/chat data and never
   download or install an update automatically.
+
+On Windows, `install-or-update.cmd` invokes the operating system's bundled
+Windows PowerShell with an execution-policy bypass limited to that installer
+process. It does not change the user or machine policy and does not require
+administrator access. The installer closes Chatterino before changing settings,
+moves the previous plugin and settings to a recoverable backup outside the
+active `Plugins` directory, preserves and hashes `data/`, enables plugin support
+and this plugin, and restores the previous installation if an update fails.

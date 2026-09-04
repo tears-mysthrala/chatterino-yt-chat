@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.5.1 - 2026-09-04
+
+- Adds a safe one-click Windows installer and updater that closes Chatterino,
+  backs up the previous installation, preserves and verifies plugin data,
+  enables the plugin, and rolls back on failure.
+- Packages the launcher and installer in each release ZIP. Chat behavior is
+  unchanged.
+
 ## 1.5.0 - 2026-08-26
 
 - Publishes the active YouTube stream and stable channel identities to the

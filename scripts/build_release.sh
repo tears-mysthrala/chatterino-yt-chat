@@ -10,9 +10,10 @@ PKG_NAME="chatterino-yt-chat-${VERSION}.zip"
 PKG_PATH="$DIST_DIR/$PKG_NAME"
 
 rm -rf "$DIST_DIR"
-mkdir -p "$DIST_DIR/package"
+mkdir -p "$DIST_DIR/package/scripts"
 
-cp -r src libs init.lua info.json LICENSE NOTICE.md "$DIST_DIR/package/"
+cp -r src libs init.lua info.json LICENSE NOTICE.md install-or-update.cmd "$DIST_DIR/package/"
+cp scripts/install.ps1 "$DIST_DIR/package/scripts/"
 
 cd "$DIST_DIR/package"
 EPOCH="${SOURCE_DATE_EPOCH:-1704067200}"
